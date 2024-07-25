@@ -1,5 +1,9 @@
 # Минимальная версия CMake
 cmake_minimum_required(VERSION 3.14)
+
+set(CMAKE_CXX_STANDARD 17)
+
+
 # Общая информация о проекте
 project(mrcv
     VERSION 1.0.0
@@ -42,8 +46,8 @@ add_library(mrcv::mrcv ALIAS mrcv)
 
 find_package( OpenCV REQUIRED )
 
-set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
-set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
+#set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
+#set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 link_directories(${OpenCV_LIB_DIR})
