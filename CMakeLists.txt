@@ -25,6 +25,8 @@ if(DEFINED MRCV_SHARED_LIBS)
     set(BUILD_SHARED_LIBS ${MRCV_SHARED_LIBS})
 endif()
 
+set(CMAKE_BUILD_TYPE Release)
+
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
@@ -66,7 +68,9 @@ generate_export_header(mrcv EXPORT_FILE_NAME include/mrcv/${export_file_name})
 set(sources
     include/mrcv/export.h
     include/mrcv/mrcv.h
-    src/mrcv.cpp)
+    src/mrcv.cpp
+    src/mrcv-util.cpp
+)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 ###############################################################################
@@ -75,7 +79,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources})
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-util.cpp")
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv
