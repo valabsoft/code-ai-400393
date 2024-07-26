@@ -12,4 +12,5 @@ namespace mrcv
 {
 	MRCV_EXPORT int add(int a, int b);
 	MRCV_EXPORT int imread(std::string pathtoimage);
+	MRCV_EXPORT  std::string openCVInfo();
 }
