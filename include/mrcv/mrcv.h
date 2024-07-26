@@ -29,7 +29,7 @@ namespace mrcv
 	
 	MRCV_EXPORT std::string readFile(const std::string& fileName);
 	MRCV_EXPORT int parserUrl(const char* nameFind);
-	MRCV_EXPORT std::vector< int > substringFind(std::string text,std::string word);
+	//MRCV_EXPORT std::vector< int > substringFind(std::string text,std::string word);
 	MRCV_EXPORT std::vector< std::string > urlFind(std::string text);
 	MRCV_EXPORT int saveFile(std::string nameFile, std::vector< std::string > arrUrl);
 	MRCV_EXPORT void downloadFoto(std::vector< std::string > arrUrl, std::string patch);
