@@ -70,7 +70,8 @@ generate_export_header(mrcv EXPORT_FILE_NAME include/mrcv/${export_file_name})
 set(sources
     include/mrcv/export.h
     include/mrcv/mrcv.h
-    src/mrcv.cpp)
+    src/mrcv.cpp
+    src/mrcv-kramar1.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 ###############################################################################
