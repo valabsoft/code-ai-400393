@@ -10,6 +10,6 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    mrcv::imread(argv[1]);
+    mrcv::readImage(argv[1]);
     return 0;
 }

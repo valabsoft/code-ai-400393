@@ -4,6 +4,6 @@
 
 int main(int, char*[])
 {
-    std::cout << mrcv::openCVInfo() << std::endl;
+    std::cout << mrcv::getOpenCVBuildInformation() << std::endl;
     return 0;
 }

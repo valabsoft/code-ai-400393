@@ -68,8 +68,9 @@ generate_export_header(mrcv EXPORT_FILE_NAME include/mrcv/${export_file_name})
 set(sources
     include/mrcv/export.h
     include/mrcv/mrcv.h
+    include/mrcv/mrcv-common.h
     src/mrcv.cpp
-    src/mrcv-util.cpp
+    src/mrcv-utility.cpp
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
@@ -79,7 +80,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "src/mrcv-util.cpp")
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "include/mrcv/mrcv-common.h")
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv

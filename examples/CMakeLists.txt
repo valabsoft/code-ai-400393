@@ -1,3 +1,3 @@
 add_subdirectory(add)
-add_subdirectory(imread)
+add_subdirectory(readimage)
 add_subdirectory(opencvinfo)
