@@ -10,6 +10,11 @@ project(mrcv
 # Общие настройки проекта
 ###############################################################################
 
+# Для разработки под VS
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+endif(MSVC)
+
 include(cmake/utils.cmake)
 include(GNUInstallDirs)
 
