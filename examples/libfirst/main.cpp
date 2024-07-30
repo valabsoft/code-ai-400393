@@ -12,8 +12,8 @@ int main()
     unsigned int countFoto =30;
     bool money = false;
     
-    std::string key="b1g75c9dm4907jfn6acn";
-    std::string secretKey ="AQVN1SnDkDf_3xZzZ0k2Onbyr_TcrnQ5XBDWNGp0";    
+    std::string key="";
+    std::string secretKey ="";    
 
 
     int rez=mrcv::getImagesFromYandex(zapros, minWidth, minHeight, nameTemplate,  outputFolder, separateDataset, trainsetPercentage,countFoto,money,key,secretKey);
