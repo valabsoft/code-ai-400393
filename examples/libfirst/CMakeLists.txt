@@ -13,8 +13,8 @@ endif()
 
 find_package( OpenCV REQUIRED )
 
-#set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
-#set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
+set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
+set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 link_directories(${OpenCV_LIB_DIR})

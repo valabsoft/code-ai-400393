@@ -1,19 +1,24 @@
 #include <mrcv/mrcv.h>
 
-
 int main()
 {
-    std::string patchBody="/home/oleg/kodII/mrcv/body.html"; // заменить на свой путь
-    std::string outputfolder="/home/oleg/kodII/mrcv/images/"; // заменить на свой путь
-    std::string nametemplate="tank"; // 
-    int count =5;
-    int trainsetpercentage = 70;
-    int minwidth=300;
-    int minheight=300;
-    bool separatedataset = true;
-    std::string text="машинки";
+    std::string zapros="hares"; // строка запроса, для двойного запроса использовать + без пробелов  зайцы+ушастые
+    int minWidth=300;
+    int minHeight=300;
+    std::string nameTemplate="hares"; // шаблон файла     
+    std::string outputFolder="/home/oleg/kodII/mrcv/images/"; // путь к изображениям
+    bool separateDataset = true;
+    int trainsetPercentage = 70;
+    unsigned int countFoto =30;
+    bool money = false;
     
-int rez=mrcv::getImagesFromYandex(patchBody, count, minwidth, minheight, nametemplate, outputfolder, separatedataset,trainsetpercentage);
-//int rez=mrcv::getImagesFromYandex(text, count, minwidth, minheight, nametemplate, outputfolder, separatedataset,trainsetpercentage);
+    std::string key="b1g75c9dm4907jfn6acn";
+    std::string secretKey ="AQVN1SnDkDf_3xZzZ0k2Onbyr_TcrnQ5XBDWNGp0";    
+
+
+    int rez=mrcv::getImagesFromYandex(zapros, minWidth, minHeight, nameTemplate,  outputFolder, separateDataset, trainsetPercentage,countFoto,money,key,secretKey);
+   
+	std::cout << "Результат работы функции " << rez << '\n';
+    
     return 0;
 } 

@@ -3,34 +3,8 @@
 namespace mrcv
 {
    
-	
-// static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
-// {
-//     ((std::string*)userp)->append((char*)contents, size * nmemb);
-//     return size * nmemb;
-// }
-// std::string  parserUrlString(const char* nameFind)
-// {
-//     CURL *curl;
-//       CURLcode res;
-//       std::string readBuffer;
-//     curl = curl_easy_init();
-// 
-//       char* esc_text= curl_easy_escape( curl, nameFind, 0);
-//       std::string url=  "https://yandex.ru/images/search?from=tabbar&text=";
-//       url+= esc_text;
-// 
-//       if(curl) {
-//         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-//         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-//         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-//         res = curl_easy_perform(curl);
-//         curl_easy_cleanup(curl);
-//       }
-//       return readBuffer;
-// }
-		
-		
+
+	// функция чтения файла и сохранения в строку	
 	std::string readFile(const std::string& fileName) 
     {
      std::ifstream f(fileName);
@@ -46,177 +20,247 @@ namespace mrcv
 	//вспомогательная функция поиска подстроки
 	std::vector< int > findSubstring(std::string text,std::string word)
 	{
-        std::vector< int > positionAll;
+        std::vector< int > positionAllSubstring;
 	    for (unsigned i {}; i <= text.length() - word.length(); )
-            {
-                // получаем индекс
-                size_t position = text.find(word, i);
-                // если не найдено ни одного вхождения с индекса i, выходим из цикла
-                if (position == std::string::npos) break;
-                // если же вхождение найдено, увеличиваем счетчик вхождений
-                positionAll.push_back(position);
-                // переходим к следующему индексу после position
-                i = position + 1;
-            }
-	return positionAll;
+        {
+            // получаем индекс
+            size_t positionSubstring = text.find(word, i);
+            // если не найдено ни одного вхождения с индекса i, выходим из цикла
+            if (positionSubstring == std::string::npos) 
+                break;
+               
+            positionAllSubstring.push_back(positionSubstring);
+            // если же вхождение найдено, увеличиваем счетчик вхождений
+            // переходим к следующему индексу после positionSubstring
+            i = positionSubstring + 1;
+        }
+            
+	return positionAllSubstring;
 	}
 
-	//поиск адресов картинок
+	//поиск url картинок в тексте файла
 	std::vector< std::string > findUrl(std::string text) 
     {
         int ind=0;
-		std::vector< int > positionAllHttps; //список всех позиций слова https
+		std::vector< int > positionAllTegHttps; //список всех позиций слова https
 		std::string wordBegin {"https"};     // слово для поиска
-		std::vector< int > positionAllJpg;   //список всех позиций слова jpg
+		std::vector< int > positionAllTegJpg;   //список всех позиций слова jpg
 		std::string wordEnd {".jpg"};        // слово для поиска
-		std::vector< int > positionHttps;    //список синхронизированных позиций слова https
-		std::vector< int > positionJpg;      //список синхронизированных позиций слова jpg
+		std::vector< int > positionTegHttps;    //список синхронизированных позиций слова https
+		std::vector< int > positionTegJpg;      //список синхронизированных позиций слова jpg
 		std::vector< std::string > arrUrl;   // список найденных url
 
-		positionAllHttps=findSubstring(text,wordBegin); // поиск всех слов https в тексте
-		positionAllJpg=findSubstring(text,wordEnd);     // поиск всех слов jpg в тексте
-
-		for (unsigned long i=0; i<positionAllHttps.size()-1;i++ )
+		positionAllTegHttps=findSubstring(text, wordBegin); // поиск позиций всех слов https в тексте
+		positionAllTegJpg=findSubstring(text, wordEnd);     // поиск позиций всех слов .jpg в тексте
+        
+        // В тексте не нашлось ниодной ссылки        
+        if (positionAllTegHttps.size() == 0)
+        {
+            arrUrl.push_back("0");
+            return arrUrl;
+        }
+        if (positionAllTegJpg.size() == 0)
+        {
+            arrUrl.push_back("0");
+            return arrUrl;
+        }
+        // цикл синхронизации тегов https и .jpg, отбрасываем все номера позиций https которые не заканчиваюится на  .jpg
+		for (unsigned long i = 0; i < positionAllTegHttps.size() - 1;i++ )
 		{
-            if( positionAllJpg[ind]> positionAllHttps[i+1])
+            if( positionAllTegJpg[ind] > positionAllTegHttps[i+1])
 			{}
                 else
-                    if( positionAllJpg[ind]< positionAllHttps[i+1])
-                        {
-                            positionHttps.push_back(positionAllHttps[i]);
-                            positionJpg.push_back(positionAllJpg[ind]);
-                            ++ind;
-                        }
+                    if( positionAllTegJpg[ind] < positionAllTegHttps[i+1])
+                    {
+                        positionTegHttps.push_back(positionAllTegHttps[i]);
+                        positionTegJpg.push_back(positionAllTegJpg[ind]);
+                        ++ind;
+                    }
 		}
-
-		for (unsigned long i=0; i<positionHttps.size()-1;i++ )
+		//цикл поиска подстроки url  в тексте и сохранения их в std::vector< std::string > arrUrl;
+		for (unsigned long i=0; i < positionTegHttps.size() - 1;i++ )
 		{
-			if (positionJpg[i]-positionHttps[i]+4>0)
+			if (positionTegJpg[i] - positionTegHttps[i] + 4 > 0)
 			{
-				int sizeBuffer=positionJpg[i]-positionHttps[i]+4;
-				std::string strA = text.substr(positionHttps[i], sizeBuffer);
-				strA = std::regex_replace(strA, std::regex("%3A%2F%2F"), "://"); 
-				strA = std::regex_replace(strA, std::regex("%2F"), "/");
-				//std::cout << strA << '\n';
-				arrUrl.push_back(strA);
+				int lengthUrl=positionTegJpg[i]-positionTegHttps[i]+4; // длина слова составляющая url
+				std::string strA = text.substr(positionTegHttps[i], lengthUrl); //вырезаем url из общего текста
+				strA = std::regex_replace(strA, std::regex("%3A%2F%2F"), "://"); // исправляем кодировку
+				strA = std::regex_replace(strA, std::regex("%2F"), "/");// исправляем кодировку
+				arrUrl.push_back(strA);// сохраняем все найденные url
 			}
 		}
 		return arrUrl;
 	}
 
-	int saveFile(std::string nameFile, std::vector< std::string > arrUrl)
+
+	// качаем фото из списка, возвращаем последний индекс файла
+	unsigned int downloadFoto(std::vector< std::string > arrUrl, std::string patch, std::string namefile,unsigned int countFotoindDir, unsigned int countFoto )
 	{
-        std::ofstream output_file(nameFile);
-        std::ostream_iterator<std::string> output_iterator(output_file, "\n");
-            try 
-                {
-                    std::copy(std::begin(arrUrl), std::end(arrUrl), output_iterator);
-                }
-            catch (std::exception& e) 
-                {
-                    return -1;
-                }
-        return 0;
-	}
-	void downloadFoto(std::vector< std::string > arrUrl, std::string patch, std::string nameFile,int count )
-	{
-		for (unsigned long i=0; i<arrUrl.size()-1;i++ )
+        unsigned int index = 0;
+		for (unsigned int i = 0; i < arrUrl.size() - 1;i++ )
 		{
-            if (i>count)
+            index=i + countFotoindDir;// цифровой индекс для добавлении к имени файла
+            if (countFoto < i) //выход из цикла если скачали достаточное количество
                 break;
-            std::string nameShag = std::to_string(i);
-            std::string str1 = "wget -nd -r -P ";
-            std::string str3 = " -A jpeg,jpg,bmp,gif,png ";
-            std::string concat_str = str1 +  str3 + " -O "+ patch+nameFile + nameShag +".jpg ";;
-            //std::string cmd = concat_str + arrUrl[i]+ " -O "+ nameFile + nameShag +".jpg ";
+
+            std::string namestep = std::to_string(index); //порядковая цифра к названию файла
+            // собираем строку
+            std::string str1 = "wget   --tries=2  --connect-timeout=5 ";
+            // тихая консоль, добавлен параметр -q который ничего не выводит в консоль
+            // std::string str1 = "wget  -r  --tries=2  --connect-timeout=5  -q ";
+            std::string str2 = " --user-agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36\" "; 
+            std::string concat_str = str1 + str2 +  " -O "+ patch + namefile + namestep +".jpg ";            
             std::string cmd = concat_str + arrUrl[i];
+            // вызов исполняемой функции
             system(cmd.c_str());
 		}
+		return index;// возвращаем последний индекс
 	}
 
 	void deleleSmall(std::string filepath,int rows,int cols) 
 	{
+       // int countfile = 0;
         std::string path = filepath;
-			for (const auto & entry : std::filesystem::directory_iterator(path))
-			{
-                cv::Mat src = cv::imread( entry.path().string() );
-			    if (src.rows <= rows && src.cols <= cols)
-                    remove(entry.path());
-			}
+        for (const auto & entry : std::filesystem::directory_iterator(path))
+        {
+            if (entry.is_regular_file())
+            {
+                cv::Mat src = cv::imread( entry.path().string() );                
+                // удаляем файлы по условию - ширина и высота фото и размер 0 байт
+                if ((src.rows <= rows && src.cols <= cols) || (std::filesystem::file_size(entry.path()) == 0))   
+                    try 
+                    {
+                        remove(entry.path());
+                    }
+                    catch (std::exception& e) 
+                    {
+                        std::cout << e.what();
+                    }
+            }
+        }
 	}
-
+    // копируем файлы в папки train и test
 	void copyFile(std::string  filepath,std::string  target, int percent) 
 	{
-		std::string path = filepath;
-		std::string train =  "train";
-		std::string test =  "test";
-		std::string pathTrain=target;
-		std::string pathTest=target;
-		pathTrain+=train;
-		pathTest+=test;
+		std::string path = filepath; // из какой папки берем фото
+		std::string train = "train";
+		std::string test = "test";
+		std::string pathTrain = target; // в какую папку копируем
+		std::string pathTest = target; // в какую папку копируем
+		pathTrain+= train; // добавляем в конечную папку, папку  train
+		pathTest+= test;// добавляем в конечную папку, папку  test
 		std::string pathRez;
+            if (!(std::filesystem::exists(pathTrain)))
+                 std::filesystem::create_directories(pathTrain);
+            if (!(std::filesystem::exists(pathTest)))
+                 std::filesystem::create_directories(pathTest);
+    
 			for (const auto & entry : std::filesystem::directory_iterator(path))
 			{
-				std::filesystem::path sourceFile = entry.path();
-					if ((rand()%100)<percent)
-						pathRez=pathTrain;
+                if (entry.is_regular_file())
+                {
+                    std::filesystem::path sourceFile = entry.path();
+                
+					if ((rand()%100) < percent)
+						pathRez = pathTrain;
 					else
-						pathRez=pathTest;
+						pathRez = pathTest;
+                    
 					std::filesystem::path targetParent = pathRez;
 					auto target = targetParent / sourceFile.filename(); 
 					try 
 					{
-						std::filesystem::create_directories(targetParent); 
 						std::filesystem::copy_file(sourceFile, target, std::filesystem::copy_options::overwrite_existing);
 					}
 					catch (std::exception& e) 
 					{
 						std::cout << e.what();
 					}
+                }
 			}
 	}
 	
 	
-std::string	pythonDownloadYandex()
+// функция скачаивания файла Яндекса
+void getFileFromYandex(std::string zapros, bool money,int pageInt, std::string key="", std::string secretKey="")
 {
-        FILE *pipe = popen("python3 /home/oleg/kodII/mrcv/python/url.py", "r"); // Replace 'your_script.py' with your Python script's filename
 
-            if (!pipe) {
-                std::cerr << "Failed to open pipe." << std::endl;
-                return "0";
-            }
+    zapros+="\" ";
+    std::string page=std::to_string(pageInt);
+    std::string strzapros;
+    std::string str1 = "curl -X GET -o result.xml ";
+    std::string str1free = "curl -X GET -o result.xml  -A \"User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36\" \"https://yandex.ru/images/search?from=tabbar&text=";
+    std::string str2 = " \"https://yandex.ru/images-xml?folderid=";
+    std::string str3 = "&apikey=";
+    std::string str4 = "&p=";
+    std::string str5 = "&text=";
 
-            char buffer[128];
-            std::string result = "";
-                while (!feof(pipe)) {
-                    if (fgets(buffer, 128, pipe) != NULL)
-                        result += buffer;
-                }
-            pclose(pipe);
+    if (money)
+        strzapros = str1 + str2 + key + str3 + secretKey + str4 + page + str5 + zapros;
+    else
+        strzapros = str1free + zapros;
 
-           // std::cout << "Python script output:\n" << result << std::endl;
-
-    return result;
+    std::string cmd =  strzapros;
+    std::cout << cmd << '\n';
+    system(cmd.c_str());
 }
-int getImagesFromYandex(std::string patchBody, int count, int minwidth, int minheight, std::string nametemplate, std::string outputfolder, bool separatedataset, int trainsetpercentage)
+
+//основная функция
+int getImagesFromYandex(std::string zapros,  int minWidth, int minHeight, std::string nameTemplate,  std::string outputFolder, bool separateDataset, int trainsetPercentage, unsigned int countFoto,bool money, std::string key, std::string secretKey)
 {
+    if (trainsetPercentage < 5 || trainsetPercentage > 90)
+        return 1501;
+    if ((money) && ((key == "") || (secretKey == "")) )
+        return 1502;
+    if (minWidth < 100 || minWidth > 1900)
+        return 1503;
+    if (minHeight < 100 || minHeight > 1900)
+        return 1504;
+    if (nameTemplate == "")
+        return 1505;
+    if (countFoto <= 5 || countFoto >= 500)
+        return 1506;
+    if (!(std::filesystem::exists(outputFolder)))
+        return 1507;
     
-    //std::string text= readFile(patchBody); // читаем скачанный файл
-   // std::string text=parserUrlString(patchBody.c_str());
-    std::string text= pythonDownloadYandex();
-    std::vector< std::string > arrUrl;
-    arrUrl =findUrl(text); //поиск в файле url
-   // int rez=saveFile("url.txt",arrUrl); // запись в файл список url
-    downloadFoto(arrUrl,outputfolder,nametemplate,count); // качаем все фото из списка
-    deleleSmall(outputfolder,minwidth,minheight); // удаляем мелкие фото (ширина, высота)
-    if (separatedataset)
-        copyFile(outputfolder,outputfolder,trainsetpercentage); // раскладываем файлы по папкам в процентном отношении 70% 
+    int page = -1;
+    unsigned int countFotoindDir = 0; // количество изображений в папке, изначально 0
+    int index = 0; // техническая переменная для защиты от бесконечного цикла
+    while (countFotoindDir < countFoto) // если количество фото в папке меньше чем надо скачать цикл продолжается
+    {
+        page = page + 1; // страница поиска, изначально 0
+        if ((money == false) && (page == 1)) // условие выхода из цикла если используется бесплатный режим, у бесплатного режима страница поиска только 0
+        break; 
+        getFileFromYandex(zapros, money,page,key,secretKey); // качаем страницу Яндекса в файл "result.xml"
+        
+        
+        if (!std::filesystem::exists("result.xml"))
+            return 1508;
+        if (std::filesystem::file_size("result.xml") < 100)
+            return 1509;
+        std::string text = readFile("result.xml"); // читаем  файл
+        std::vector< std::string > arrUrl;
+        arrUrl =findUrl(text); //поиск в скаченном файле url
+            
+        if (arrUrl[0] == "0")
+            return 1510;
+        
+        
+        countFotoindDir= downloadFoto(arrUrl,outputFolder,nameTemplate,countFotoindDir,countFoto); // качаем все фото из списка, возвращаем последний индекс скачанного файла
+        if (countFotoindDir == 0)
+            return 1511;
+
     
-    return 0;
+        index = index + 1;
+        if (index == 20) // защита от бесконечного цикла, если условия цикла while никогда не станет false, сработает это условие через 20 итераций
+            return 1512;
+    }
     
+    deleleSmall(outputFolder,minWidth,minHeight); // удаляем мелкие фото (ширина, высота) и фото с нулевым размером
+    if (separateDataset)
+        copyFile(outputFolder,outputFolder,trainsetPercentage); // раскладываем файлы по папкам в процентном отношении 70% 
     
-    
-    
+    return 1500;
 }
 
 
