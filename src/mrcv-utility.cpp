@@ -12,7 +12,12 @@ namespace mrcv
     {
         struct tm currentTime;
         time_t nowTime = time(0);
+
+#ifdef _WIN32 
         localtime_s(&currentTime, &nowTime);
+#else
+        localtime_r(&currentTime, &nowTime);
+#endif
 
         std::ostringstream outStringStream;
         std::string fullFileName = fileName + "_%d%m%Y_%H%M%S" + fileExtension;
@@ -28,8 +33,13 @@ namespace mrcv
     {
         struct tm currentTime;
         time_t nowTime = time(0);
-        localtime_s(&currentTime, &nowTime);
 
+#ifdef _WIN32 
+        localtime_s(&currentTime, &nowTime);
+#else
+        localtime_r(&currentTime, &nowTime);
+#endif
+        
         std::ostringstream outStringStream;
         std::string fullFileName = "%d-%m-%Y.log";
         outStringStream << std::put_time(&currentTime, fullFileName.c_str());
@@ -91,7 +101,12 @@ namespace mrcv
             // Определяем временную метку
             struct tm currentTime;
             time_t nowTime = time(0);
+
+#ifdef _WIN32 
             localtime_s(&currentTime, &nowTime);
+#else
+            localtime_r(&currentTime, &nowTime);
+#endif
 
             std::ostringstream outStringStream;
             outStringStream << std::put_time(&currentTime, "%H:%M:%S");
