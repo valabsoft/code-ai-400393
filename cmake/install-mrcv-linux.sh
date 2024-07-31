@@ -8,5 +8,3 @@ sudo ldconfig
 
 cmake -B/home/oleg/kodII/mrcv/examples/libfirst/build -H/home/oleg/kodII/mrcv/examples/libfirst
 make -C/home/oleg/kodII/mrcv/examples/libfirst/build
-
-

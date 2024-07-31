@@ -16,25 +16,6 @@ endif()
 # testing framework
 #----------------------------------------------------------------------------------------------------------------------
 
-
-###############################################################################
-# Определение зависимостей библиотеки
-###############################################################################
-
-find_package( OpenCV REQUIRED )
-
-#set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
-#set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
-
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-link_directories(${OpenCV_LIB_DIR})
-
-
-
-###############################################################################
-# Исходники библиотеки
-###############################################################################
-
 include(FetchContent)
 FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz)
 
