@@ -16,7 +16,7 @@ namespace mrcv
 #ifdef _WIN32 
         localtime_s(&currentTime, &nowTime);
 #else
-        localtime_r(&currentTime, &nowTime);
+        localtime_r(&nowTime, &currentTime);
 #endif
 
         std::ostringstream outStringStream;
@@ -37,7 +37,7 @@ namespace mrcv
 #ifdef _WIN32 
         localtime_s(&currentTime, &nowTime);
 #else
-        localtime_r(&currentTime, &nowTime);
+        localtime_r(&nowTime, &currentTime);
 #endif
         
         std::ostringstream outStringStream;
@@ -105,7 +105,7 @@ namespace mrcv
 #ifdef _WIN32 
             localtime_s(&currentTime, &nowTime);
 #else
-            localtime_r(&currentTime, &nowTime);
+            localtime_r(&nowTime, &currentTime);
 #endif
 
             std::ostringstream outStringStream;
