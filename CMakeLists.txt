@@ -14,6 +14,11 @@ project(mrcv
 # Общие настройки проекта
 ###############################################################################
 
+# Для разработки под VS
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+endif(MSVC)
+
 include(cmake/utils.cmake)
 include(GNUInstallDirs)
 
@@ -28,6 +33,8 @@ set_if_undefined(MRCV_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/mrcv" CACH
 if(DEFINED MRCV_SHARED_LIBS)
     set(BUILD_SHARED_LIBS ${MRCV_SHARED_LIBS})
 endif()
+
+set(CMAKE_BUILD_TYPE Release)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
@@ -70,8 +77,11 @@ generate_export_header(mrcv EXPORT_FILE_NAME include/mrcv/${export_file_name})
 set(sources
     include/mrcv/export.h
     include/mrcv/mrcv.h
+    include/mrcv/mrcv-common.h
     src/mrcv.cpp
-    src/mrcv-imgcollection.cpp)
+    src/mrcv-utility.cpp
+    src/mrcv-imgcollection.cpp
+)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 ###############################################################################
@@ -80,7 +90,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources})
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "include/mrcv/mrcv-common.h")
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv
