@@ -314,7 +314,7 @@ namespace mrcv
                 videoCapture.release();
 
             // Возврат кода нормального завершения работы
-            writeLog("Стоп записи видео.");
+            writeLog("Стоп записи видео");
             return 0;
         }
         catch (...)
