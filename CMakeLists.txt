@@ -80,6 +80,7 @@ set(sources
     src/mrcv.cpp
     src/mrcv-utility.cpp
     src/mrcv-imgcollection.cpp
+    src/mrcv-calibration.cpp
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
@@ -89,7 +90,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "include/mrcv/mrcv-common.h")
+target_sources(mrcv PRIVATE ${sources} "include/mrcv/mrcv-common.h" "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp")
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv
