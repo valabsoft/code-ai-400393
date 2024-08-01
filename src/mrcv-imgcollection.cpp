@@ -241,23 +241,21 @@ namespace mrcv
       return 8;
     return 0;
   }
-
   /**
-  * @brief функция скачаивания файла Яндекса.
-  * @param query - Запрос для поиска.
-  * @param minWidth - минимальная ширина изображения.
-  * @param minHeight - минимальная высота изображения.
-  * @param nameTemplate - шаблон имени файла.
-  * @param outputFolder - папка для скачивания.
-  * @param separateDataset - .
-  * @param trainsetPercentage - процент для распределения между папками.
-  * @param countFoto - количество необходимых фото для скачивания.
-  * @param money - платный или бесплатный вариант работы.
-  * @param key - Яндекс key.
-  * @param secretKey - Яндекс secretKey.
-  * @return - результат работы функции.
-  */
-  // основная функция
+    * @brief Функция скачаивания файла Яндекса.
+    * @param query - Строка запроса для поиска.
+    * @param minWidth - Минимальная ширина изображения.
+    * @param minHeight - Минимальная высота изображения.
+    * @param nameTemplate - Шаблон имени файла.
+    * @param outputFolder - Папка для скачивания.
+    * @param separateDataset - Флаг разбивки датасета на тренировочную и тестовую выборки.
+    * @param trainsetPercentage - Процент для распределения между папками.
+    * @param countFoto - Количество необходимых фото для скачивания.
+    * @param money - Платный или бесплатный вариант работы.
+    * @param key - Яндекс key.
+    * @param secretKey - Яндекс secretKey.
+    * @return - Результат работы функции.
+    */
   int getImagesFromYandex(std::string query, int minWidth, int minHeight, std::string nameTemplate, std::string outputFolder, bool separateDataset, unsigned int trainsetPercentage, unsigned int countFoto, bool money, std::string key, std::string secretKey)
   {
     if (trainsetPercentage < 5 || trainsetPercentage > 90)
