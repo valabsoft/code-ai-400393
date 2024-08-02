@@ -311,10 +311,12 @@ namespace mrcv
         return 12;
     }
 
-    int resuiltDelete = deleleSmall(outputFolder, minWidth, minHeight); // удаляем мелкие фото (ширина, высота) и фото с нулевым размером
+    deleleSmall(outputFolder, minWidth, minHeight); // удаляем мелкие фото (ширина, высота) и фото с нулевым размером
     
     if (separateDataset)
-      int resuiltCopy = copyFile(outputFolder, outputFolder, trainsetPercentage); // раскладываем файлы по папкам в процентном отношении 70% 
+    {
+        copyFile(outputFolder, outputFolder, trainsetPercentage); // раскладываем файлы по папкам в процентном отношении 70% 
+    } 
 
     return 0;
   }
