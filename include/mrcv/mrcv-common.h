@@ -54,7 +54,7 @@ namespace mrcv
 	};
 	
 	// Структура для хранения параметров калибровки одиночной камеры
-	typedef struct CalibrationParametersMono
+	struct CalibrationParametersMono
 	{
 		cv::Mat cameraMatrix;     // Матрица камеры
 		cv::Mat distCoeffs;       // Вектор коэффициентов дисторсии
@@ -67,7 +67,7 @@ namespace mrcv
 	};
 	
 	// Структура для хранения параметров калибровки стерео камеры
-	typedef struct CalibrationParametersStereo {
+	struct CalibrationParametersStereo {
 		cv::Mat cameraMatrixL;	// Матрица левой камеры
 		cv::Mat cameraMatrixR;	// Матрица правой камеры
 		cv::Mat distCoeffsL;	// Вектор коэффициентов дисторсии левой камеры
