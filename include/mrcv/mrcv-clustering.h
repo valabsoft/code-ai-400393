@@ -24,7 +24,8 @@
 #include <vtkNamedColors.h>
 #include <vtkProperty.h>
 
-namespace mrcv {
+namespace mrcv
+{
 
     /**
      * @brief Структура для работы с плотным стерео и кластеризацией.

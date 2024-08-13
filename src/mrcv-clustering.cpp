@@ -2,7 +2,8 @@
 #include <mrcv/mrcv-common.h>
 #include <mrcv/mrcv-clustering.h>
 
-namespace mrcv {
+namespace mrcv
+{
     // Загружает данные из указанного файла
     void DenseStereo::loadDataFromFile(const std::string& filename) {
         std::ifstream file(filename);

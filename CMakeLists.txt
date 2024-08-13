@@ -61,13 +61,11 @@ link_directories(${OpenCV_LIB_DIR})
 target_link_libraries( mrcv ${OpenCV_LIBS} )
 
 find_package( VTK REQUIRED )
-
 IF (WIN32)
-    set( VTK_INCLUDE_DIRS "C:/VTK/include/vtk-8.2/" )
-    set( VTK_LIB_DIR "C:/VTK/lib/" )
+  set( VTK_INCLUDE_DIRS "C:/Program Files/VTK/include/vtk-8.2/" )
+  set( VTK_LIB_DIR "C:/Program Files/VTK/lib/" )      
 ELSE()
-    #На linux пока не тестировалось    
-
+  # На linux пока не тестировалось     
 ENDIF()
 
 include_directories( ${VTK_INCLUDE_DIRS} )
