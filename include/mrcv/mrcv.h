@@ -129,4 +129,16 @@ namespace mrcv
 	 */
 	MRCV_EXPORT CalibrationParametersStereo readCalibrationParametersStereo(std::string fileName);
 	/////////////////////////////////////////////////////////////////////////////
+
+	MRCV_EXPORT class MRCVPoint
+	{
+	private:
+		int _X;
+		int _Y;
+	public:
+		MRCVPoint();
+		void setX(int X);
+		void setY(int Y);
+		std::string gerCoordinates();
+	};
 }

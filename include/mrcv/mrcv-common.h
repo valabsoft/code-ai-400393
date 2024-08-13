@@ -9,9 +9,9 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <regex>
 #include <sstream>
 #include <string>
-#include <regex>
 #include <vector>
 
 #include <opencv2/calib3d.hpp>
