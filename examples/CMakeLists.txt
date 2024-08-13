@@ -1,5 +1,7 @@
-add_subdirectory(add)
+﻿add_subdirectory(add)
 add_subdirectory(readimage)
 add_subdirectory(opencvinfo)
 add_subdirectory(imgcollection)
 add_subdirectory(recordvideo)
+add_subdirectory(segmentationTest)
+add_subdirectory(segmentationTraining)
