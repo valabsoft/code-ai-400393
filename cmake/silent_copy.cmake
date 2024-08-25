@@ -1,4 +1,4 @@
-# Script which does not fail when some of the files to be copied are missing.
+﻿# Script which does not fail when some of the files to be copied are missing.
 #
 # Usage: cmake -P silent_copy.cmake [files]... [dest]
 

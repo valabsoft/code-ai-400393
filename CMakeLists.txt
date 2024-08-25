@@ -25,7 +25,7 @@ string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_
 
 # MRCV_SHARED_LIBS option (undefined by default) can be used to force shared/static build
 option(MRCV_BUILD_TESTS "Build mrcv tests" OFF)
-option(MRCV_BUILD_EXAMPLES "Build mrcv examples" OFF)
+option(MRCV_BUILD_EXAMPLES "Build mrcv examples" OFF) # ON
 option(MRCV_INSTALL "Generate target for installing mrcv" ${is_top_level})
 set_if_undefined(MRCV_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/mrcv" CACHE STRING "Install path for mrcv package-related CMake files")
 
@@ -50,15 +50,41 @@ add_library(mrcv::mrcv ALIAS mrcv)
 # Определение зависимостей библиотеки
 ###############################################################################
 
+set(CMAKE_PREFIX_PATH "D:/Games/LibTorch_Release/")
+find_package(Torch REQUIRED)
+if (Torch_FOUND)
+    message(STATUS "Torch library found!")
+else ()
+    message(FATAL_ERROR "Could not locate Torch" \n)
+endif()
+
+set(CMAKE_PREFIX_PATH "D:/Games/OpenCV480_CUDA/Opencv_480_build")
 find_package( OpenCV REQUIRED )
 
-set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
-set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
+IF (WIN32)
+    set(OpenCV_INCLUDE_DIRS "D:/Games/OpenCV480_CUDA/Opencv_480_build/include/" )
+    set(OpenCV_LIB_DIR "D:/Games/OpenCV480_CUDA/Opencv_480_build/x64/vc17/lib")
+    #set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
+    #set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
+ELSE()
+    set( OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4/" )
+    set( OpenCV_LIB_DIR "/usr/local/lib/" )
+ENDIF()
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 link_directories(${OpenCV_LIB_DIR})
 
-target_link_libraries( mrcv ${OpenCV_LIBS} )
+
+set(ALL_LIBS
+    ${OpenCV_LIBS}
+    ${TORCH_LIBRARIES}
+    ${CUDA_LIBRARIES} 
+    ${CUDA_CUBLAS_LIBRARIES} 
+    ${CUDA_cudart_static_LIBRARY}
+)
+
+
+target_link_libraries( mrcv ${ALL_LIBS})
 
 ###############################################################################
 # Исходники библиотеки
@@ -77,12 +103,15 @@ set(sources
     include/mrcv/export.h
     include/mrcv/mrcv.h
     include/mrcv/mrcv-common.h
+    include/mrcv/mrcv-util.h
+    include/mrcv/mrcv-Detector.h
     src/mrcv.cpp
-    src/mrcv-utility.cpp
     src/mrcv-imgcollection.cpp
     src/mrcv-calibration.cpp
+    src/mrcv-util.cpp
+    src/mrcv-Detector.cpp
 )
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
+#source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 ###############################################################################
 # Определение таргетов библиотеки
@@ -90,8 +119,27 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "include/mrcv/mrcv-common.h" "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp")
-target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
+target_sources(mrcv PRIVATE ${sources} "include/mrcv/mrcv-common.h"  "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp" 
+    "src/mrcv-util.cpp"
+    "src/mrcv-Detector.cpp"
+    "src/mrcv-CSPdarknet53.cpp" 
+    "src/mrcv-tinystr.cpp" 
+    "src/mrcv-tinyxml.cpp" 
+    "src/mrcv-tinyxlmerror.cpp" 
+    "src/mrcv-tinyxmlparser.cpp" 
+    "src/mrcv-yolotiny.cpp" 
+    "src/mrcv-yolotraining.cpp"
+
+    "include/mrcv/mrcv-tinyxml.h" 
+    "include/mrcv/mrcv-tinystr.h" 
+    "include/mrcv/mrcv-dirent.h" 
+    "include/mrcv/mrcv-util.h"
+    "include/mrcv/mrcv-Detector.h"
+    "include/mrcv/mrcv-CSPdarknet53.h" 
+    "include/mrcv/mcrv-readfile.h"
+    "include/mrcv/mrcv-yolotiny.h" 
+    "include/mrcv/mrcv-yolotraining.h" 
+    )
 
 target_include_directories(mrcv
     PUBLIC
