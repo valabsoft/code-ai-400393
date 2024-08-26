@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdio.h>
-
+#include <algorithm>
+#include <cmath>
 #include <chrono>
 #include <cstdio>
 #include <filesystem>
@@ -9,9 +9,12 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <mutex>
+#include <regex>
 #include <sstream>
 #include <string>
-#include <regex>
+#include <stdio.h>
+#include <thread>
 #include <vector>
 
 #include <opencv2/calib3d.hpp>
@@ -19,6 +22,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
 
 namespace mrcv
 {

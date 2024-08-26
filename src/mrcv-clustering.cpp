@@ -1,6 +1,5 @@
 ﻿#include <mrcv/mrcv.h>
 #include <mrcv/mrcv-common.h>
-#include <mrcv/mrcv-clustering.h>
 
 namespace mrcv {
     // Загружает данные из указанного файла
@@ -218,43 +217,5 @@ namespace mrcv {
                 }
             }
         }
-    }
-
-    // Визуализирует кластеры в 3D пространстве
-    void DenseStereo::visualizeClusters3D() {
-        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-        vtkSmartPointer<vtkNamedColors> colors = vtkSmartPointer<vtkNamedColors>::New();
-        vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-
-        // Добавление точек в PolyData
-        for (size_t i = 0; i < vuxyzrgb.xyz.size(); ++i) {
-            points->InsertNextPoint(vuxyzrgb.xyz[i][0], vuxyzrgb.xyz[i][1], vuxyzrgb.xyz[i][2]);
-        }
-        polyData->SetPoints(points);
-
-        vtkSmartPointer<vtkVertexGlyphFilter> vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-        vertexFilter->SetInputData(polyData);
-        vertexFilter->Update();
-
-        vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        mapper->SetInputConnection(vertexFilter->GetOutputPort());
-
-        vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-        actor->SetMapper(mapper);
-        actor->GetProperty()->SetPointSize(5);
-
-        vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
-        renderer->AddActor(actor);
-        renderer->SetBackground(colors->GetColor3d("Black").GetData());
-
-        vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
-        renderWindow->AddRenderer(renderer);
-        renderWindow->SetSize(800, 600);
-
-        vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-        renderWindowInteractor->SetRenderWindow(renderWindow);
-
-        renderWindow->Render();
-        renderWindowInteractor->Start();
     }
 }

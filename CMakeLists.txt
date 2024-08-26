@@ -60,21 +60,6 @@ link_directories(${OpenCV_LIB_DIR})
 
 target_link_libraries( mrcv ${OpenCV_LIBS} )
 
-find_package( VTK REQUIRED )
-
-IF (WIN32)
-    set( VTK_INCLUDE_DIRS "C:/VTK/include/vtk-8.2/" )
-    set( VTK_LIB_DIR "C:/VTK/lib/" )
-ELSE()
-    #На linux пока не тестировалось    
-
-ENDIF()
-
-include_directories( ${VTK_INCLUDE_DIRS} )
-link_directories(${VTK_LIB_DIR})
-
-target_link_libraries( mrcv ${VTK_LIBS} )
-
 ###############################################################################
 # Исходники библиотеки
 ###############################################################################
@@ -105,7 +90,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "include/mrcv/mrcv-common.h" "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp" "src/mrcv-clustering.cpp"  "include/mrcv/mrcv-clustering.h")
+target_sources(mrcv PRIVATE ${sources} "include/mrcv/mrcv-common.h" "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp" "src/mrcv-clustering.cpp"  )
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv

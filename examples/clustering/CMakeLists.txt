@@ -15,15 +15,6 @@ if(is_top_level)
       set( OpenCV_LIB_DIR "/usr/local/lib/" )
       #На linux пока не тестировалось    
     ENDIF()
-
-    find_package( VTK REQUIRED )
-    IF (WIN32)
-      set( VTK_INCLUDE_DIRS "C:/VTK/include/vtk-8.2/" )
-      set( VTK_LIB_DIR "C:/VTK/lib/" )
-    ELSE()
-      #На linux пока не тестировалось    
-    ENDIF()
-
 endif()
 
 set(sources main.cpp)

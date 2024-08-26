@@ -1,4 +1,4 @@
-#include <mrcv/mrcv-clustering.h>
+#include <mrcv/mrcv.h>
 
 int main() {
 
@@ -7,7 +7,6 @@ int main() {
     denseStereo.loadDataFromFile(filename);
     denseStereo.Clustering();
     denseStereo.printClusters();
-    denseStereo.visualizeClusters3D();
 
     return 0;
 }
