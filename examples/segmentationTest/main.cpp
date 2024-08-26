@@ -1,12 +1,9 @@
 #include <mrcv/mrcv.h>
 
-#include <iostream>
-
 int main() {
 
-  auto image_path = "../images/test/43.jpg";
-
-  cv::Mat image = cv::imread(image_path);
+  auto imagePath = "../images/test/43.jpg";
+  cv::Mat image = cv::imread(imagePath);
 
   mrcv::Segmentor segmentor;
 

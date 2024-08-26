@@ -49,15 +49,25 @@ add_library(mrcv::mrcv ALIAS mrcv)
 ###############################################################################
 # Определение зависимостей библиотеки
 ###############################################################################
+set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release/")
+
+find_package(OpenCV REQUIRED)
 find_package(Torch REQUIRED)
-if (Torch_FOUND)
-    message(STATUS "Torch library found!")
-else ()
-    message(FATAL_ERROR "Could not locate Torch" \n)
-endif()
 
-find_package( OpenCV REQUIRED )
+# Диагностический вывод о наличии библиотек
+#if (OpenCV_FOUND)
+#    message(STATUS "OpenCV library found!")
+#else ()
+#    message(FATAL_ERROR "Could not locate OpenCV" \n)
+#endif()
 
+#if (Torch_FOUND)
+#    message(STATUS "Torch library found!")
+#else ()
+#    message(FATAL_ERROR "Could not locate Torch" \n)
+#endif()
+
+# OpenCV DIRs
 IF (WIN32)
     set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
     set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
@@ -66,21 +76,33 @@ ELSE()
     set( OpenCV_LIB_DIR "/usr/local/lib/" )
 ENDIF()
 
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-link_directories(${OpenCV_LIB_DIR})
+# Torch DIRs
+IF (WIN32)
+    set( Torch_INCLUDE_DIRS "C:/libtorch-12.4/Release/include/" )
+    set( Torch_LIB_DIR "C:/libtorch-12.4/Release/lib/" )
+ELSE()
+    set( Torch_INCLUDE_DIRS "/usr/local/include/torch/" )
+    set( Torch_LIB_DIR "/usr/local/lib/" )
+ENDIF()
 
+include_directories( ${OpenCV_INCLUDE_DIRS}; ${Torch_INCLUDE_DIRS} )
+link_directories( ${OpenCV_LIB_DIR}; ${Torch_LIB_DIR} )
 
-set(ALL_LIBS
-    ${OpenCV_LIBS}
-    ${TORCH_LIBRARIES}
-    ${CUDA_LIBRARIES} 
-    ${CUDA_CUBLAS_LIBRARIES} 
-    ${CUDA_cudart_static_LIBRARY}
-)
+set(MRCV_CUDA false) # Ключ сборки с/без CUDA
 
-
-target_link_libraries( mrcv ${ALL_LIBS})
-
+IF (MRCV_CUDA)
+    set(ALL_LIBS
+        ${OpenCV_LIBS}
+        ${TORCH_LIBRARIES}
+        ${CUDA_LIBRARIES}
+        ${CUDA_CUBLAS_LIBRARIES}
+        ${CUDA_cudart_static_LIBRARY}
+    )
+    target_link_libraries( mrcv ${ALL_LIBS})
+ELSE()
+    target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES})
+ENDIF()
+# target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES} )
 ###############################################################################
 # Исходники библиотеки
 ###############################################################################
@@ -102,7 +124,6 @@ set(sources
     include/mrcv/mrcv-FPNDecoder.h
     include/mrcv/mrcv-util.h
     include/mrcv/mrcv-ResNet.h
-    include/mrcv/mrcv-segmentor.h
     include/mrcv/mrcv-json.hpp
     src/mrcv.cpp
     src/mrcv-utility.cpp
@@ -113,7 +134,6 @@ set(sources
     src/mrcv-FPNDecoder.cpp
     src/mrcv-ResNet.cpp
     src/mrcv-segmentor.cpp
-    
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
@@ -123,19 +143,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "include/mrcv/mrcv-common.h" "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp" 
-    "src/mrcv-FPN.cpp"
-    "include/mrcv/mrcv-json.hpp"
-    "src/mrcv-util.cpp"
-    "src/mrcv-FPNDecoder.cpp"
-    "src/mrcv-ResNet.cpp"
-    "src/mrcv-segmentor.cpp"
-    "include/mrcv/mrcv-FPN.h"
-    "include/mrcv/mrcv-FPNDecoder.h"
-    "include/mrcv/mrcv-util.h"
-    "include/mrcv/mrcv-ResNet.h"
-    "include/mrcv/mrcv-segmentor.h"    
-    )
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp" "src/mrcv-FPN.cpp" "src/mrcv-util.cpp" "src/mrcv-FPNDecoder.cpp" "src/mrcv-ResNet.cpp" "src/mrcv-segmentor.cpp" "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp" "include/mrcv/mrcv-FPN.h" "include/mrcv/mrcv-FPNDecoder.h" "include/mrcv/mrcv-util.h" "include/mrcv/mrcv-ResNet.h")
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv

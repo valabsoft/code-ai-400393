@@ -2,7 +2,6 @@
 
 #include <mrcv/export.h>
 #include <mrcv/mrcv-common.h>
-#include <mrcv/mrcv-segmentor.h>
 
 namespace mrcv
 {
@@ -130,4 +129,23 @@ namespace mrcv
 	 */
 	MRCV_EXPORT CalibrationParametersStereo readCalibrationParametersStereo(std::string fileName);
 	/////////////////////////////////////////////////////////////////////////////
+
+	MRCV_EXPORT class Segmentor
+	{
+	public:
+		Segmentor() { };
+		~Segmentor() { };
+		void Initialize(int gpu_id, int width, int height, std::vector<std::string>&& name_list, std::string encoder_name, std::string pretrained_path);
+		void SetTrainTricks(trainTricks& tricks);
+		void Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string image_type, std::string save_path);
+		void LoadWeight(std::string weight_path);
+		void Predict(cv::Mat& image, const std::string& which_class);
+	private:
+		int width = 512;
+		int height = 512;
+		std::vector<std::string> name_list;
+		torch::Device device = torch::Device(torch::kCPU);
+		trainTricks tricks;
+		FPN fpn{ nullptr };
+	};
 }
