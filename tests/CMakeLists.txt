@@ -56,6 +56,9 @@ if(is_top_level)
         set( Torch_INCLUDE_DIRS "/usr/local/include/torch/" )
         set( Torch_LIB_DIR "/usr/local/lib/" )
     ENDIF()
+
+    include_directories( ${OpenCV_INCLUDE_DIRS}; ${Torch_INCLUDE_DIRS} )
+    link_directories( ${OpenCV_LIB_DIR}; ${Torch_LIB_DIR} )
 endif()
 
 #----------------------------------------------------------------------------------------------------------------------
