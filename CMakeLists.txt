@@ -50,8 +50,12 @@ add_library(mrcv::mrcv ALIAS mrcv)
 # Определение зависимостей библиотеки
 ###############################################################################
 
-find_package( OpenCV REQUIRED )
+set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release/")
 
+find_package(OpenCV REQUIRED)
+find_package(Torch REQUIRED)
+
+# OpenCV DIRs
 IF (WIN32)
     set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
     set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
@@ -60,10 +64,20 @@ ELSE()
     set( OpenCV_LIB_DIR "/usr/local/lib/" )
 ENDIF()
 
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-link_directories(${OpenCV_LIB_DIR})
+# Torch DIRs
+IF (WIN32)
+    set( Torch_INCLUDE_DIRS "C:/libtorch-12.4/Release/include/" )
+    set( Torch_LIB_DIR "C:/libtorch-12.4/Release/lib/" )
+ELSE()
+    set( Torch_INCLUDE_DIRS "/usr/local/include/torch/" )
+    set( Torch_LIB_DIR "/usr/local/lib/" )
+ENDIF()
 
-target_link_libraries( mrcv ${OpenCV_LIBS} )
+include_directories( ${OpenCV_INCLUDE_DIRS}; ${Torch_INCLUDE_DIRS} )
+link_directories( ${OpenCV_LIB_DIR}; ${Torch_LIB_DIR} )
+
+target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES})
+
 
 ###############################################################################
 # Исходники библиотеки
