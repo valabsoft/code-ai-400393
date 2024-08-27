@@ -12,6 +12,7 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <sys/stat.h>
 #include <vector>
 
 #include <opencv2/calib3d.hpp>
@@ -19,6 +20,15 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
+
+#include "mrcv-FPN.h"
+
+#if _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace mrcv
 {
@@ -80,5 +90,18 @@ namespace mrcv
 		cv::Mat tvecs;			// Кортеж векторов смещения для перехода из базиса объекта в базис камеры
 		cv::Mat perViewErrors;	// Вектор среднеквадратической ошибки перепроецирования для каждого вида
 		double RMS;				// Значение среднеквадратической ошибки перепроецирования
+	};
+
+	struct trainTricks {
+		unsigned int freeze_epochs = 0;					// Замораживает магистраль нейронной сети во время первых freeze_epochs, по умолчанию 0;
+		std::vector<unsigned int> decay_epochs = { 0 };	// При каждом decay_epochs скорость обучения будет снижаться на 90 процентов, по умолчанию 0;
+		float dice_ce_ratio = (float)0.5;				// Вес выпадения кубиков в общем проигрыше, по умолчанию 0,5;
+		float horizontal_flip_prob = (float)0.0;		// Вероятность увеличения поворота по горизонтали, по умолчанию 0;
+		float vertical_flip_prob = (float)0.0;			// Вероятность увеличения поворота по вертикали, по умолчанию 0;
+		float scale_rotate_prob = (float)0.0;			// Вероятность выполнения поворота и увеличения масштаба, по умолчанию 0;
+		float scale_limit = (float)0.1;
+		float rotate_limit = (float)45.0;
+		int interpolation = cv::INTER_LINEAR;
+		int border_mode = cv::BORDER_CONSTANT;
 	};
 }
