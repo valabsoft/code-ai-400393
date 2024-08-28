@@ -51,7 +51,7 @@ namespace mrcv
      * @param logText - текст сообщения для записи в лог-файл
      * @param logType - тип сообщения в лог-файле
      */
-    void writeLog(std::string logText, LOGTYPE logType = LOGTYPE::INFO)
+    void writeLog(std::string logText, LOGTYPE logType)
     {
         if (!IS_DEBUG_LOG_ENABLED)
             return;
