@@ -120,20 +120,14 @@ set(sources
     include/mrcv/export.h
     include/mrcv/mrcv.h
     include/mrcv/mrcv-common.h
-    include/mrcv/mrcv-FPN.h
-    include/mrcv/mrcv-FPNDecoder.h
-    include/mrcv/mrcv-util.h
-    include/mrcv/mrcv-ResNet.h
     include/mrcv/mrcv-json.hpp
+    include/mrcv/mrcv-segmentation.h
     src/mrcv.cpp
     src/mrcv-utility.cpp
     src/mrcv-imgcollection.cpp
     src/mrcv-calibration.cpp
-    src/mrcv-FPN.cpp    
-    src/mrcv-util.cpp
-    src/mrcv-FPNDecoder.cpp
-    src/mrcv-ResNet.cpp
     src/mrcv-segmentor.cpp
+    src/mrcv-segmentation.cpp
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
@@ -143,7 +137,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp" "src/mrcv-FPN.cpp" "src/mrcv-util.cpp" "src/mrcv-FPNDecoder.cpp" "src/mrcv-ResNet.cpp" "src/mrcv-segmentor.cpp" "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp" "include/mrcv/mrcv-FPN.h" "include/mrcv/mrcv-FPNDecoder.h" "include/mrcv/mrcv-util.h" "include/mrcv/mrcv-ResNet.h")
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp" "src/mrcv-segmentor.cpp" "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp")
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv
