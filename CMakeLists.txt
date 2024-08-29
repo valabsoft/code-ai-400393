@@ -126,7 +126,6 @@ set(sources
     src/mrcv-utility.cpp
     src/mrcv-imgcollection.cpp
     src/mrcv-calibration.cpp
-    src/mrcv-segmentor.cpp
     src/mrcv-segmentation.cpp
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
@@ -137,7 +136,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp" "src/mrcv-segmentor.cpp" "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp")
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp")
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv
