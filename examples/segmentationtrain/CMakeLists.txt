@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.14)
-project(mrcv-segmentationTrain LANGUAGES CXX)
+project(mrcv-segmentationtrain LANGUAGES CXX)
 
 include("../../cmake/utils.cmake")
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_level)
@@ -33,10 +33,10 @@ endif()
 set(sources main.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
-add_executable(mrcv-segmentationTrain)
-target_sources(mrcv-segmentationTrain PRIVATE ${sources})
-target_link_libraries(mrcv-segmentationTrain PRIVATE mrcv::mrcv)
+add_executable(mrcv-segmentationtrain)
+target_sources(mrcv-segmentationtrain PRIVATE ${sources})
+target_link_libraries(mrcv-segmentationtrain PRIVATE mrcv::mrcv)
 
 if(NOT is_top_level)
-    win_copy_deps_to_target_dir(mrcv-segmentationTrain mrcv::mrcv)
+    win_copy_deps_to_target_dir(mrcv-segmentationtrain mrcv::mrcv)
 endif()

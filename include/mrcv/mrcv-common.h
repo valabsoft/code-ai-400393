@@ -22,7 +22,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
 
-#include "mrcv-FPN.h"
+#include "mrcv-segmentation.h"
 
 #if _WIN32
 #include <io.h>
