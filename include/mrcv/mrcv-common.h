@@ -31,6 +31,8 @@
 #include<torch/torch.h>
 #include<torch/script.h>
 
+#define Pi 3.14159265358979323846
+
 namespace mrcv
 {
 	// Флаг отладочного лога, если false - лог не создается
@@ -92,4 +94,5 @@ namespace mrcv
 		cv::Mat perViewErrors;	// Вектор среднеквадратической ошибки перепроецирования для каждого вида
 		double RMS;				// Значение среднеквадратической ошибки перепроецирования
 	};
+
 }

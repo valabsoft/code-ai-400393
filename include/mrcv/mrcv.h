@@ -2,7 +2,7 @@
 
 #include <mrcv/export.h>
 #include <mrcv/mrcv-common.h>
-#include <mrcv/mrcv-Detector.h>
+#include <mrcv/mrcv-detector.h>
 
 namespace mrcv
 {
@@ -130,4 +130,26 @@ namespace mrcv
 	 */
 	MRCV_EXPORT CalibrationParametersStereo readCalibrationParametersStereo(std::string fileName);
 	/////////////////////////////////////////////////////////////////////////////
+
+	MRCV_EXPORT class Detector
+	{
+	private:
+		int width = 416; 
+		int height = 416; 
+		std::vector<std::string> name_list;
+		torch::Device device = torch::Device(torch::kCPU);
+		YoloBody_tiny detector{ nullptr };
+	public:
+		Detector();
+		void Initialize(int gpu_id, int width, int height, std::string name_list_path);
+		void Train(std::string train_val_path, std::string image_type, int num_epochs = 30, int batch_size = 4, float learning_rate = 0.0003, 
+					std::string save_path = "detector.pt", std::string pretrained_path = "detector.pt");
+		void LoadWeight(std::string weight_path);
+		void loadPretrained(std::string pretrained_pth);
+		void Predict(cv::Mat image, bool show = true, float conf_thresh = 0.3, float nms_thresh = 0.3);
+		void GridSearch(std::vector<HyperParams> param_grid, std::string train_val_path, std::string image_type, std::string save_path, std::string pretrained_path);
+		void AutoTrain(std::string train_val_path, std::string image_type, std::vector<int> epochs_list, std::vector<int> batch_sizes, std::vector<float> learning_rates, 
+						std::string save_path,std::string pretrained_path);
+		float Detector::Validate(std::string val_data_path, std::string image_type, int batch_size);
+	};
 }

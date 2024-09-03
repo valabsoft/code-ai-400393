@@ -12,5 +12,4 @@ namespace mrcv
     {
         return a + b;
     }
-
 }

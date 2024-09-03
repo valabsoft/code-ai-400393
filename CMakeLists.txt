@@ -103,13 +103,17 @@ set(sources
     include/mrcv/export.h
     include/mrcv/mrcv.h
     include/mrcv/mrcv-common.h
-    include/mrcv/mrcv-util.h
-    include/mrcv/mrcv-Detector.h
+    include/mrcv/mrcv-detector.h
+    include/mrcv/mrcv-tinyxml.h
+    include/mrcv/mrcv-tinystr.h
     src/mrcv.cpp
     src/mrcv-imgcollection.cpp
     src/mrcv-calibration.cpp
-    src/mrcv-util.cpp
-    src/mrcv-Detector.cpp
+    src/mrcv-detector.cpp
+    src/mrcv-tinystr.cpp
+    src/mrcv-tinyxml.cpp
+    src/mrcv-tinyxlmerror.cpp
+    src/mrcv-tinyxmlparser.cpp
 )
 #source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
@@ -120,25 +124,17 @@ set(sources
 include(CMakePackageConfigHelpers)
 
 target_sources(mrcv PRIVATE ${sources} "include/mrcv/mrcv-common.h"  "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp" 
-    "src/mrcv-util.cpp"
-    "src/mrcv-Detector.cpp"
-    "src/mrcv-CSPdarknet53.cpp" 
+    "src/mrcv-detector.cpp"
+     
     "src/mrcv-tinystr.cpp" 
     "src/mrcv-tinyxml.cpp" 
     "src/mrcv-tinyxlmerror.cpp" 
     "src/mrcv-tinyxmlparser.cpp" 
-    "src/mrcv-yolotiny.cpp" 
-    "src/mrcv-yolotraining.cpp"
 
     "include/mrcv/mrcv-tinyxml.h" 
     "include/mrcv/mrcv-tinystr.h" 
-    "include/mrcv/mrcv-dirent.h" 
-    "include/mrcv/mrcv-util.h"
-    "include/mrcv/mrcv-Detector.h"
-    "include/mrcv/mrcv-CSPdarknet53.h" 
-    "include/mrcv/mcrv-readfile.h"
-    "include/mrcv/mrcv-yolotiny.h" 
-    "include/mrcv/mrcv-yolotraining.h" 
+    
+    "include/mrcv/mrcv-detector.h"
     )
 
 target_include_directories(mrcv
