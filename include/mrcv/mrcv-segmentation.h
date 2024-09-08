@@ -8,11 +8,11 @@
 #include "mrcv-json.hpp"
 
 #ifdef _WIN32
-inline char file_sepator() {
+inline char fileSepator() {
     return '\\';
 }
 #else
-inline char file_sepator() {
+inline char fileSepator() {
     return '/';
 }
 #endif
@@ -61,11 +61,11 @@ namespace mrcv
 
     class SegmentationHeadImpl : public torch::nn::Module {
     public:
-        SegmentationHeadImpl(int in_channels, int out_channels, int kernel_size = 3, double upsampling = 1);
+        SegmentationHeadImpl(int in_channels, int outgoingChannel, int kernel_size = 3, double upsampling = 1);
         torch::Tensor forward(torch::Tensor x);
     private:
-        torch::nn::Conv2d conv2d { nullptr };
-        torch::nn::Upsample upsampling { nullptr };
+        torch::nn::Conv2d convolution2d { nullptr };
+        torch::nn::Upsample upsampl { nullptr };
     }; TORCH_MODULE(SegmentationHead);
 
     std::string replace_all_distinct2(std::string str, const std::string old_value, const std::string new_value);
@@ -76,60 +76,61 @@ namespace mrcv
 
     ///////////////////////////////////////////////////////////////////////////    
 
-    class Conv3x3GNReLUImpl : public torch::nn::Module
+    class ReLUConv3x3GNImpl : public torch::nn::Module
     {
     public:
-        Conv3x3GNReLUImpl(int in_channels, int out_channels, bool upsample = false);
+        ReLUConv3x3GNImpl(int in_channels, int outgoingChannel, bool upsample = false);
         torch::Tensor forward(torch::Tensor x);
     private:
         bool upsample;
         torch::nn::Sequential block{ nullptr };
     };
-    TORCH_MODULE(Conv3x3GNReLU);
+    TORCH_MODULE(ReLUConv3x3GN);
 
-    class FPNBlockImpl : public torch::nn::Module
+    class BlockFPNImpl : public torch::nn::Module
     {
     public:
-        FPNBlockImpl(int pyramid_channels, int skip_channels);
+        BlockFPNImpl(int pyramidChannels, int skipChannels);
         torch::Tensor forward(torch::Tensor x, torch::Tensor skip);
     private:
-        torch::nn::Conv2d skip_conv{ nullptr };
         torch::nn::Upsample upsample{ nullptr };
-    };
-    TORCH_MODULE(FPNBlock);
+        torch::nn::Conv2d skipConvolution{ nullptr };
 
-    class SegmentationBlockImpl : public torch::nn::Module
+    };
+    TORCH_MODULE(BlockFPN);
+
+    class BlockSegmentationImpl : public torch::nn::Module
     {
     public:
-        SegmentationBlockImpl(int in_channels, int out_channels, int n_upsamples = 0);
+        BlockSegmentationImpl(int in_channels, int outgoingChannel, int n_upsamples = 0);
         torch::Tensor forward(torch::Tensor x);
     private:
         torch::nn::Sequential block{ nullptr };
-    }; TORCH_MODULE(SegmentationBlock);
+    }; TORCH_MODULE(BlockSegmentation);
 
-    class MergeBlockImpl : public torch::nn::Module {
+    class BlockMergeImpl : public torch::nn::Module {
     public:
-        MergeBlockImpl(std::string policy);
+        BlockMergeImpl(std::string policy);
         torch::Tensor forward(std::vector<torch::Tensor> x);
     private:
         std::string _policy;
         std::string policies[2] = { "add","cat" };
-    }; TORCH_MODULE(MergeBlock);
+    }; TORCH_MODULE(BlockMerge);
 
     class FPNDecoderImpl : public torch::nn::Module
     {
     public:
-        FPNDecoderImpl(std::vector<int> encoder_channels = { 3, 64, 64, 128, 256, 512 }, int encoder_depth = 5, int pyramid_channels = 256,
+        FPNDecoderImpl(std::vector<int> encoderChannels = { 3, 64, 64, 128, 256, 512 }, int depthEncoder = 5, int pyramidChannels = 256,
             int segmentation_channels = 128, float dropout = 0.2, std::string merge_policy = "add");
         torch::Tensor forward(std::vector<torch::Tensor> features);
     private:
-        int out_channels;
+        int outgoingChannel;
         torch::nn::Conv2d p5{ nullptr };
-        FPNBlock p4{ nullptr };
-        FPNBlock p3{ nullptr };
-        FPNBlock p2{ nullptr };
+        BlockFPN p4{ nullptr };
+        BlockFPN p3{ nullptr };
+        BlockFPN p2{ nullptr };
         torch::nn::ModuleList seg_blocks{};
-        MergeBlock merge{ nullptr };
+        BlockMerge merge{ nullptr };
         torch::nn::Dropout2d dropout{ nullptr };
 
     }; TORCH_MODULE(FPNDecoder);
@@ -143,7 +144,7 @@ namespace mrcv
         ~FPNImpl() {
             //delete encoder;
         }
-        FPNImpl(int num_classes, std::string encoder_name = "resnet18", std::string pretrained_path = "", int encoder_depth = 5,
+        FPNImpl(int numClasses, std::string encoder_name = "resnet18", std::string pretrained_path = "", int encoder_depth = 5,
             int decoder_pyramid_channel = 256, int decoder_segmentation_channels = 128, std::string decoder_merge_policy = "add",
             float decoder_dropout = 0.2, double upsampling = 4);
         torch::Tensor forward(torch::Tensor x);
@@ -151,7 +152,7 @@ namespace mrcv
         Backbone* encoder;
         FPNDecoder decoder{ nullptr };
         SegmentationHead segmentation_head{ nullptr };
-        int num_classes = 1;
+        int numClasses = 1;
     }; TORCH_MODULE(FPN);
 
     ///////////////////////////////////////////////////////////////////////////
@@ -165,18 +166,18 @@ namespace mrcv
     private:
         bool is_basic = true;
         int64_t stride = 1;
-        torch::nn::Conv2d conv1{ nullptr };
-        torch::nn::BatchNorm2d bn1{ nullptr };
-        torch::nn::Conv2d conv2{ nullptr };
-        torch::nn::BatchNorm2d bn2{ nullptr };
-        torch::nn::Conv2d conv3{ nullptr };
-        torch::nn::BatchNorm2d bn3{ nullptr };
+        torch::nn::Conv2d convolution1{ nullptr };
+        torch::nn::BatchNorm2d BatchNorm1{ nullptr };
+        torch::nn::Conv2d convolution2{ nullptr };
+        torch::nn::BatchNorm2d BatchNorm2{ nullptr };
+        torch::nn::Conv2d convolution3{ nullptr };
+        torch::nn::BatchNorm2d BatchNorm3{ nullptr };
     };
     TORCH_MODULE(Block);
 
     class ResNetImpl : public Backbone {
     public:
-        ResNetImpl(std::vector<int> layers, int num_classes = 1000, std::string model_type = "resnet18",
+        ResNetImpl(std::vector<int> layers, int numClasses = 1000, std::string model_type = "resnet18",
             int groups = 1, int width_per_group = 64);
         torch::Tensor forward(torch::Tensor x);
         torch::nn::Sequential _make_layer(int64_t planes, int64_t blocks, int64_t stride = 1);
@@ -190,8 +191,8 @@ namespace mrcv
         std::string model_type = "resnet18";
         int expansion = 1; bool is_basic = true;
         int64_t inplanes = 64; int groups = 1; int base_width = 64;
-        torch::nn::Conv2d conv1{ nullptr };
-        torch::nn::BatchNorm2d bn1{ nullptr };
+        torch::nn::Conv2d convolution1{ nullptr };
+        torch::nn::BatchNorm2d BatchNorm1{ nullptr };
         torch::nn::Sequential layer1{ nullptr };
         torch::nn::Sequential layer2{ nullptr };
         torch::nn::Sequential layer3{ nullptr };
@@ -213,10 +214,10 @@ namespace mrcv
         return name2layers;
     }
 
-    ResNet resnet18(int64_t num_classes);
-    ResNet resnet34(int64_t num_classes);
-    ResNet resnet50(int64_t num_classes);
-    ResNet resnet101(int64_t num_classes);
+    ResNet resnet18(int64_t numClasses);
+    ResNet resnet34(int64_t numClasses);
+    ResNet resnet50(int64_t numClasses);
+    ResNet resnet101(int64_t numClasses);
 
-    ResNet pretrained_resnet(int64_t num_classes, std::string model_name, std::string weight_path);
+    ResNet pretrained_resnet(int64_t numClasses, std::string model_name, std::string weight_path);
 }

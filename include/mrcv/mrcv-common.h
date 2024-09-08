@@ -94,14 +94,8 @@ namespace mrcv
 
 	struct trainTricks {
 		unsigned int freeze_epochs = 0;					// Замораживает магистраль нейронной сети во время первых freeze_epochs, по умолчанию 0;
-		std::vector<unsigned int> decay_epochs = { 0 };	// При каждом decay_epochs скорость обучения будет снижаться на 90 процентов, по умолчанию 0;
-		float dice_ce_ratio = (float)0.5;				// Вес выпадения кубиков в общем проигрыше, по умолчанию 0,5;
-		float horizontal_flip_prob = (float)0.0;		// Вероятность увеличения поворота по горизонтали, по умолчанию 0;
-		float vertical_flip_prob = (float)0.0;			// Вероятность увеличения поворота по вертикали, по умолчанию 0;
-		float scale_rotate_prob = (float)0.0;			// Вероятность выполнения поворота и увеличения масштаба, по умолчанию 0;
-		float scale_limit = (float)0.1;
-		float rotate_limit = (float)45.0;
-		int interpolation = cv::INTER_LINEAR;
-		int border_mode = cv::BORDER_CONSTANT;
+		std::vector<unsigned int> decayEpochs = { 0 };	// При каждом decay_epochs скорость обучения будет снижаться на 90 процентов, по умолчанию 0;
+		float diceCrossEntropyRatio = (float)0.5;				// Вес выпадения кубиков в общем проигрыше, по умолчанию 0,5;
+
 	};
 }
