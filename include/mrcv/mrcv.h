@@ -153,7 +153,7 @@ namespace mrcv
 		torch::Device device = torch::Device(torch::kCPU);
 		trainTricks tricks;
 		FPN fpn{ nullptr };
-  };
+	};
 	MRCV_EXPORT class MRCVPoint
 	{
 	private:
@@ -164,5 +164,33 @@ namespace mrcv
 		void setX(int X);
 		void setY(int Y);
 		std::string gerCoordinates();
+	};
+	MRCV_EXPORT class ObjCourse
+	{
+	public:
+		ObjCourse(const std::string pathToModel, const std::string pathToClasses);
+		ObjCourse(const std::string pathToModel, const std::string pathToClasses, int width, int height);
+		std::vector<float> getConfidences(void) { return _confidencesSet; }
+		std::vector<cv::Rect> getBoxes(void) { return _boxesSet; }
+		std::vector<int> getClassIDs(void) { return _classesIdSet; }
+		std::vector<std::string> getClasses(void) { return _classesSet; }
+		float getInference(void) { return _inferenceTime; }
+		std::string getInfo(void);
+		cv::Mat mainProcess(cv::Mat& img);
+	private:
+		cv::dnn::Net _network;
+		int _inputWidth = 640;
+		int _inputHeight = 640;
+		std::vector<std::string> _classes;
+		std::vector<int> _classesIdSet;
+		std::vector<cv::Rect> _boxesSet;
+		std::vector<float> _confidencesSet;
+		std::vector<std::string> _classesSet;
+		float _inferenceTime;
+		errno_t readClasses(const std::string pathToClasses);
+		errno_t initNN(const std::string pathToModel, const std::string pathToClasses);
+		void drawLabel(cv::Mat& img, std::string label, int left, int top);
+		std::vector<cv::Mat> preProcess(cv::Mat& img, cv::dnn::Net& net);
+		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames);	
 	};
 }
