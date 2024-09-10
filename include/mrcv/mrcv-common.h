@@ -51,9 +51,6 @@ namespace mrcv
 	static cv::Scalar OBJCOURSE_YELLOW = cv::Scalar(0, 255, 255);
 	static cv::Scalar OBJCOURSE_RED = cv::Scalar(0, 0, 255);
 	static cv::Scalar OBJCOURSE_GREEN = cv::Scalar(0, 255, 0);
-	static const float OBJCOURSE_SCORE_THRESHOLD = 0.50f;
-	static const float OBJCOURSE_NMS_THRESHOLD = 0.45f;
-	static const float OBJCOURSE_CONFIDENCE_THRESHOLD = 0.45f;
 	static const bool OBJCOURSE_DRAW_LABEL = false;
 	
 	// Виды кодеков

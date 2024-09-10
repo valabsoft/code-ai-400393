@@ -170,6 +170,7 @@ namespace mrcv
 	public:
 		ObjCourse(const std::string pathToModel, const std::string pathToClasses);
 		ObjCourse(const std::string pathToModel, const std::string pathToClasses, int width, int height);
+		ObjCourse(const std::string pathToModel, const std::string pathToClasses, int width, int height, float scoreThreshold, float nmsThreshold, float confidenceThreshold, float cameraAngle);
 		std::vector<float> getConfidences(void) { return _confidencesSet; }
 		std::vector<cv::Rect> getBoxes(void) { return _boxesSet; }
 		std::vector<int> getClassIDs(void) { return _classesIdSet; }
@@ -177,10 +178,16 @@ namespace mrcv
 		float getInference(void) { return _inferenceTime; }
 		std::string getInfo(void);
 		cv::Mat mainProcess(cv::Mat& img);
+		int getObjectCount(cv::Mat frame);
+		float getObjectCourse(cv::Mat frame, double frameWidth, double frameHeight);
 	private:
 		cv::dnn::Net _network;
 		int _inputWidth = 640;
 		int _inputHeight = 640;
+		float _scoreThreshold = 0.50f;
+		float _nmsThreshold = 0.45f;
+		float _confidenceThreshold = 0.45f;
+		float _cameraAngle = 80;
 		std::vector<std::string> _classes;
 		std::vector<int> _classesIdSet;
 		std::vector<cv::Rect> _boxesSet;
@@ -192,5 +199,7 @@ namespace mrcv
 		void drawLabel(cv::Mat& img, std::string label, int left, int top);
 		std::vector<cv::Mat> preProcess(cv::Mat& img, cv::dnn::Net& net);
 		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames);	
+		int findAngle(double resolution, int cx);
+		std::string getTimeStamp();
 	};
 }
