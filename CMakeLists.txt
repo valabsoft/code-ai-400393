@@ -98,9 +98,9 @@ IF (MRCV_CUDA)
         ${CUDA_CUBLAS_LIBRARIES}
         ${CUDA_cudart_static_LIBRARY}
     )
-    target_link_libraries( mrcv ${ALL_LIBS})
+    target_link_libraries( mrcv ${ALL_LIBS}; yaml-cpp)
 ELSE()
-    target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES})
+    target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES}; yaml-cpp)
 ENDIF()
 # target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES} )
 ###############################################################################
@@ -122,12 +122,14 @@ set(sources
     include/mrcv/mrcv-common.h
     include/mrcv/mrcv-json.hpp
     include/mrcv/mrcv-segmentation.h
+    include/mrcv/mrcv-yolov5.h
     src/mrcv.cpp
     src/mrcv-utility.cpp
     src/mrcv-imgcollection.cpp
     src/mrcv-calibration.cpp
     src/mrcv-segmentation.cpp
     src/mrcv-objcourse.cpp
+    src/mrcv-yolov5.cpp
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
@@ -137,7 +139,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp" "src/mrcv-objcourse.cpp" "src/mrcv-imgpreprocessing.cpp")
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp" "src/mrcv-objcourse.cpp" "src/mrcv-imgpreprocessing.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp")
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv
