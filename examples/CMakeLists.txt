@@ -2,6 +2,7 @@
 add_subdirectory(readimage)
 add_subdirectory(opencvinfo)
 add_subdirectory(imgcollection)
+add_subdirectory(imgpreprocessing)
 add_subdirectory(recordvideo)
 add_subdirectory(segmentationtest)
 add_subdirectory(segmentationtrain)
