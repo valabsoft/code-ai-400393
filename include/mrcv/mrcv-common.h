@@ -71,6 +71,23 @@ namespace mrcv
 		INFO,		// Информация		INFO
 		WARNING		// Предупреждение	WARN
 	};
+
+	// Методы предобработки изображений
+	enum class IMG_PREPROCESSING_METHOD
+	{
+		NONE,
+		BRIGHTNESSLEVELUP,
+		BRIGHTNESSLEVELDOWN,
+		EQUALIZEHIST,
+		CLAHE,
+		COLORLABCLAHE,
+		BGRTOGRAY,
+		SHARPENING01,
+		SHARPENING02,
+		NOISEFILTERINGMEDIANFILTER,
+		NOISEFILTERINGAVARAGEFILTER,
+		CORRECTIONGEOMETRICDEFORMATION
+	};
 	
 	// Структура для хранения параметров калибровки одиночной камеры
 	struct CalibrationParametersMono
