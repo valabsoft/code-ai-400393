@@ -33,16 +33,25 @@
 namespace mrcv
 {
 	// Флаг отладочного лога, если false - лог не создается
-	const bool IS_DEBUG_LOG_ENABLED = true;
+	static const bool IS_DEBUG_LOG_ENABLED = true;
 	
 	// Маска файла для функции записи видео
-	const std::string UTILITY_DEFAULT_RECORDER_FILENAME = "video";
+	static const std::string UTILITY_DEFAULT_RECORDER_FILENAME = "video";
 	
 	// Интервал записи видео файла по умолчанию
-	const int UTILITY_DEFAULT_RECORDER_INTERVAL = 5;
+	static const int UTILITY_DEFAULT_RECORDER_INTERVAL = 5;
 	
 	// FPS камеры по умолчанию
-	const int UTILITY_DEFAULT_CAMERA_FPS = 25;
+	static const int UTILITY_DEFAULT_CAMERA_FPS = 25;
+
+	// Константы для задачи OBJCOURSE
+	static const float OBJCOURSE_FONT_SCALE = 0.7f;
+	static const int OBJCOURSE_THICKNESS = 1;
+	static cv::Scalar OBJCOURSE_BLACK = cv::Scalar(0, 0, 0);
+	static cv::Scalar OBJCOURSE_YELLOW = cv::Scalar(0, 255, 255);
+	static cv::Scalar OBJCOURSE_RED = cv::Scalar(0, 0, 255);
+	static cv::Scalar OBJCOURSE_GREEN = cv::Scalar(0, 255, 0);
+	static const bool OBJCOURSE_DRAW_LABEL = false;
 	
 	// Виды кодеков
 	enum class CODEC
@@ -103,5 +112,5 @@ namespace mrcv
 		float rotate_limit = (float)45.0;
 		int interpolation = cv::INTER_LINEAR;
 		int border_mode = cv::BORDER_CONSTANT;
-	};
+	};	
 }
