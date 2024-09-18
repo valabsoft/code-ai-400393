@@ -1,5 +1,8 @@
 #include <fstream>
 #include <stdexcept>
+#ifndef YAML_CPP_STATIC_DEFINE
+#define YAML_CPP_STATIC_DEFINE
+#endif
 #include <yaml-cpp/yaml.h>
 
 #include "mrcv/mrcv-yolov5.h"

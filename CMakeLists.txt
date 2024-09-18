@@ -49,10 +49,11 @@ add_library(mrcv::mrcv ALIAS mrcv)
 ###############################################################################
 # Определение зависимостей библиотеки
 ###############################################################################
-set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release/")
+set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release/;C:/yaml-cpp/")
 
 find_package(OpenCV REQUIRED)
 find_package(Torch REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 # Диагностический вывод о наличии библиотек
 #if (OpenCV_FOUND)
@@ -85,8 +86,8 @@ ELSE()
     set( Torch_LIB_DIR "/usr/local/lib/" )
 ENDIF()
 
-include_directories( ${OpenCV_INCLUDE_DIRS}; ${Torch_INCLUDE_DIRS} )
-link_directories( ${OpenCV_LIB_DIR}; ${Torch_LIB_DIR} )
+include_directories( ${OpenCV_INCLUDE_DIRS}; ${Torch_INCLUDE_DIRS}; ${YAML_CPP_INCLUDE_DIR} )
+link_directories( ${OpenCV_LIB_DIR}; ${Torch_LIB_DIR}; ${YAML_CPP_LIBRARY_DIR} )
 
 set(MRCV_CUDA false) # Ключ сборки с/без CUDA
 
@@ -94,13 +95,14 @@ IF (MRCV_CUDA)
     set(ALL_LIBS
         ${OpenCV_LIBS}
         ${TORCH_LIBRARIES}
+        yaml-cpp::yaml-cpp
         ${CUDA_LIBRARIES}
         ${CUDA_CUBLAS_LIBRARIES}
         ${CUDA_cudart_static_LIBRARY}
     )
-    target_link_libraries( mrcv ${ALL_LIBS}; yaml-cpp)
+    target_link_libraries( mrcv ${ALL_LIBS} )
 ELSE()
-    target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES}; yaml-cpp)
+    target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES}; yaml-cpp::yaml-cpp )
 ENDIF()
 # target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES} )
 ###############################################################################
