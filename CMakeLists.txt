@@ -128,6 +128,7 @@ set(sources
     src/mrcv-imgcollection.cpp
     src/mrcv-calibration.cpp
     src/mrcv-segmentation.cpp
+    src/mrcv-yolov5.cpp
 <<<<<<< HEAD
     src/mrcv-objcourse.cpp
 =======
@@ -143,7 +144,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 include(CMakePackageConfigHelpers)
 
 <<<<<<< HEAD
-target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp" "src/mrcv-objcourse.cpp" "src/mrcv-imgpreprocessing.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp")
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp" "src/mrcv-objcourse.cpp" "src/mrcv-imgpreprocessing.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp")
 =======
 target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp")
 >>>>>>> b2a7a85 (AI-41 Разработаны функции для генерации конфигов, добавлен пример использования)
