@@ -3,9 +3,18 @@
 
 namespace mrcv
 {
-	errno_t ObjCourse::initNN(const std::string pathToModel, const std::string pathToClasses)
+#ifdef _WIN32
+    errno_t ObjCourse::initNN(const std::string pathToModel, const std::string pathToClasses)
+#else
+    error_t ObjCourse::initNN(const std::string pathToModel, const std::string pathToClasses)
+#endif
 	{
-		errno_t err = readClasses(pathToClasses);
+		
+#ifdef _WIN32
+        errno_t err = readClasses(pathToClasses);
+#else
+        error_t err = readClasses(pathToClasses);
+#endif
 		if (err == 0)
 		{
 			_network = cv::dnn::readNetFromONNX(pathToModel);
@@ -73,8 +82,11 @@ namespace mrcv
             writeLog("The neural network initialization ERROR!");
         }
     }
-
-	errno_t ObjCourse::readClasses(const std::string pathToClasses)
+#ifdef _WIN32
+    errno_t ObjCourse::readClasses(const std::string pathToClasses)
+#else
+    error_t ObjCourse::readClasses(const std::string pathToClasses)
+#endif
 	{
 		std::ifstream classesFile(pathToClasses);
 		std::string line;

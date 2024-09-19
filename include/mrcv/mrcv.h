@@ -194,8 +194,13 @@ namespace mrcv
 		std::vector<float> _confidencesSet;
 		std::vector<std::string> _classesSet;
 		float _inferenceTime;
+#ifdef _WIN32
 		errno_t readClasses(const std::string pathToClasses);
 		errno_t initNN(const std::string pathToModel, const std::string pathToClasses);
+#else
+		error_t readClasses(const std::string pathToClasses);
+		error_t initNN(const std::string pathToModel, const std::string pathToClasses);
+#endif		
 		void drawLabel(cv::Mat& img, std::string label, int left, int top);
 		std::vector<cv::Mat> preProcess(cv::Mat& img, cv::dnn::Net& net);
 		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames);	
