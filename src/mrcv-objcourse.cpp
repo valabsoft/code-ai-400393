@@ -279,6 +279,20 @@ namespace mrcv
         std::vector<float> confidences = getConfidences();
         std::vector<cv::Rect> boxes = getBoxes();
         std::vector<std::string> classes = getClasses();
+
+        std::stringstream strIDs;
+        for each (auto id in ids)
+        {
+            strIDs << std::to_string(id) << ";";
+        }
+        std::stringstream strConfs;
+        for each (auto conf in confidences)
+        {
+            strConfs << std::to_string(conf) << ";";
+        }
+        writeLog("IDs: " + strIDs.str());
+        writeLog("Confidence: " + strConfs.str());
+        writeLog("Boxes: " + std::to_string(boxes.size()));
         
         return (int)boxes.size();
     }

@@ -140,6 +140,57 @@ namespace mrcv
             return;
         }
     }
+    void writeLog()
+    {
+        if (!IS_DEBUG_LOG_ENABLED)
+            return;
+
+        try
+        {
+            std::filesystem::path pathToLogDirectory = std::filesystem::current_path() / "log";
+            std::filesystem::directory_entry directoryEntry{ pathToLogDirectory };
+
+            // Проверяем существование папки log в рабочем каталоге
+            bool isLogDirectoryExists = directoryEntry.exists();
+
+            if (!isLogDirectoryExists)
+            {
+                // Если папка log не существует, создаем ее
+                isLogDirectoryExists = std::filesystem::create_directory(pathToLogDirectory);
+                if (!isLogDirectoryExists)
+                {
+                    return;
+                }
+            }
+
+            // Генерируем уникальное имя файла в формате dd-mm-yyyy.log
+            std::string logFileName = generateUniqueLogFileName();
+            std::filesystem::path pathToLogFile = pathToLogDirectory / logFileName;
+
+            std::ofstream logFile; // Идентификатор лог-файла
+
+            if (std::filesystem::exists(pathToLogFile))
+            {
+                // Если файл лога существует, открываем файл для дозаписи и добавляем строку в конец            
+                logFile.open(pathToLogFile.c_str(), std::ios_base::app);
+            }
+            else
+            {
+                // Если файл лога не существует, создаем его и добавляем строчку
+                logFile.open(pathToLogFile.c_str(), std::ios_base::out);
+            }
+
+            if (logFile.is_open())
+            {
+                logFile << std::endl;
+                logFile.close();
+            }
+        }
+        catch (...)
+        {
+            return;
+        }
+    }
 
     /**
      * @brief Функция загрузки изображения.
