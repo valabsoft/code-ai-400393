@@ -35,11 +35,12 @@ int main()
     cv::resize(imageIn, imageIn, cv::Size(double(imageIn.cols * scale), double(imageIn.rows * scale)), 0, 0, cv::INTER_LINEAR);
     cv::resize(imageOut, imageOut, cv::Size(double(imageOut.cols * scale), double(imageOut.rows * scale)), 0, 0, cv::INTER_LINEAR);
     
-    cv::namedWindow("Before", cv::WINDOW_AUTOSIZE);    
-    cv::namedWindow("After", cv::WINDOW_AUTOSIZE);
-
-    imshow("Before", imageIn);    
-    imshow("After", imageOut);
+    cv::String originalWindowTitle = "Original image";
+    cv::String procesedWindowTitle = "Image after processing";
+    cv::namedWindow(originalWindowTitle, cv::WINDOW_AUTOSIZE);
+    cv::namedWindow(procesedWindowTitle, cv::WINDOW_AUTOSIZE);
+    cv::imshow(originalWindowTitle, imageIn);
+    cv::imshow(procesedWindowTitle, imageOut);
 
     cv::waitKey(0);
     
