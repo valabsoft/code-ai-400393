@@ -211,7 +211,6 @@ namespace mrcv
         for (size_t i = 0; i < IDX.size(); ++i) {
             logStream << i << "      " << IDX[i] << std::endl;
         }
-
         // Записываем сообщение в лог
         writeLog(logStream.str(), mrcv::LOGTYPE::INFO);
     }
