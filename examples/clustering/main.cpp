@@ -2,12 +2,9 @@
 
 int main() {
 
-    std::filesystem::path dataFile("files\\claster.dat");    
-    auto currentPath = std::filesystem::current_path();
-    auto dataPath = currentPath / dataFile;
-
-    mrcv::DenseStereo denseStereo;    
-    denseStereo.loadDataFromFile(dataPath.u8string());
+    mrcv::DenseStereo denseStereo;
+    std::string filename = "C:/Users/delis/Desktop/pointsClaster_1001.txt";
+    denseStereo.loadDataFromFile(filename);
     denseStereo.makeClustering();
     denseStereo.printClusters();
 
