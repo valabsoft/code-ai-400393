@@ -5,7 +5,7 @@
 
 namespace mrcv
 {
-    MRCV_EXPORT struct VariationalAutoEncoder : public torch::nn::Module {
+   MRCV_EXPORT struct VariationalAutoEncoder : public torch::nn::Module {
         torch::nn::Linear encoder1{ nullptr }, encoder2{ nullptr };
         torch::nn::Linear mu{ nullptr }, logvar{ nullptr };
         torch::nn::Linear decoder1{ nullptr }, decoder2{ nullptr };

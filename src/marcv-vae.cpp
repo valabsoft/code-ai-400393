@@ -136,9 +136,9 @@ namespace mrcv
     }
 
     
-    int semiAutomaticLabeler(){
-
-        
+    int semiAutomaticLabeler()
+    {
+        return 0;
     }
 
 }
