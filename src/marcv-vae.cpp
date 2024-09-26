@@ -5,18 +5,18 @@
 namespace mrcv
 {
     torch::Tensor neuralNetworkAugmentationAsTensor(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate) {
-        // Логирование
+        // Р›РѕРіРёСЂРѕРІР°РЅРёРµ
         std::ostringstream logStream;
-        // Количестыо цветов генерируемого изображения
+        // РљРѕР»РёС‡РµСЃС‚С‹Рѕ С†РІРµС‚РѕРІ РіРµРЅРµСЂРёСЂСѓРµРјРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
         const int64_t numColor = 1;
-        // Расчет размерности входно слоя
+        // Р Р°СЃС‡РµС‚ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё РІС…РѕРґРЅРѕ СЃР»РѕСЏ
         const int64_t inputDim = numColor * height * width;
-        // Выбор устройства
+        // Р’С‹Р±РѕСЂ СѓСЃС‚СЂРѕР№СЃС‚РІР°
         torch::Device device(torch::kCUDA);
-        // Загрузка датасета
+        // Р—Р°РіСЂСѓР·РєР° РґР°С‚Р°СЃРµС‚Р°
         auto dataset = CustomDataset(root, numColor).map(torch::data::transforms::Stack<>());
 
-        // Проверка датасета
+        // РџСЂРѕРІРµСЂРєР° РґР°С‚Р°СЃРµС‚Р°
         if (dataset.size() == 0) {
             logStream << "Dataset is empty!" << std::endl;
             //return ;
@@ -24,15 +24,15 @@ namespace mrcv
 
         auto dataLoader = torch::data::make_data_loader(dataset, torch::data::DataLoaderOptions().batch_size(batchSize).workers(2));
 
-        // Создание объекта модели
+        // РЎРѕР·РґР°РЅРёРµ РѕР±СЉРµРєС‚Р° РјРѕРґРµР»Рё
         VariationalAutoEncoder model(inputDim, hDim, zDim);
-        // Перенос модели на устройство
+        // РџРµСЂРµРЅРѕСЃ РјРѕРґРµР»Рё РЅР° СѓСЃС‚СЂРѕР№СЃС‚РІРѕ
         model.to(device);
-        // Оптимизация модели
+        // РћРїС‚РёРјРёР·Р°С†РёСЏ РјРѕРґРµР»Рё
         torch::optim::Adam optimizer(model.parameters(), torch::optim::AdamOptions(lrRate));
         logStream << "Dataset size before training: " << dataset.size().value() << std::endl;
 
-        // Обучение модели
+        // РћР±СѓС‡РµРЅРёРµ РјРѕРґРµР»Рё
         for (int epoch = 0; epoch < numEpoch; ++epoch) {
             model.train();
             for (auto& batch : *dataLoader) {
@@ -59,7 +59,7 @@ namespace mrcv
 
         logStream << "Dataset size after training: " << dataset.size().value() << std::endl;
 
-        // Коллическтво генерируемых изображений
+        // РљРѕР»Р»РёС‡РµСЃРєС‚РІРѕ РіРµРЅРµСЂРёСЂСѓРµРјС‹С… РёР·РѕР±СЂР°Р¶РµРЅРёР№
         int numExamples = 1;
 
         std::vector<torch::Tensor> images;
@@ -77,7 +77,7 @@ namespace mrcv
 
         std::vector<std::pair<torch::Tensor, torch::Tensor>> encodingsDigit;
 
-        // Энкодер
+        // Р­РЅРєРѕРґРµСЂ
         for (int d = 0; d < numExamples; ++d) {
             torch::NoGradGuard no_grad;
             logStream << "Image tensor size: " << images[d].sizes() << std::endl;
@@ -92,7 +92,7 @@ namespace mrcv
 
         }
 
-        // Декодер
+        // Р”РµРєРѕРґРµСЂ
         for (int example = 0; example < numExamples; ++example) {
             auto [mu, sigma] = encodingsDigit[0];
             auto sample = model.reparameterize(mu, sigma);
@@ -100,36 +100,36 @@ namespace mrcv
             tensor = torch::sigmoid(tensor).view({ numColor, width, height });
             return tensor.clone();
         }
-        //Сохранение логов
+        //РЎРѕС…СЂР°РЅРµРЅРёРµ Р»РѕРіРѕРІ
         writeLog(logStream.str(), mrcv::LOGTYPE::INFO);
     }
 
     cv::Mat neuralNetworkAugmentationAsMat(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate) {
-        // Логирование
+        // Р›РѕРіРёСЂРѕРІР°РЅРёРµ
         std::ostringstream logStream;
-        // Количестыо цветов генерируемого изображения
+        // РљРѕР»РёС‡РµСЃС‚С‹Рѕ С†РІРµС‚РѕРІ РіРµРЅРµСЂРёСЂСѓРµРјРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
         const int64_t numColor = 1;
         // 
         torch::Tensor tensor = neuralNetworkAugmentationAsTensor(root, height, width, hDim, zDim, numEpoch, batchSize, lrRate);
-        // Проверка, что тензор не пустой
+        // РџСЂРѕРІРµСЂРєР°, С‡С‚Рѕ С‚РµРЅР·РѕСЂ РЅРµ РїСѓСЃС‚РѕР№
         if (!tensor.defined()) {
             logStream << "Error: Tensor is undefined." << std::endl;
         }
-        // Прелбразование тензора в OpenCV Мat
+        // РџСЂРµР»Р±СЂР°Р·РѕРІР°РЅРёРµ С‚РµРЅР·РѕСЂР° РІ OpenCV Рњat
         tensor = tensor.mul(255).clamp(0, 255).to(torch::kU8);
         tensor = tensor.to(torch::kCPU);
         tensor = tensor.view({ numColor, height, width });
 
-        // Переставляем каналы с {numColor, height, width} на {height, width, numColor} для OpenCV
+        // РџРµСЂРµСЃС‚Р°РІР»СЏРµРј РєР°РЅР°Р»С‹ СЃ {numColor, height, width} РЅР° {height, width, numColor} РґР»СЏ OpenCV
         tensor = tensor.permute({ 1, 2, 0 });
 
-        // Создаем OpenCV Mat
+        // РЎРѕР·РґР°РµРј OpenCV Mat
         cv::Mat image(tensor.size(0), tensor.size(1), CV_8UC1, tensor.data_ptr());
-        // Проверка, что изображение не пустое
+        // РџСЂРѕРІРµСЂРєР°, С‡С‚Рѕ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РЅРµ РїСѓСЃС‚РѕРµ
         if (image.empty()) {
             logStream << "Error: Image is empty." << std::endl;
         }
-        //Сохранение логов
+        //РЎРѕС…СЂР°РЅРµРЅРёРµ Р»РѕРіРѕРІ
         writeLog(logStream.str(), mrcv::LOGTYPE::INFO);
 
         return image.clone();

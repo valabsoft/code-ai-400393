@@ -99,19 +99,19 @@ namespace mrcv
    using imageType = std::variant<cv::Mat, torch::Tensor>;
 
    /**
-    * @brief функция генерации изображения.
+    * @brief С„СѓРЅРєС†РёСЏ РіРµРЅРµСЂР°С†РёРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ.
     * 
-    * Функция может использоваться для аугментации данных с помощью нейронной сети.
+    * Р¤СѓРЅРєС†РёСЏ РјРѕР¶РµС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РґР»СЏ Р°СѓРіРјРµРЅС‚Р°С†РёРё РґР°РЅРЅС‹С… СЃ РїРѕРјРѕС‰СЊСЋ РЅРµР№СЂРѕРЅРЅРѕР№ СЃРµС‚Рё.
     *
-    * @param root - путь к датасету для обучения.
-    * @param height - высота сгенерированного изображения.
-    * @param width - ширина сгенерированного изображения.
-    * @param hDim - размерность скрытого слоя.
-    * @param zDim - размерность латентного слоя.
-    * @param numEpoch - количество эпох обучения.
-    * @param batchSize - размер пакета.
-    * @param lrRate - скорость обучения.
-    * @return - изображение с формате Мat или Tensor, код результата работы функции. 0 - Success; -1 - Unhandled Exception.
+    * @param root - РїСѓС‚СЊ Рє РґР°С‚Р°СЃРµС‚Сѓ РґР»СЏ РѕР±СѓС‡РµРЅРёСЏ.
+    * @param height - РІС‹СЃРѕС‚Р° СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ.
+    * @param width - С€РёСЂРёРЅР° СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ.
+    * @param hDim - СЂР°Р·РјРµСЂРЅРѕСЃС‚СЊ СЃРєСЂС‹С‚РѕРіРѕ СЃР»РѕСЏ.
+    * @param zDim - СЂР°Р·РјРµСЂРЅРѕСЃС‚СЊ Р»Р°С‚РµРЅС‚РЅРѕРіРѕ СЃР»РѕСЏ.
+    * @param numEpoch - РєРѕР»РёС‡РµСЃС‚РІРѕ СЌРїРѕС… РѕР±СѓС‡РµРЅРёСЏ.
+    * @param batchSize - СЂР°Р·РјРµСЂ РїР°РєРµС‚Р°.
+    * @param lrRate - СЃРєРѕСЂРѕСЃС‚СЊ РѕР±СѓС‡РµРЅРёСЏ.
+    * @return - РёР·РѕР±СЂР°Р¶РµРЅРёРµ СЃ С„РѕСЂРјР°С‚Рµ Рњat РёР»Рё Tensor, РєРѕРґ СЂРµР·СѓР»СЊС‚Р°С‚Р° СЂР°Р±РѕС‚С‹ С„СѓРЅРєС†РёРё. 0 - Success; -1 - Unhandled Exception.
     */
    torch::Tensor neuralNetworkAugmentationAsTensor(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate);
    cv::Mat neuralNetworkAugmentationAsMat(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate);
