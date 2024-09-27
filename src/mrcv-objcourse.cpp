@@ -254,8 +254,9 @@ namespace mrcv
         ObjCourse::_inferenceTime = _network.getPerfProfile(layersTimes) / (float)freq;
         return res;
 	}    
-    int ObjCourse::findAngle(double resolution, int cx)
+    int ObjCourse::findAngle(double resolution, double cameraAngle, int cx)
     {
+        _cameraAngle = cameraAngle;
         return (int)((cx * _cameraAngle / resolution) - _cameraAngle / 2);
     }
     std::string ObjCourse::getTimeStamp()
@@ -296,7 +297,7 @@ namespace mrcv
         
         return (int)boxes.size();
     }
-    float ObjCourse::getObjectCourse(cv::Mat frame, double frameWidth, double frameHeight)
+    float ObjCourse::getObjectCourse(cv::Mat frame, double frameWidth, double cameraAngle)
     {
         cv::Mat img = mainProcess(frame);
         std::string timestamp = getTimeStamp();
@@ -342,7 +343,7 @@ namespace mrcv
             center = (boxes[bigestIndex].br() + boxes[bigestIndex].tl()) * 0.5;
 
             // Угол между прицелом и целью
-            angle = findAngle(frameWidth, center.x);
+            angle = findAngle(frameWidth, cameraAngle, center.x);
 
             // Команда управления лево / право
             direction = center.x > frameWidth / 2 ? "RIGHT" : "LEFT";
