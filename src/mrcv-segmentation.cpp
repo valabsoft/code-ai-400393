@@ -4,8 +4,8 @@
 
 namespace mrcv
 {
-  SegmentationHeadImpl::SegmentationHeadImpl(int in_channels, int out_channels, int kernel_size, double _upsampling) {
-    conv2d = torch::nn::Conv2d(conv_options(in_channels, out_channels, kernel_size, 1, kernel_size / 2));
+  SegmentationHeadImpl::SegmentationHeadImpl(int inChannels, int outChannels, int kernelSize, double _upsampling) {
+    conv2d = torch::nn::Conv2d(conv_options(inChannels, outChannels, kernelSize, 1, kernelSize / 2));
     upsampling = torch::nn::Upsample(upsample_options(std::vector<double>{_upsampling, _upsampling}));
     register_module("conv2d", conv2d);
   }
@@ -16,171 +16,87 @@ namespace mrcv
     return x;
   }
 
-  std::string replace_all_distinct2(std::string str, const std::string old_value, const std::string new_value)
+  std::string replaceAll(std::string str, const std::string oldValue, const std::string newValue)
   {
     std::filesystem::path path{ str };
-    return path.replace_extension(new_value).string();
+    return path.replace_extension(newValue).string();
   }
 
-  void loadDataFromFolder(std::string folder, std::string image_type,
-    std::vector<std::string>& list_images, std::vector<std::string>& list_labels)
+  void loadDataFromFolder(std::string folder, std::string imageType,
+    std::vector<std::string>& listImages, std::vector<std::string>& listLabels)
   {
     for (auto& p : std::filesystem::directory_iterator(folder))
     {
-      if (std::filesystem::path(p).extension() == image_type)
+      if (std::filesystem::path(p).extension() == imageType)
       {
-        list_images.push_back(p.path().string());
-        list_labels.push_back(replace_all_distinct2(p.path().string(), image_type, ".json"));
+        listImages.push_back(p.path().string());
+        listLabels.push_back(replaceAll(p.path().string(), imageType, ".json"));
 
       }
     }
   }
 
-  nlohmann::json encoder_params() {
+  nlohmann::json encoderParameters() {
     nlohmann::json params = {
     {"resnet18", {
       {"class_type", "resnet"},
-      {"out_channels", {3, 64, 64, 128, 256, 512}},
+      {"outChannels", {3, 64, 64, 128, 256, 512}},
       {"layers" , {2, 2, 2, 2}},
       },
     },
     {"resnet34", {
       {"class_type", "resnet"},
-      {"out_channels", {3, 64, 64, 128, 256, 512}},
+      {"outChannels", {3, 64, 64, 128, 256, 512}},
       {"layers" , {3, 4, 6, 3}},
       },
     },
     {"resnet50", {
       {"class_type", "resnet"},
-      {"out_channels", {3, 64, 256, 512, 1024, 2048}},
+      {"outChannels", {3, 64, 256, 512, 1024, 2048}},
       {"layers" , {3, 4, 6, 3}},
       },
     },
-    {"resnet101", {
-      {"class_type", "resnet"},
-      {"out_channels", {3, 64, 256, 512, 1024, 2048}},
-      {"layers" , {3, 4, 23, 3}},
-      },
-    },
-    {"resnet101", {
-      {"class_type", "resnet"},
-      {"out_channels", {3, 64, 256, 512, 1024, 2048}},
-      {"layers" , {3, 8, 36, 3}},
-      },
-    },
-    {"resnext50_32x4d", {
-      {"class_type", "resnet"},
-      {"out_channels", {3, 64, 256, 512, 1024, 2048}},
-      {"layers" , {3, 4, 6, 3}},
-      },
-    },
-    {"resnext101_32x8d", {
-      {"class_type", "resnet"},
-      {"out_channels", {3, 64, 256, 512, 1024, 2048}},
-      {"layers" , {3, 4, 23, 3}},
-      },
-    },
-    {"vgg11", {
-      {"class_type", "vgg"},
-      {"out_channels", {64, 128, 256, 512, 512, 512}},
-      {"cfg",{64, -1, 128, -1, 256, 256, -1, 512, 512, -1, 512, 512, -1}},
-      {"batch_norm" , false},
-      },
-    },
-    {"vgg11_bn", {
-      {"class_type", "vgg"},
-      {"out_channels", {64, 128, 256, 512, 512, 512}},
-      {"cfg",{64, -1, 128, -1, 256, 256, -1, 512, 512, -1, 512, 512, -1}},
-      {"batch_norm" , true},
-      },
-    },
-    {"vgg13", {
-      {"class_type", "vgg"},
-      {"out_channels", {64, 128, 256, 512, 512, 512}},
-      {"cfg",{64, 64, -1, 128, 128, -1, 256, 256, -1, 512, 512, -1, 512, 512, -1}},
-      {"batch_norm" , false},
-      },
-    },
-    {"vgg13_bn", {
-      {"class_type", "vgg"},
-      {"out_channels", {64, 128, 256, 512, 512, 512}},
-      {"cfg",{64, 64, -1, 128, 128, -1, 256, 256, -1, 512, 512, -1, 512, 512, -1}},
-      {"batch_norm" , true},
-      },
-    },
-    {"vgg16", {
-      {"class_type", "vgg"},
-      {"out_channels", {64, 128, 256, 512, 512, 512}},
-      {"cfg",{64, 64, -1, 128, 128, -1, 256, 256, 256, -1, 512, 512, 512, -1, 512, 512, 512, -1}},
-      {"batch_norm" , false},
-      },
-    },
-    {"vgg16_bn", {
-      {"class_type", "vgg"},
-      {"out_channels", {64, 128, 256, 512, 512, 512}},
-      {"cfg",{64, 64, -1, 128, 128, -1, 256, 256, 256, -1, 512, 512, 512, -1, 512, 512, 512, -1}},
-      {"batch_norm" , true},
-      },
-    },
-    {"vgg19", {
-      {"class_type", "vgg"},
-      {"out_channels", {64, 128, 256, 512, 512, 512}},
-      {"cfg",{64, 64, -1, 128, 128, -1, 256, 256, 256, 256, -1, 512, 512, 512, 512, -1, 512, 512, 512, 512, -1}},
-      {"batch_norm" , false},
-      },
-    },
-    {"vgg19_bn", {
-      {"class_type", "vgg"},
-      {"out_channels", {64, 128, 256, 512, 512, 512}},
-      {"cfg",{64, 64, -1, 128, 128, -1, 256, 256, 256, 256, -1, 512, 512, 512, 512, -1, 512, 512, 512, 512, -1}},
-      {"batch_norm" , true},
-      },
-    },
+
     };
     return params;
   }
 
   ///////////////////////////////////////////////////////////////////////////
 
-  FPNImpl::FPNImpl(int _num_classes, std::string encoder_name, std::string pretrained_path, int encoder_depth,
-    int decoder_pyramid_channel, int decoder_segmentation_channels, std::string decoder_merge_policy,
+  FPNImpl::FPNImpl(int _numberClasses, std::string encoderName, std::string pretrainedPath, int encoderDepth,
+    int decoderChannelPyramid, int decoderChannelsSegmentation, std::string decoderMergePolicy,
     float decoder_dropout, double upsampling) {
-    num_classes = _num_classes;
-    auto encoder_param = encoder_params();
-    std::vector<int> encoder_channels = encoder_param[encoder_name]["out_channels"];
-    if (!encoder_param.contains(encoder_name))
-      std::cout << "encoder name must in {resnet18, resnet34, resnet50, resnet101, resnet150, \
-				resnext50_32x4d, resnext101_32x8d, vgg11, vgg11_bn, vgg13, vgg13_bn, \
-				vgg16, vgg16_bn, vgg19, vgg19_bn,}";
-    if (encoder_param[encoder_name]["class_type"] == "resnet")
-      encoder = new ResNetImpl(encoder_param[encoder_name]["layers"], 1000, encoder_name);
-    //else if (encoder_param[encoder_name]["class_type"] == "vgg")
-    //	encoder = new VGGImpl(encoder_param[encoder_name]["cfg"], 1000, encoder_param[encoder_name]["batch_norm"]);
+    numberClasses = _numberClasses;
+    auto encoderParameter = encoderParameters();
+    std::vector<int> channelsEncoder = encoderParameter[encoderName]["outChannels"];
+
+    if (encoderParameter[encoderName]["class_type"] == "resnet")
+      encoder = new ResNetImpl(encoderParameter[encoderName]["layers"], 1000, encoderName);
     else std::cout << "unknown error in backbone initialization";
 
-    encoder->load_pretrained(pretrained_path);
-    decoder = FPNDecoder(encoder_channels, encoder_depth, decoder_pyramid_channel,
-      decoder_segmentation_channels, decoder_dropout, decoder_merge_policy);
-    segmentation_head = SegmentationHead(decoder_segmentation_channels, num_classes, 1, upsampling);
+    encoder->load_pretrained(pretrainedPath);
+    decoder = FPNDecoder(channelsEncoder, encoderDepth, decoderChannelPyramid,
+      decoderChannelsSegmentation, decoder_dropout, decoderMergePolicy);
+    segmentHeader = SegmentationHead(decoderChannelsSegmentation, numberClasses, 1, upsampling);
 
     register_module("encoder", std::shared_ptr<Backbone>(encoder));
     register_module("decoder", decoder);
-    register_module("segmentation_head", segmentation_head);
+    register_module("segmentHeader", segmentHeader);
   }
 
   torch::Tensor FPNImpl::forward(torch::Tensor x) {
     std::vector<torch::Tensor> features = encoder->features(x);
     x = decoder->forward(features);
-    x = segmentation_head->forward(x);
+    x = segmentHeader->forward(x);
     return x;
   }
 
   ///////////////////////////////////////////////////////////////////////////
 
-  Conv3x3GNReLUImpl::Conv3x3GNReLUImpl(int _in_channels, int _out_channels, bool _upsample) {
+  Conv3x3GNReLUImpl::Conv3x3GNReLUImpl(int _inChannels, int _outChannels, bool _upsample) {
     upsample = _upsample;
-    block = torch::nn::Sequential(torch::nn::Conv2d(conv_options(_in_channels, _out_channels, 3, 1, 1, 1, false)),
-      torch::nn::GroupNorm(torch::nn::GroupNormOptions(32, _out_channels)),
+    block = torch::nn::Sequential(torch::nn::Conv2d(conv_options(_inChannels, _outChannels, 3, 1, 1, 1, false)),
+      torch::nn::GroupNorm(torch::nn::GroupNormOptions(32, _outChannels)),
       torch::nn::ReLU(torch::nn::ReLUOptions(true)));
     register_module("block", block);
   }
@@ -193,9 +109,9 @@ namespace mrcv
     return x;
   }
 
-  FPNBlockImpl::FPNBlockImpl(int pyramid_channels, int skip_channels)
+  FPNBlockImpl::FPNBlockImpl(int channelsPyramid, int channelsSkip)
   {
-    skip_conv = torch::nn::Conv2d(conv_options(skip_channels, pyramid_channels, 1));
+    skip_conv = torch::nn::Conv2d(conv_options(channelsSkip, channelsPyramid, 1));
     upsample = torch::nn::Upsample(torch::nn::UpsampleOptions().scale_factor(std::vector<double>({ 2,2 })).mode(torch::kNearest));
 
     register_module("skip_conv", skip_conv);
@@ -208,13 +124,13 @@ namespace mrcv
     return x;
   }
 
-  SegmentationBlockImpl::SegmentationBlockImpl(int in_channels, int out_channels, int n_upsamples)
+  SegmentationBlockImpl::SegmentationBlockImpl(int inChannels, int outChannels, int upSamplesNam)
   {
     block = torch::nn::Sequential();
-    block->push_back(Conv3x3GNReLU(in_channels, out_channels, bool(n_upsamples)));
-    if (n_upsamples > 1) {
-      for (int i = 1; i < n_upsamples; i++) {
-        block->push_back(Conv3x3GNReLU(out_channels, out_channels, true));
+    block->push_back(Conv3x3GNReLU(inChannels, outChannels, bool(upSamplesNam)));
+    if (upSamplesNam > 1) {
+      for (int i = 1; i < upSamplesNam; i++) {
+        block->push_back(Conv3x3GNReLU(outChannels, outChannels, true));
       }
     }
     register_module("block", block);
@@ -226,18 +142,18 @@ namespace mrcv
   }
 
   template<typename T>
-  T sumTensor(std::vector<T> x_list) {
-    if (x_list.empty()) std::cout << "sumTensor only accept non-empty list";
-    T re = x_list[0];
-    for (int i = 1; i < x_list.size(); i++) {
-      re += x_list[i];
+  T sumTensor(std::vector<T> listX) {
+
+    T re = listX[0];
+    for (int i = 1; i < listX.size(); i++) {
+      re += listX[i];
     }
     return re;
   }
 
   MergeBlockImpl::MergeBlockImpl(std::string policy) {
     if (policy != policies[0] && policy != policies[1]) {
-      std::cout << "`merge_policy` must be one of: ['add', 'cat'], got " + policy;
+      std::cout << "policy должен быть add или cat";
     }
     _policy = policy;
   }
@@ -247,24 +163,24 @@ namespace mrcv
     else if (_policy == "cat") return torch::cat(x, 1);
     else
     {
-      std::cout << "`merge_policy` must be one of: ['add', 'cat'], got " + _policy;
+      std::cout << "policy должен быть add или cat";
       return torch::cat(x, 1);
     }
   }
 
-  FPNDecoderImpl::FPNDecoderImpl(std::vector<int> encoder_channels, int encoder_depth, int pyramid_channels, int segmentation_channels,
+  FPNDecoderImpl::FPNDecoderImpl(std::vector<int> channelsEncoder, int encoderDepth, int channelsPyramid, int channelsSegmentation,
     float dropout_, std::string merge_policy)
   {
-    out_channels = merge_policy == "add" ? segmentation_channels : segmentation_channels * 4;
-    if (encoder_depth < 3) std::cout << "Encoder depth for FPN decoder cannot be less than 3";
-    std::reverse(std::begin(encoder_channels), std::end(encoder_channels));
-    encoder_channels = std::vector<int>(encoder_channels.begin(), encoder_channels.begin() + encoder_depth + 1);
-    p5 = torch::nn::Conv2d(conv_options(encoder_channels[0], pyramid_channels, 1));
-    p4 = FPNBlock(pyramid_channels, encoder_channels[1]);
-    p3 = FPNBlock(pyramid_channels, encoder_channels[2]);
-    p2 = FPNBlock(pyramid_channels, encoder_channels[3]);
+    outChannels = merge_policy == "add" ? channelsSegmentation : channelsSegmentation * 4;
+    if (encoderDepth < 3) std::cout << "Encoder depth for FPN decoder cannot be less than 3";
+    std::reverse(std::begin(channelsEncoder), std::end(channelsEncoder));
+    channelsEncoder = std::vector<int>(channelsEncoder.begin(), channelsEncoder.begin() + encoderDepth + 1);
+    p5 = torch::nn::Conv2d(conv_options(channelsEncoder[0], channelsPyramid, 1));
+    p4 = FPNBlock(channelsPyramid, channelsEncoder[1]);
+    p3 = FPNBlock(channelsPyramid, channelsEncoder[2]);
+    p2 = FPNBlock(channelsPyramid, channelsEncoder[3]);
     for (int i = 3; i >= 0; i--) {
-      seg_blocks->push_back(SegmentationBlock(pyramid_channels, segmentation_channels, i));
+      seg_blocks->push_back(SegmentationBlock(channelsPyramid, channelsSegmentation, i));
     }
     merge = MergeBlock(merge_policy);
     dropout = torch::nn::Dropout2d(torch::nn::Dropout2dOptions().p(dropout_).inplace(true));
@@ -278,11 +194,11 @@ namespace mrcv
   }
 
   torch::Tensor FPNDecoderImpl::forward(std::vector<torch::Tensor> features) {
-    int features_len = (int)features.size();
-    auto _p5 = p5->forward(features[features_len - 1]);
-    auto _p4 = p4->forward(_p5, features[features_len - 2]);
-    auto _p3 = p3->forward(_p4, features[features_len - 3]);
-    auto _p2 = p2->forward(_p3, features[features_len - 4]);
+    int lengthFeatures = (int)features.size();
+    auto _p5 = p5->forward(features[lengthFeatures - 1]);
+    auto _p4 = p4->forward(_p5, features[lengthFeatures - 2]);
+    auto _p3 = p3->forward(_p4, features[lengthFeatures - 3]);
+    auto _p2 = p2->forward(_p3, features[lengthFeatures - 4]);
     _p5 = seg_blocks[0]->as<SegmentationBlock>()->forward(_p5);
     _p4 = seg_blocks[1]->as<SegmentationBlock>()->forward(_p4);
     _p3 = seg_blocks[2]->as<SegmentationBlock>()->forward(_p3);
@@ -354,18 +270,18 @@ namespace mrcv
     return x;
   }
 
-  ResNetImpl::ResNetImpl(std::vector<int> layers, int num_classes, std::string _model_type, int _groups, int _width_per_group)
+  ResNetImpl::ResNetImpl(std::vector<int> layers, int numberClasses, std::string _typeModel, int _groups, int _widthGroupPer)
   {
-    model_type = _model_type;
-    if (model_type != "resnet18" && model_type != "resnet34")
+    typeModel = _typeModel;
+    if (typeModel != "resnet18" && typeModel != "resnet34")
     {
       expansion = 4;
       is_basic = false;
     }
-    if (model_type == "resnext50_32x4d") {
+    if (typeModel == "resnext50_32x4d") {
       groups = 32; base_width = 4;
     }
-    if (model_type == "resnext101_32x8d") {
+    if (typeModel == "resnext101_32x8d") {
       groups = 32; base_width = 8;
     }
     conv1 = torch::nn::Conv2d(conv_options(3, 64, 7, 2, 3, 1, false));
@@ -375,7 +291,7 @@ namespace mrcv
     layer3 = torch::nn::Sequential(_make_layer(256, layers[2], 2));
     layer4 = torch::nn::Sequential(_make_layer(512, layers[3], 2));
 
-    fc = torch::nn::Linear(512 * expansion, num_classes);
+    fc = torch::nn::Linear(512 * expansion, numberClasses);
     register_module("conv1", conv1);
     register_module("bn1", bn1);
     register_module("layer1", layer1);
@@ -412,7 +328,7 @@ namespace mrcv
     return ans;
   }
 
-  std::vector<torch::Tensor> ResNetImpl::features(torch::Tensor x, int encoder_depth) {
+  std::vector<torch::Tensor> ResNetImpl::features(torch::Tensor x, int encoderDepth) {
     std::vector<torch::Tensor> features;
     features.push_back(x);
     x = conv1->forward(x);
@@ -422,7 +338,7 @@ namespace mrcv
     x = torch::max_pool2d(x, 3, 2, 1);
 
     std::vector<torch::nn::Sequential> stages = get_stages();
-    for (int i = 0; i < encoder_depth - 1; i++) {
+    for (int i = 0; i < encoderDepth - 1; i++) {
       x = stages[i]->as<torch::nn::Sequential>()->forward(x);
       features.push_back(x);
     }
@@ -448,10 +364,10 @@ namespace mrcv
     return x;
   }
 
-  void ResNetImpl::load_pretrained(std::string pretrained_path) {
+  void ResNetImpl::load_pretrained(std::string pretrainedPath) {
     std::map<std::string, std::vector<int>> name2layers = getParams();
-    ResNet net_pretrained = ResNet(name2layers[model_type], 1000, model_type, groups, base_width);
-    torch::load(net_pretrained, pretrained_path);
+    ResNet net_pretrained = ResNet(name2layers[typeModel], 1000, typeModel, groups, base_width);
+    torch::load(net_pretrained, pretrainedPath);
 
     torch::OrderedDict<std::string, at::Tensor> pretrained_dict = net_pretrained->named_parameters();
     torch::OrderedDict<std::string, at::Tensor> model_dict = this->named_parameters();
@@ -464,10 +380,10 @@ namespace mrcv
       model_dict[(*n).key()] = (*n).value();
     }
 
-    torch::autograd::GradMode::set_enabled(false);  // make parameters copying possible
-    auto new_params = model_dict; // implement this
-    auto params = this->named_parameters(true /*recurse*/);
-    auto buffers = this->named_buffers(true /*recurse*/);
+    torch::autograd::GradMode::set_enabled(false);
+    auto new_params = model_dict;
+    auto params = this->named_parameters(true);
+    auto buffers = this->named_buffers(true);
     for (auto& val : new_params) {
       auto name = val.key();
       auto* t = params.find(name);
@@ -504,8 +420,8 @@ namespace mrcv
     return layers;
   }
 
-  void ResNetImpl::make_dilated(std::vector<int> stage_list, std::vector<int> dilation_list) {
-    if (stage_list.size() != dilation_list.size()) {
+  void ResNetImpl::make_dilated(std::vector<int> listStage, std::vector<int> listDilation) {
+    if (listStage.size() != listDilation.size()) {
       std::cout << "make sure stage list len equal to dilation list len";
       return;
     }
@@ -514,58 +430,58 @@ namespace mrcv
     stage_dict.insert(std::pair<int, torch::nn::Sequential>(4, this->layer3));
     stage_dict.insert(std::pair<int, torch::nn::Sequential>(3, this->layer2));
     stage_dict.insert(std::pair<int, torch::nn::Sequential>(2, this->layer1));
-    for (int i = 0; i < stage_list.size(); i++) {
-      int dilation_rate = dilation_list[i];
-      for (auto m : stage_dict[stage_list[i]]->modules()) {
+    for (int i = 0; i < listStage.size(); i++) {
+      int rateDilation = listDilation[i];
+      for (auto m : stage_dict[listStage[i]]->modules()) {
         if (m->name() == "torch::nn::Conv2dImpl") {
           m->as<torch::nn::Conv2d>()->options.stride(1);
-          m->as<torch::nn::Conv2d>()->options.dilation(dilation_rate);
-          int kernel_size = (int)(m->as<torch::nn::Conv2d>()->options.kernel_size()->at(0));
-          m->as<torch::nn::Conv2d>()->options.padding((kernel_size / 2) * dilation_rate);
+          m->as<torch::nn::Conv2d>()->options.dilation(rateDilation);
+          int kernelSize = (int)(m->as<torch::nn::Conv2d>()->options.kernel_size()->at(0));
+          m->as<torch::nn::Conv2d>()->options.padding((kernelSize / 2) * rateDilation);
         }
       }
     }
     return;
   }
 
-  ResNet resnet18(int64_t num_classes) {
+  ResNet resnet18(int64_t numberClasses) {
     std::vector<int> layers = { 2, 2, 2, 2 };
-    ResNet model(layers, num_classes, "resnet18");
+    ResNet model(layers, numberClasses, "resnet18");
     return model;
   }
 
-  ResNet resnet34(int64_t num_classes) {
+  ResNet resnet34(int64_t numberClasses) {
     std::vector<int> layers = { 3, 4, 6, 3 };
-    ResNet model(layers, num_classes, "resnet34");
+    ResNet model(layers, numberClasses, "resnet34");
     return model;
   }
 
-  ResNet resnet50(int64_t num_classes) {
+  ResNet resnet50(int64_t numberClasses) {
     std::vector<int> layers = { 3, 4, 6, 3 };
-    ResNet model(layers, num_classes, "resnet50");
+    ResNet model(layers, numberClasses, "resnet50");
     return model;
   }
 
-  ResNet resnet101(int64_t num_classes) {
+  ResNet resnet101(int64_t numberClasses) {
     std::vector<int> layers = { 3, 4, 23, 3 };
-    ResNet model(layers, num_classes, "resnet101");
+    ResNet model(layers, numberClasses, "resnet101");
     return model;
   }
 
-  ResNet pretrained_resnet(int64_t num_classes, std::string model_name, std::string weight_path) {
+  ResNet pretrained_resnet(int64_t numberClasses, std::string model_name, std::string weight_path) {
     std::map<std::string, std::vector<int>> name2layers = getParams();
     int groups = 1;
-    int width_per_group = 64;
+    int widthGroupPer = 64;
     if (model_name == "resnext50_32x4d") {
-      groups = 32; width_per_group = 4;
+      groups = 32; widthGroupPer = 4;
     }
     if (model_name == "resnext101_32x8d") {
-      groups = 32; width_per_group = 8;
+      groups = 32; widthGroupPer = 8;
     }
-    ResNet net_pretrained = ResNet(name2layers[model_name], 1000, model_name, groups, width_per_group);
+    ResNet net_pretrained = ResNet(name2layers[model_name], 1000, model_name, groups, widthGroupPer);
     torch::load(net_pretrained, weight_path);
-    if (num_classes == 1000) return net_pretrained;
-    ResNet module = ResNet(name2layers[model_name], num_classes, model_name);
+    if (numberClasses == 1000) return net_pretrained;
+    ResNet module = ResNet(name2layers[model_name], numberClasses, model_name);
 
     torch::OrderedDict<std::string, at::Tensor> pretrained_dict = net_pretrained->named_parameters();
     torch::OrderedDict<std::string, at::Tensor> model_dict = module->named_parameters();
@@ -604,14 +520,14 @@ namespace mrcv
   class SegDataset :public torch::data::Dataset<SegDataset>
   {
   public:
-    SegDataset(int resize_width, int resize_height, std::vector<std::string> list_images,
-      std::vector<std::string> list_labels, std::vector<std::string> name_list,
+    SegDataset(int resize_width, int resize_height, std::vector<std::string> listImages,
+      std::vector<std::string> listLabels, std::vector<std::string> name_list,
       trainTricks tricks, bool isTrain = false);
     // Override get() function to return tensor at location index
     torch::data::Example<> get(size_t index) override;
     // Return the length of data
     torch::optional<size_t> size() const override {
-      return list_labels.size();
+      return listLabels.size();
     };
   private:
     void draw_mask(std::string json_path, cv::Mat& mask);
@@ -619,8 +535,8 @@ namespace mrcv
     std::vector<std::string> name_list = {};
     std::map<std::string, int> name2index = {};
     std::map<std::string, cv::Scalar> name2color = {};
-    std::vector<std::string> list_images;
-    std::vector<std::string> list_labels;
+    std::vector<std::string> listImages;
+    std::vector<std::string> listLabels;
     trainTricks tricks;
   };
 
@@ -642,20 +558,20 @@ namespace mrcv
   }
 
   void Segmentor::Initialize(int gpu_id, int _width, int _height, std::vector<std::string>&& _name_list,
-    std::string encoder_name, std::string pretrained_path) {
+    std::string encoderName, std::string pretrainedPath) {
     width = _width;
     height = _height;
     name_list = _name_list;
     //struct stat s {};
-    //lstat(pretrained_path.c_str(), &s);
+    //lstat(pretrainedPath.c_str(), &s);
     // TODO: Здесь функция должна выводить ошибку на верхний уровень
 #ifdef _WIN32
-    if ((_access(pretrained_path.data(), 0)) == -1)
+    if ((_access(pretrainedPath.data(), 0)) == -1)
     {
       std::cout << "Pretrained path is invalid";
     }
 #else
-    if (access(pretrained_path.data(), F_OK) != 0)
+    if (access(pretrainedPath.data(), F_OK) != 0)
     {
       std::cout << "Pretrained path is invalid";
     }
@@ -666,8 +582,8 @@ namespace mrcv
     if (gpu_id >= gpu_num) std::cout << "GPU id exceeds max number of gpus";
     if (gpu_id >= 0) device = torch::Device(torch::kCUDA, gpu_id);
 
-    fpn = FPN(name_list.size(), encoder_name, pretrained_path);
-    //  fpn = FPN(name_list.size(),encoder_name,pretrained_path);
+    fpn = FPN(name_list.size(), encoderName, pretrainedPath);
+    //  fpn = FPN(name_list.size(),encoderName,pretrainedPath);
     fpn->to(device);
   }
 
@@ -677,23 +593,23 @@ namespace mrcv
   }
 
   void Segmentor::Train(float learning_rate, unsigned int epochs, int batch_size,
-    std::string train_val_path, std::string image_type, std::string save_path) {
+    std::string train_val_path, std::string imageType, std::string save_path) {
 
     // TODO: Переписать код с использованием filesystem
     std::string train_dir = train_val_path + file_sepator() + "train";
     std::string val_dir = train_val_path + file_sepator() + "test";
 
-    std::vector<std::string> list_images_train = {};
-    std::vector<std::string> list_labels_train = {};
-    std::vector<std::string> list_images_val = {};
-    std::vector<std::string> list_labels_val = {};
+    std::vector<std::string> listImages_train = {};
+    std::vector<std::string> listLabels_train = {};
+    std::vector<std::string> listImages_val = {};
+    std::vector<std::string> listLabels_val = {};
 
-    loadDataFromFolder(train_dir, image_type, list_images_train, list_labels_train);
-    loadDataFromFolder(val_dir, image_type, list_images_val, list_labels_val);
+    loadDataFromFolder(train_dir, imageType, listImages_train, listLabels_train);
+    loadDataFromFolder(val_dir, imageType, listImages_val, listLabels_val);
 
-    auto custom_dataset_train = SegDataset(width, height, list_images_train, list_labels_train, \
+    auto custom_dataset_train = SegDataset(width, height, listImages_train, listLabels_train, \
       name_list, tricks, true).map(torch::data::transforms::Stack<>());
-    auto custom_dataset_val = SegDataset(width, height, list_images_val, list_labels_val, \
+    auto custom_dataset_val = SegDataset(width, height, listImages_val, listLabels_val, \
       name_list, tricks, false).map(torch::data::transforms::Stack<>());
     auto options = torch::data::DataLoaderOptions();
     options.drop_last(true);
@@ -939,16 +855,16 @@ namespace mrcv
     }
   }
 
-  SegDataset::SegDataset(int resize_width, int resize_height, std::vector<std::string> list_images,
-    std::vector<std::string> list_labels, std::vector<std::string> name_list,
+  SegDataset::SegDataset(int resize_width, int resize_height, std::vector<std::string> listImages,
+    std::vector<std::string> listLabels, std::vector<std::string> name_list,
     trainTricks tricks, bool isTrain)
   {
     this->tricks = tricks;
     this->name_list = name_list;
     this->resize_width = resize_width;
     this->resize_height = resize_height;
-    this->list_images = list_images;
-    this->list_labels = list_labels;
+    this->listImages = listImages;
+    this->listLabels = listLabels;
     this->isTrain = isTrain;
     for (int i = 0; i < name_list.size(); i++) {
       name2index.insert(std::pair<std::string, int>(name_list[i], i));
@@ -964,8 +880,8 @@ namespace mrcv
   }
 
   torch::data::Example<> SegDataset::get(size_t index) {
-    std::string image_path = list_images.at(index);
-    std::string label_path = list_labels.at(index);
+    std::string image_path = listImages.at(index);
+    std::string label_path = listLabels.at(index);
     cv::Mat image = cv::imread(image_path);
     cv::Mat mask = cv::Mat::zeros(image.rows, image.cols, CV_8UC3);
     draw_mask(label_path, mask);
