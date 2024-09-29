@@ -15,10 +15,6 @@ namespace mrcv
 	 */
 	MRCV_EXPORT void writeLog(std::string logText, LOGTYPE logType = LOGTYPE::INFO);
 	/**
-	 * @brief Функция для записи строки-разделителя в текстовый лог-файл
-	 */
-	MRCV_EXPORT void writeLog();
-	/**
 	 * @brief Функция сложения двух целых чисел.
 	 * @param a - Первое слагаемое.
 	 * @param b - Второе слагаемое.
@@ -145,11 +141,47 @@ namespace mrcv
 	public:
 		Segmentor() { };
 		~Segmentor() { };
-		void Initialize(int gpu_id, int width, int height, std::vector<std::string>&& name_list, std::string encoder_name, std::string pretrained_path);
+	/**
+	 * @brief Функция инициализации
+	 * @param gpu_id - Подключение GPU.
+	 * @param width - Ширина пердаваемых изображений.
+	 * @param height - Высота пердаваемых изображений.
+	 * @param name_list - Список классов.
+	 * @param encoderName - Имя кодировщика.
+	 * @param pretrainedPath - Путь к кодировщику.
+	 */
+		void Initialize(int gpu_id, int width, int height, std::vector<std::string>&& name_list, std::string encoderName, std::string pretrainedPath);
+
+	/**
+	 * @brief функция для повышения производительности обучения
+	 * @param tricks - Структура дополнений для обучения таких как скорость оюучения, вращение изображения и вес при проигрыше .
+	 */
 		void SetTrainTricks(trainTricks& tricks);
-		void Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string image_type, std::string save_path);
+
+	/**
+	 * @brief Функция обучения модели
+	 * @param learning_rate - Темп обучения.
+	 * @param epochs - Количество эпох.
+	 * @param batch_size - Количество обучающих примеров за одну итерацию.
+	 * @param train_val_path - Путь к изображениям для обучения.
+	 * @param imageType - Тип изображений.
+	 * @param save_path - Путь для сохранения своих весов.
+	 */
+		void Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string imageType, std::string save_path);
+
+	/**
+	 * @brief функция загрузки своих весов
+	 * @param weight_path - Путь к своим весам.
+	 */
 		void LoadWeight(std::string weight_path);
+
+	/**
+	 * @brief Функция прогноза
+	 * @param image - Тестируемое изображение.
+	 * @param which_class - Список классов.
+	 */
 		void Predict(cv::Mat& image, const std::string& which_class);
+
 	private:
 		int width = 512;
 		int height = 512;
@@ -293,56 +325,5 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
 	 */
 	int readCameraParametrsFromFile(const char* pathToFileCameraParametrs, cv::Mat& map11, cv::Mat& map12);
-	/**
-	 * @brief Класс для работы с плотным стерео и кластеризацией.
-	 *
-	 * Класс `DenseStereo` предоставляет функционал для загрузки данных,
-	 * выполнения кластеризации, вывода и визуализации кластеров.
-	 */
-	MRCV_EXPORT class DenseStereo {
-	public:
-		/**
-		 * @brief Выполняет кластеризацию загруженных данных.
-		 *
-		 * Функция для выполнения кластеризации данных, хранящихся
-		 * в `vuxyzrgb`. Результаты кластеризации сохраняются в `IDX`.
-		 */
-		void makeClustering();
-
-		/**
-		 * @brief Загружает данные из файла.
-		 *
-		 * Функция считывает данные из указанного файла и сохраняет их
-		 * во внутренней структуре `vuxyzrgb`.
-		 *
-		 * @param filename Имя файла, из которого будут загружены данные.
-		 */
-		void loadDataFromFile(const std::string& filename);
-
-		/**
-		 * @brief Печатает информацию о кластерах.
-		 *
-		 * Функция выводит на экран информацию о кластерах,
-		 * сформированных в результате выполнения кластеризации.
-		 */
-		void printClusters();
-
-	private:
-		/**
-		 * @brief Класс для хранения координат точек.
-		 *
-		 * В этом классе сохраняются трехмерные координаты точек,
-		 * используемых в процессе кластеризации.
-		 */
-		class Vuxyzrgb {
-		public:
-			std::vector<std::vector<double>> xyz; ///< Трехмерные координаты точек.
-		};
-
-		Vuxyzrgb vuxyzrgb; ///< Экземпляр класса для хранения данных.
-		std::mutex vuxyzrgb_mutex; ///< Мьютекс для защиты данных `vuxyzrgb`.
-
-		std::vector<int> IDX; ///< Вектор индексов кластеров для каждой точки.
-	};
 
 }
