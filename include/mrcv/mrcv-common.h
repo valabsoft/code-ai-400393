@@ -118,6 +118,7 @@ namespace mrcv
 		double RMS;				// Значение среднеквадратической ошибки перепроецирования
 	};
 
+	// Структура trianTricks предназначена для повышения производительности обучения
 	struct trainTricks {
 		unsigned int freeze_epochs = 0;					// Замораживает магистраль нейронной сети во время первых freeze_epochs, по умолчанию 0;
 		std::vector<unsigned int> decay_epochs = { 0 };	// При каждом decay_epochs скорость обучения будет снижаться на 90 процентов, по умолчанию 0;
