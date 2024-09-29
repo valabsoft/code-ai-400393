@@ -77,17 +77,17 @@ namespace mrcv
     encoder->load_pretrained(pretrainedPath);
     decoder = FPNDecoder(channelsEncoder, encoderDepth, decoderChannelPyramid,
       decoderChannelsSegmentation, decoder_dropout, decoderMergePolicy);
-    segmentHeader = SegmentationHead(decoderChannelsSegmentation, numberClasses, 1, upsampling);
+    segmentation_head = SegmentationHead(decoderChannelsSegmentation, numberClasses, 1, upsampling);
 
     register_module("encoder", std::shared_ptr<Backbone>(encoder));
     register_module("decoder", decoder);
-    register_module("segmentHeader", segmentHeader);
+    register_module("segmentation_head", segmentation_head);
   }
 
   torch::Tensor FPNImpl::forward(torch::Tensor x) {
     std::vector<torch::Tensor> features = encoder->features(x);
     x = decoder->forward(features);
-    x = segmentHeader->forward(x);
+    x = segmentation_head->forward(x);
     return x;
   }
 
