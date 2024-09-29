@@ -341,4 +341,24 @@ namespace mrcv
 		std::vector<int> IDX; ///< Вектор индексов кластеров для каждой точки.
 	};
 
+
+	enum class augmetationMethodFunctions
+	{
+		none,
+		flipHorizontal,
+		flipVertical,
+		rotateImage90,
+		rotateImage45,
+		rotateImage270,
+		rotateImage315,
+		flipHorizontalandVertical,
+		test
+	};
+
+	int flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode);
+
+	int rotateImage(cv::Mat& imageInput, cv::Mat& imageOutput, double angle);
+
+	int augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
+		std::vector<mrcv::augmetationMethodFunctions> augmetationMethod);
 }
