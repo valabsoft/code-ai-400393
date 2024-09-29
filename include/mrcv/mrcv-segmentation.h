@@ -150,7 +150,7 @@ namespace mrcv
     private:
         Backbone* encoder;
         FPNDecoder decoder{ nullptr };
-        SegmentationHead segmentHeader{ nullptr };
+        SegmentationHead segmentation_head{ nullptr };
         int numberClasses = 1;
     }; TORCH_MODULE(FPN);
 
