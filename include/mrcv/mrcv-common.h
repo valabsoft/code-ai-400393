@@ -130,4 +130,17 @@ namespace mrcv
 		int interpolation = cv::INTER_LINEAR;
 		int border_mode = cv::BORDER_CONSTANT;
 	};	
+
+	enum class AUGMENTATION_METHOD
+	{
+		NONE,
+		FLIP_HORIZONTAL,
+		FLIP_VERTICAL,
+		ROTATE_IMAGE_90,
+		ROTATE_IMAGE_45,
+		ROTATE_IMAGE_270,
+		ROTATE_IMAGE_315,
+		FLIP_HORIZONTAL_AND_VERTICAL,
+		TEST
+	};
 }
