@@ -69,7 +69,7 @@ int mrcv::flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode)
      */
 
 int mrcv::augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
-    std::vector<augmetationMethodFunctions> augmetationMethod)
+    std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod)
 {
     try
     {
@@ -98,31 +98,31 @@ int mrcv::augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<
 
                 switch (augmetationMethod.at(q))
                 {
-                case mrcv::augmetationMethodFunctions::flipHorizontal:
+                case mrcv::AUGMENTATION_METHOD::FLIP_HORIZONTAL:
                     status = mrcv::flipImage(image, resultImage, 1);  // Горизонтальное отражение
                     methodName = "flipHorizontal";
                     break;
-                case mrcv::augmetationMethodFunctions::flipVertical:
+                case mrcv::AUGMENTATION_METHOD::FLIP_VERTICAL:
                     status = mrcv::flipImage(image, resultImage, 0);  // Вертикальное отражение
                     methodName = "flipVertical";
                     break;
-                case mrcv::augmetationMethodFunctions::flipHorizontalandVertical:
+                case mrcv::AUGMENTATION_METHOD::FLIP_HORIZONTAL_AND_VERTICAL:
                     status = mrcv::flipImage(image, resultImage, -1);  // Горизонтальное и вертикальное отражение
                     methodName = "flipHorizontalandVertical";
                     break;
-                case mrcv::augmetationMethodFunctions::rotateImage90:
+                case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_90:
                     status = mrcv::rotateImage(image, resultImage, 90);
                     methodName = "rotate90";
                     break;
-                case mrcv::augmetationMethodFunctions::rotateImage45:
+                case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_45:
                     status = mrcv::rotateImage(image, resultImage, 45);
                     methodName = "rotate45";
                     break;
-                case mrcv::augmetationMethodFunctions::rotateImage315:
+                case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_315:
                     status = mrcv::rotateImage(image, resultImage, 315);
                     methodName = "rotate315";
                     break;
-                case mrcv::augmetationMethodFunctions::rotateImage270:
+                case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_270:
                     status = mrcv::rotateImage(image, resultImage, 270);
                     methodName = "rotate270";
                     break;

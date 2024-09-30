@@ -33,14 +33,14 @@ int main()
     std::vector<cv::Mat> outputImagesAugmetation;
 
     // Методы аугментации
-    std::vector<mrcv::augmetationMethodFunctions> augmetationMethod = {
-        mrcv::augmetationMethodFunctions::rotateImage90,
-        mrcv::augmetationMethodFunctions::flipHorizontal,
-        mrcv::augmetationMethodFunctions::flipVertical,
-        mrcv::augmetationMethodFunctions::rotateImage45,
-        mrcv::augmetationMethodFunctions::rotateImage315,
-        mrcv::augmetationMethodFunctions::rotateImage270,
-        mrcv::augmetationMethodFunctions::flipHorizontalandVertical,
+    std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod = {
+        mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_90,
+        mrcv::AUGMENTATION_METHOD::FLIP_HORIZONTAL,
+        mrcv::AUGMENTATION_METHOD::FLIP_VERTICAL,
+        mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_45,
+        mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_315,
+        mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_270,
+        mrcv::AUGMENTATION_METHOD::FLIP_HORIZONTAL_AND_VERTICAL,
     };
 
     // Вызов функции аугментации
