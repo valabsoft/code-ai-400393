@@ -10,6 +10,16 @@ namespace mrcv
 	// Утилиты
 	/////////////////////////////////////////////////////////////////////////////
 	/**
+	 * @brief Функция для создания текстового файла-лога работы функций библиотеки
+	 * @param logText - текст сообщения для записи в лог-файл
+	 * @param logType - тип сообщения в лог-файле
+	 */
+	MRCV_EXPORT void writeLog(std::string logText, LOGTYPE logType = LOGTYPE::INFO);
+	/**
+	 * @brief Функция для записи строки-разделителя в текстовый лог-файл
+	 */
+	MRCV_EXPORT void writeLog();
+	/**
 	 * @brief Функция сложения двух целых чисел.
 	 * @param a - Первое слагаемое.
 	 * @param b - Второе слагаемое.
@@ -131,25 +141,237 @@ namespace mrcv
 	MRCV_EXPORT CalibrationParametersStereo readCalibrationParametersStereo(std::string fileName);
 	/////////////////////////////////////////////////////////////////////////////
 
+	MRCV_EXPORT class Segmentor
+	{
+	public:
+		Segmentor() { };
+		~Segmentor() { };
+		void Initialize(int gpu_id, int width, int height, std::vector<std::string>&& name_list, std::string encoder_name, std::string pretrained_path);
+		void SetTrainTricks(trainTricks& tricks);
+		void Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string image_type, std::string save_path);
+		void LoadWeight(std::string weight_path);
+		void Predict(cv::Mat& image, const std::string& which_class);
+	private:
+		int width = 512;
+		int height = 512;
+		std::vector<std::string> name_list;
+		torch::Device device = torch::Device(torch::kCPU);
+		trainTricks tricks;
+		FPN fpn{ nullptr };
+	};
+	MRCV_EXPORT class MRCVPoint
+	{
+	private:
+		int _X;
+		int _Y;
+	public:
+		MRCVPoint();
+		void setX(int X);
+		void setY(int Y);
+		std::string gerCoordinates();
+	};
+	MRCV_EXPORT class ObjCourse
+	{
+	public:
+		ObjCourse(const std::string pathToModel, const std::string pathToClasses);
+		ObjCourse(const std::string pathToModel, const std::string pathToClasses, int width, int height);
+		ObjCourse(const std::string pathToModel, const std::string pathToClasses, int width, int height, float scoreThreshold, float nmsThreshold, float confidenceThreshold, float cameraAngle);
+		std::vector<float> getConfidences(void) { return _confidencesSet; }
+		std::vector<cv::Rect> getBoxes(void) { return _boxesSet; }
+		std::vector<int> getClassIDs(void) { return _classesIdSet; }
+		std::vector<std::string> getClasses(void) { return _classesSet; }
+		float getInference(void) { return _inferenceTime; }
+		std::string getInfo(void);
+		cv::Mat mainProcess(cv::Mat& img);
+		int getObjectCount(cv::Mat frame);
+		float getObjectCourse(cv::Mat frame, double frameWidth, double frameHeight);
+	private:
+		cv::dnn::Net _network;
+		int _inputWidth = 640;
+		int _inputHeight = 640;
+		float _scoreThreshold = 0.50f;
+		float _nmsThreshold = 0.45f;
+		float _confidenceThreshold = 0.45f;
+		float _cameraAngle = 80;
+		std::vector<std::string> _classes;
+		std::vector<int> _classesIdSet;
+		std::vector<cv::Rect> _boxesSet;
+		std::vector<float> _confidencesSet;
+		std::vector<std::string> _classesSet;
+		float _inferenceTime;
+#ifdef _WIN32
+		errno_t readClasses(const std::string pathToClasses);
+		errno_t initNN(const std::string pathToModel, const std::string pathToClasses);
+#else
+		error_t readClasses(const std::string pathToClasses);
+		error_t initNN(const std::string pathToModel, const std::string pathToClasses);
+#endif		
+		void drawLabel(cv::Mat& img, std::string label, int left, int top);
+		std::vector<cv::Mat> preProcess(cv::Mat& img, cv::dnn::Net& net);
+		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames);	
+		int findAngle(double resolution, int cx);
+		std::string getTimeStamp();
+	};
+
+	/////////////////////////////////////////////////////////////////////////////
+	// Методы препроцессинга изображений
+	/////////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * @brief Функция формирования изображения в случаи ошибки.
+	 * 
+	 *
+	 * @param textError - текс сообщения, которое будет записано в изображение.
+	 * @return - изображение с кодом ошибки (для информирование оператора в режиме рельного времени).
+	 */
+	cv::Mat getErrorImage(std::string textError);
+	/**
+	 * @brief Функция автоматической предобработки изображения, кооррекции контраста.
+	 * Функция автоматической коррекции контраста изображения с помощью метода Эквализации Гистограмм
+	 * @param imageInput - входное (исходное) изображение cv::Mat.
+	 * @param imageOutput - выходное (преобразованное) изображение cv::Mat.
+	 * @param clipLimit - пороговое значение для ограничения контрастности
+	 * @param gridSize - Размер сетки. Изображение будет разделено на одинакового размера части в виде матрицы,
+	 * параметр определяет количество строк и столбцов
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 */
+	int increaseImageContrastEqualizeHist(cv::Mat& imageInput, cv::Mat& imageOutput);
+	/**
+	 * @brief Функция автоматической предобработки изображения, кооррекции контраста.
+	 * Функция автоматической коррекции контраста изображения с помощью метода Адаптивной Эквализации Гистограмм
+	 * Contrast Limited Adaptive Histogram Equalization
+	 * @param imageInput - входное (исходное) изображение cv::Mat.
+	 * @param imageOutput - выходное (преобразованное) изображение cv::Mat.
+	 * @param clipLimit - пороговое значение для ограничения контрастности
+	 * @param gridSize - Размер сетки. Изображение будет разделено на одинакового размера части в виде матрицы,
+	 * параметр определяет количество строк и столбцов
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 */
+	int increaseImageContrastCLAHE(cv::Mat& imageInput, cv::Mat& imageOutput, double clipLimit, cv::Size gridSize);
+	/**
+	 * @brief Функция автоматической предобработки изображения, кооррекции контраста.
+	 * Функция автоматической коррекции контраста изображения с помощью метода Адаптивной Эквализации Гистограмм через цетовое пространство Lab
+	 * @param imageInput - входное (исходное) изображение cv::Mat.
+	 * @param imageOutput - выходное (преобразованное) изображение cv::Mat.
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 */
+	int increaseImageContrastСolorLabCLAHE(cv::Mat& imageInput, cv::Mat& imageOutput, double clipLimit, cv::Size gridSize);
+	/**
+	 * @brief Функция автоматической предобработки изображения, кооррекции яркости.
+	 * Функция автоматической коррекции яркости изображения с помощью степенного преобразовамния (метод Гамма-Коррекции)
+	 * @param imageInput - входное (исходное) изображение cv::Mat.
+	 * @param imageOutput - выходное (преобразованное) изображение cv::Mat.
+	 * @param gamma - степень преобразования (1 - без изменений от 1 до 0 - осветление, от 1 до 10 - затемнение изображения)
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 */
+	int changeImageBrightness(cv::Mat& imageInput, cv::Mat& imageOutput, double gamma);
+	/**
+	 * @brief Функция предварительной обработки изображений (автоматическая коррекция контраста и яркости, резкости)
+	 * Функция автоматической предобработки изображения, кооррекции яркости и контраста, резкости.
+	 * @param image - изображение cv::Mat, над которым происходит преобразование.
+	 * @param metodImagePerProcessingBrightnessContrast - вектор параметров, которые опрределяют, какие преобразования и в какой последовательноси  проводить.
+	 *  none  - без изменений
+	 *  brightnessLevelUp - увеличение уровня яркости
+	 *  brightnessLevelDown - уменьшение уровня яркости
+	 *  equalizeHist -  повышение контрастности, метод 01
+	 *  CLAHE -  повышение контрастности, метод 02
+	 *  colorLabCLAHE -  повышение контрастности, метод 03
+	 *  BGRtoGray - преобразование типа изображения к из цветноко BGR к монохромному (серому)
+	 *  sharpening01 -  повышение резкости, метод 01
+	 *  sharpening02-  повышение резкости, метод 02
+	 *  noiseFilteringMedianFilter - фильтрация изображения от импульсных шумов
+	 *  noiseFilteringAvarageFilter- фильтрация изображения от шумов
+	 *  correctionGeometricDeformation - коррекция геометрических искажений
+	 * @param fileNameCameraParameters - путь к файлу c параметрами камеры для исправления геометрических искажений.
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 */
+	int preprocessingImage(cv::Mat& imageInput, std::vector<mrcv::IMG_PREPROCESSING_METHOD> metodImagePerProcessingm, const std::string& fileNameCameraParameters);
+	/**
+	 * @brief Функция чтения параметров камеры из файла.
+	 * @param fileNameCameraParameters - путь к файлу c параметрами камеры.
+	 * @param map11 - первая карта точек (x, y) или просто значений x для исправления геометрических искажений
+	 * @param map12 - вторая карта значений y, (пустая карта, если map1 равен точкам (x,y)) соответственно.
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 */
+	int readCameraParametrsFromFile(const char* pathToFileCameraParametrs, cv::Mat& map11, cv::Mat& map12);
+	/**
+	 * @brief Класс для работы с плотным стерео и кластеризацией.
+	 *
+	 * Класс `DenseStereo` предоставляет функционал для загрузки данных,
+	 * выполнения кластеризации, вывода и визуализации кластеров.
+	 */
+	MRCV_EXPORT class DenseStereo {
+	public:
+		/**
+		 * @brief Выполняет кластеризацию загруженных данных.
+		 *
+		 * Функция для выполнения кластеризации данных, хранящихся
+		 * в `vuxyzrgb`. Результаты кластеризации сохраняются в `IDX`.
+		 */
+		void makeClustering();
+
+		/**
+		 * @brief Загружает данные из файла.
+		 *
+		 * Функция считывает данные из указанного файла и сохраняет их
+		 * во внутренней структуре `vuxyzrgb`.
+		 *
+		 * @param filename Имя файла, из которого будут загружены данные.
+		 */
+		void loadDataFromFile(const std::string& filename);
+
+		/**
+		 * @brief Печатает информацию о кластерах.
+		 *
+		 * Функция выводит на экран информацию о кластерах,
+		 * сформированных в результате выполнения кластеризации.
+		 */
+		void printClusters();
+
+	private:
+		/**
+		 * @brief Класс для хранения координат точек.
+		 *
+		 * В этом классе сохраняются трехмерные координаты точек,
+		 * используемых в процессе кластеризации.
+		 */
+		class Vuxyzrgb {
+		public:
+			std::vector<std::vector<double>> xyz; ///< Трехмерные координаты точек.
+		};
+
+		Vuxyzrgb vuxyzrgb; ///< Экземпляр класса для хранения данных.
+		std::mutex vuxyzrgb_mutex; ///< Мьютекс для защиты данных `vuxyzrgb`.
+
+		std::vector<int> IDX; ///< Вектор индексов кластеров для каждой точки.
+	};
+
 	MRCV_EXPORT class Detector
 	{
 	private:
-		int width = 416; 
-		int height = 416; 
-		std::vector<std::string> name_list;
+		int width = 416;
+		int height = 416;
+		std::vector<std::string> nameList;
 		torch::Device device = torch::Device(torch::kCPU);
 		YoloBody_tiny detector{ nullptr };
 	public:
 		Detector();
-		void Initialize(int gpu_id, int width, int height, std::string name_list_path);
-		void Train(std::string train_val_path, std::string image_type, int num_epochs = 30, int batch_size = 4, float learning_rate = 0.0003, 
-					std::string save_path = "detector.pt", std::string pretrained_path = "detector.pt");
-		void LoadWeight(std::string weight_path);
-		void loadPretrained(std::string pretrained_pth);
-		void Predict(cv::Mat image, bool show = true, float conf_thresh = 0.3, float nms_thresh = 0.3);
-		void GridSearch(std::vector<HyperParams> param_grid, std::string train_val_path, std::string image_type, std::string save_path, std::string pretrained_path);
-		void AutoTrain(std::string train_val_path, std::string image_type, std::vector<int> epochs_list, std::vector<int> batch_sizes, std::vector<float> learning_rates, 
-						std::string save_path,std::string pretrained_path);
-		float Detector::Validate(std::string val_data_path, std::string image_type, int batch_size);
+		void Initialize(int gpuID, int width, int height, std::string nameListPath);
+		int Train(std::string trainValPath, std::string imageType, int numEpochs = 30, int batchSize = 4, float learningRate = 0.0003,
+			std::string savePath = "detector.pt", std::string pretrainedPath = "detector.pt");
+		int LoadWeight(std::string weightPath);
+		int LoadPretrained(std::string pretrainedPath);
+		void Predict(cv::Mat image, bool show = true, float confThresh = 0.3, float nmsThresh = 0.3);
+		int AutoTrain(std::string trainValPath, std::string imageType, std::vector<int> epochsList = { 10, 30, 50 }, std::vector<int> batchSizes = { 4, 8, 10 },
+			std::vector<float> learningRates = { 0.1, 0.01 }, std::string savePath = "detector.pt", std::string pretrainedPath = "detector");
+		float Detector::Validate(std::string valDataPath, std::string imageType, int batchSize);
 	};
+
+	
+	int flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode);
+
+	int rotateImage(cv::Mat& imageInput, cv::Mat& imageOutput, double angle);
+
+	int augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
+		std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod);
 }

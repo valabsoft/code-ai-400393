@@ -9,43 +9,49 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <regex>
 #include <sstream>
 #include <string>
-#include <regex>
-#include <vector>
 #include <sys/stat.h>
+#include <vector>
+
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
+
+#include "mrcv-segmentation.h"
+
 #if _WIN32
 #include <io.h>
 #else
 #include <unistd.h>
 #endif
 
-
-#include <opencv2/opencv.hpp>
-#include <opencv2/calib3d.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-
-#include<torch/torch.h>
-#include<torch/script.h>
-
-#define Pi 3.14159265358979323846
-
 namespace mrcv
 {
 	// Флаг отладочного лога, если false - лог не создается
-	const bool IS_DEBUG_LOG_ENABLED = true;
+	static const bool IS_DEBUG_LOG_ENABLED = true;
 	
 	// Маска файла для функции записи видео
-	const std::string UTILITY_DEFAULT_RECORDER_FILENAME = "video";
+	static const std::string UTILITY_DEFAULT_RECORDER_FILENAME = "video";
 	
 	// Интервал записи видео файла по умолчанию
-	const int UTILITY_DEFAULT_RECORDER_INTERVAL = 5;
+	static const int UTILITY_DEFAULT_RECORDER_INTERVAL = 5;
 	
 	// FPS камеры по умолчанию
-	const int UTILITY_DEFAULT_CAMERA_FPS = 25;
+	static const int UTILITY_DEFAULT_CAMERA_FPS = 25;
+
+	// Константы для задачи OBJCOURSE
+	static const float OBJCOURSE_FONT_SCALE = 0.7f;
+	static const int OBJCOURSE_THICKNESS = 1;
+	static cv::Scalar OBJCOURSE_BLACK = cv::Scalar(0, 0, 0);
+	static cv::Scalar OBJCOURSE_YELLOW = cv::Scalar(0, 255, 255);
+	static cv::Scalar OBJCOURSE_RED = cv::Scalar(0, 0, 255);
+	static cv::Scalar OBJCOURSE_GREEN = cv::Scalar(0, 255, 0);
+	static const bool OBJCOURSE_DRAW_LABEL = false;
 	
 	// Виды кодеков
 	enum class CODEC
@@ -64,6 +70,23 @@ namespace mrcv
 		EXCEPTION,	// Исключение		EXCP
 		INFO,		// Информация		INFO
 		WARNING		// Предупреждение	WARN
+	};
+
+	// Методы предобработки изображений
+	enum class IMG_PREPROCESSING_METHOD
+	{
+		NONE,
+		BRIGHTNESSLEVELUP,
+		BRIGHTNESSLEVELDOWN,
+		EQUALIZEHIST,
+		CLAHE,
+		COLORLABCLAHE,
+		BGRTOGRAY,
+		SHARPENING01,
+		SHARPENING02,
+		NOISEFILTERINGMEDIANFILTER,
+		NOISEFILTERINGAVARAGEFILTER,
+		CORRECTIONGEOMETRICDEFORMATION
 	};
 	
 	// Структура для хранения параметров калибровки одиночной камеры
@@ -95,4 +118,29 @@ namespace mrcv
 		double RMS;				// Значение среднеквадратической ошибки перепроецирования
 	};
 
+	struct trainTricks {
+		unsigned int freeze_epochs = 0;					// Замораживает магистраль нейронной сети во время первых freeze_epochs, по умолчанию 0;
+		std::vector<unsigned int> decay_epochs = { 0 };	// При каждом decay_epochs скорость обучения будет снижаться на 90 процентов, по умолчанию 0;
+		float dice_ce_ratio = (float)0.5;				// Вес выпадения кубиков в общем проигрыше, по умолчанию 0,5;
+		float horizontal_flip_prob = (float)0.0;		// Вероятность увеличения поворота по горизонтали, по умолчанию 0;
+		float vertical_flip_prob = (float)0.0;			// Вероятность увеличения поворота по вертикали, по умолчанию 0;
+		float scale_rotate_prob = (float)0.0;			// Вероятность выполнения поворота и увеличения масштаба, по умолчанию 0;
+		float scale_limit = (float)0.1;
+		float rotate_limit = (float)45.0;
+		int interpolation = cv::INTER_LINEAR;
+		int border_mode = cv::BORDER_CONSTANT;
+	};	
+
+	enum class AUGMENTATION_METHOD
+	{
+		NONE,
+		FLIP_HORIZONTAL,
+		FLIP_VERTICAL,
+		ROTATE_IMAGE_90,
+		ROTATE_IMAGE_45,
+		ROTATE_IMAGE_270,
+		ROTATE_IMAGE_315,
+		FLIP_HORIZONTAL_AND_VERTICAL,
+		TEST
+	};
 }
