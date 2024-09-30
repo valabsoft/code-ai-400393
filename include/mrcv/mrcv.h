@@ -367,4 +367,11 @@ namespace mrcv
 		float Detector::Validate(std::string valDataPath, std::string imageType, int batchSize);
 	};
 
+	
+	int flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode);
+
+	int rotateImage(cv::Mat& imageInput, cv::Mat& imageOutput, double angle);
+
+	int augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
+		std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod);
 }
