@@ -131,7 +131,8 @@ set(sources
     src/mrcv-calibration.cpp
     src/mrcv-segmentation.cpp
     src/mrcv-objcourse.cpp
-    src/mrcv-yolov5.cpp)
+    src/mrcv-yolov5.cpp
+ "src/marcv-vae.cpp")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 ###############################################################################
@@ -140,7 +141,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp" "src/mrcv-objcourse.cpp" "src/mrcv-imgpreprocessing.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp" "src/mrcv-clustering.cpp" "src/mrcv-augmentation.cpp")
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp" "src/mrcv-objcourse.cpp" "src/mrcv-imgpreprocessing.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp" "src/mrcv-clustering.cpp" "include/mrcv/mrcv-vae.h" "src/marcv-vae.cpp" "src/mrcv-augmentation.cpp")
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv

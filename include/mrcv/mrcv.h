@@ -15,6 +15,10 @@ namespace mrcv
 	 */
 	MRCV_EXPORT void writeLog(std::string logText, LOGTYPE logType = LOGTYPE::INFO);
 	/**
+	 * @brief Функция для записи строки-разделителя в текстовый лог-файл
+	 */
+	MRCV_EXPORT void writeLog();
+	/**
 	 * @brief Функция сложения двух целых чисел.
 	 * @param a - Первое слагаемое.
 	 * @param b - Второе слагаемое.
