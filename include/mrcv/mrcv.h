@@ -346,28 +346,112 @@ namespace mrcv
 		std::vector<int> IDX; ///< Вектор индексов кластеров для каждой точки.
 	};
 
+
+	/**
+	*	@brief Класс детектора
+	*	
+	*	Класс реализует атрибуты и методы детекции объектов на изображениях подводных объектов, 
+	*	а также аварийных ситуаций, связанных с подводными технологическими сооружениями.
+	*/
 	MRCV_EXPORT class Detector
 	{
 	private:
-		int width = 416;
+		int width = 416; 
 		int height = 416;
 		std::vector<std::string> nameList;
 		torch::Device device = torch::Device(torch::kCPU);
 		YoloBody_tiny detector{ nullptr };
 	public:
+		/**
+		* @brief Конструктор класса по умолчанию
+		*/
 		Detector();
+		/**
+		* @brief Функция инициализации модели детектора
+		* 
+		* @param gpuID			- ID устройтсва, для которого будет инициализирована модель. Значение < 1 - исполнение программы на CPU, 0 и > 0 - исполнение программы на выбранном GPU-устройстве
+		* @param width			- Ширина изображения, до которой будет масштабировано исходное изображение
+		* @param height			- Высота изображения, до которой будет масштабировано исходное изображение
+		* @param nameListPath	- Путь к текстовому файлу, содержащему наименования предполагаемых классов
+		*/
 		void Initialize(int gpuID, int width, int height, std::string nameListPath);
+		/**
+		* @brief Функция обучения модели детектора
+		* 
+		* @param trainValPath	- Путь к директории с обучающим и валидационным датасетами
+		* @param imageType		- Расширение изображений в директориях. Например, ".jpg", ".png" и т.д.
+		* @param numEpoch		- Число эпох, требуемых для обучения модели
+		* @param batchSize		- Размер батча, используемого при обучении модели
+		* @param learningRate	- Темп обучения модели, который определяет размер шага на каждой итерации, при движении к минимуму функции потерь
+		* @param savePath		- Путь, по которому будут сохранены веса обученной модели в формате .pt
+		* @param pretrainedPath - Путь к предобученной модели YOLOv4_tiny.pt
+		* 
+		* @return Код результата выполнения функции. 
+		* Значения: 
+		*			0	- Success;
+		*			1	- Путь к предобученной модели задан не корректно или не существует;
+		*			2	- Размер батча превышает число изображений в директории с обучающей выборкой или директория пуста;
+		*			3	- Путь к обучающей выборке задан неверно;
+		*			-1	- Неизвестная ошибка.
+		*/
 		int Train(std::string trainValPath, std::string imageType, int numEpochs = 30, int batchSize = 4, float learningRate = 0.0003,
 			std::string savePath = "detector.pt", std::string pretrainedPath = "detector.pt");
+		/**
+		* @brief Функция загрузки весов обученной модели
+		* 
+		* @param - Путь к весам
+		* 
+		* @return - Код результата выполнения функции. 0 - Success; -1 - Неизвестная ошибка.
+		*/
 		int LoadWeight(std::string weightPath);
-		int LoadPretrained(std::string pretrainedPath);
+		/**
+		* @brief Функция загрузки предобученной модели
+		* 
+		* @param - Путь к предобученной модели в формате .pt
+		*/
+		void LoadPretrained(std::string pretrainedPath);
+		/**
+		* @brief Функция детекции и идентификации объектов по изображению
+		* 
+		* @param image		- Изображение в формате cv::Mat
+		* @param show		- Флаг отображения изображения с нанесёнными ограничивающими рамками.
+		* @param confTresh	- Пороговое значение интервала "доверительности" для предсказаний модели. Если модель предсказывает, что вероятность присутствия объекта ниже этого значения, такой объект отбрасывается.
+		* @param nmsThresh	- Пороговое значение для Non-Maximum Suppression (NMS), алгоритма, который отбрасывает пересекающиеся предсказания объектов. Если несколько рамок сильно пересекаются и показывают высокую вероятность для одного и того же объекта, остаётся только та рамка, которая имеет наибольшую вероятность
+		*/
 		void Predict(cv::Mat image, bool show = true, float confThresh = 0.3, float nmsThresh = 0.3);
+		/**
+		* @brief Функция автоматического обучения модели детектора
+		*
+		* @param trainValPath	- Путь к директории с обучающим и валидационным датасетами
+		* @param imageType		- Расширение изображений в директориях. Например, ".jpg", ".png" и т.д.
+		* @param epochList		- Кортеж, содержащий перечень значений эпох для обучения модели
+		* @param batchSizes		- Кортеж, содержащий перечень размеров батча, используемых при обучении модели
+		* @param learningRate	- Кортеж, содержащий перечень значений темпа обучения модели
+		* @param savePath		- Путь, по которому будут сохранены веса обученной модели в формате .pt
+		* @param pretrainedPath - Путь к предобученной модели YOLOv4_tiny.pt
+		*
+		* @return Код результата выполнения функции.
+		* Значения:
+		*			0	- Success;
+		*			1	- Путь к предобученной модели задан не корректно или не существует;
+		*			2	- Размер батча превышает число изображений в директории с обучающей выборкой или директория пуста;
+		*			3	- Путь к обучающей выборке задан неверно;
+		*			-1	- Неизвестная ошибка.
+		*/
 		int AutoTrain(std::string trainValPath, std::string imageType, std::vector<int> epochsList = { 10, 30, 50 }, std::vector<int> batchSizes = { 4, 8, 10 },
 			std::vector<float> learningRates = { 0.1, 0.01 }, std::string savePath = "detector.pt", std::string pretrainedPath = "detector");
+		/**
+		* @brief Функция валидации модели
+		*
+		* @param valDataPath	- Путь к директории с валидационной выборкой
+		* @param imageType		- Расширение изображений в директориях. Например, ".jpg", ".png" и т.д.
+		* @param batchSize		- Размер батча, используемого при обучении модели
+		*
+		* @return Значение функции потерь для текущей выборки
+		*/
 		float Detector::Validate(std::string valDataPath, std::string imageType, int batchSize);
 	};
 
-	
 	int flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode);
 
 	int rotateImage(cv::Mat& imageInput, cv::Mat& imageOutput, double angle);
