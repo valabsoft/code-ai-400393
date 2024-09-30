@@ -2,6 +2,7 @@
 
 #include <mrcv/export.h>
 #include <mrcv/mrcv-common.h>
+#include <mrcv/mrcv-detector.h>
 
 namespace mrcv
 {
@@ -343,6 +344,27 @@ namespace mrcv
 		std::mutex vuxyzrgb_mutex; ///< Мьютекс для защиты данных `vuxyzrgb`.
 
 		std::vector<int> IDX; ///< Вектор индексов кластеров для каждой точки.
+	};
+
+	MRCV_EXPORT class Detector
+	{
+	private:
+		int width = 416;
+		int height = 416;
+		std::vector<std::string> nameList;
+		torch::Device device = torch::Device(torch::kCPU);
+		YoloBody_tiny detector{ nullptr };
+	public:
+		Detector();
+		void Initialize(int gpuID, int width, int height, std::string nameListPath);
+		int Train(std::string trainValPath, std::string imageType, int numEpochs = 30, int batchSize = 4, float learningRate = 0.0003,
+			std::string savePath = "detector.pt", std::string pretrainedPath = "detector.pt");
+		int LoadWeight(std::string weightPath);
+		int LoadPretrained(std::string pretrainedPath);
+		void Predict(cv::Mat image, bool show = true, float confThresh = 0.3, float nmsThresh = 0.3);
+		int AutoTrain(std::string trainValPath, std::string imageType, std::vector<int> epochsList = { 10, 30, 50 }, std::vector<int> batchSizes = { 4, 8, 10 },
+			std::vector<float> learningRates = { 0.1, 0.01 }, std::string savePath = "detector.pt", std::string pretrainedPath = "detector");
+		float Detector::Validate(std::string valDataPath, std::string imageType, int batchSize);
 	};
 
 }
