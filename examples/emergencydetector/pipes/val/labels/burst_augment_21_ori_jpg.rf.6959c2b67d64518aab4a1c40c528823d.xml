@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>burst_augment_21_ori_jpg.rf.6959c2b67d64518aab4a1c40c528823d.jpg</filename>
+	<path>burst_augment_21_ori_jpg.rf.6959c2b67d64518aab4a1c40c528823d.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>416</width>
+		<height>416</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>burst</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>171</xmin>
+			<xmax>269</xmax>
+			<ymin>240</ymin>
+			<ymax>350</ymax>
+		</bndbox>
+	</object>
+</annotation>

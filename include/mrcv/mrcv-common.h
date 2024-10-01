@@ -30,6 +30,8 @@
 #include <unistd.h>
 #endif
 
+#define Pi 3,1415926535
+
 namespace mrcv
 {
 	// Флаг отладочного лога, если false - лог не создается
