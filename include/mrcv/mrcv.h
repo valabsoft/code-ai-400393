@@ -138,6 +138,12 @@ namespace mrcv
 	 * @return - Структура для хранения калибровочных параметров.
 	 */
 	MRCV_EXPORT CalibrationParametersStereo readCalibrationParametersStereo(std::string fileName);
+	/**
+	 * @brief Функция чтения конфигурационного файла для калибровки
+	 * @param pathToConfigFile - Полный путь к конфигурационному файлу.
+	 * @return - Структура для хранения параметров процедуры калибровки.
+	 */
+	MRCV_EXPORT int readCalibrartionConfigFile(std::string pathToConfigFile, CalibrationConfig& config);
 	/////////////////////////////////////////////////////////////////////////////
 
 	MRCV_EXPORT class Segmentor
