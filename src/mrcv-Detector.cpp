@@ -949,10 +949,18 @@ namespace mrcv
 		return;
 	}
 
-	void Detector::LoadPretrained(std::string pretrainedPath) 
+	int Detector::LoadPretrained(std::string pretrainedPath) 
 	{
 		auto netPretrained = YoloBody_tiny(3, 80);
-		torch::load(netPretrained, pretrainedPath);
+		try
+		{
+			torch::load(netPretrained, pretrainedPath);
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << e.what();
+		}
+
 		if (this->nameList.size() == 80)
 		{
 			detector = netPretrained;
@@ -960,7 +968,6 @@ namespace mrcv
 
 		torch::OrderedDict<std::string, at::Tensor> pretrainedDict = netPretrained->named_parameters();
 		torch::OrderedDict<std::string, at::Tensor> modelDict = detector->named_parameters();
-
 
 		for (auto n = pretrainedDict.begin(); n != pretrainedDict.end(); n++)
 		{
@@ -993,6 +1000,7 @@ namespace mrcv
 			}
 		}
 		torch::autograd::GradMode::set_enabled(true);
+		return 0;
 	}
 
 	int Detector::Train(std::string trainValPath, std::string imageType, int numEpochs, int batchSize,
@@ -1003,7 +1011,8 @@ namespace mrcv
 			std::cout << "Pretrained path is invalid: " << pretrainedPath << "\t random initialzed the model" << std::endl;
 			return 1;
 		}
-		else {
+		else 
+		{
 			LoadPretrained(pretrainedPath);
 		}
 
@@ -1270,7 +1279,7 @@ namespace mrcv
 		return EXIT_SUCCESS;
 	}
 
-	void Detector::Predict(cv::Mat image, bool show, float confThresh, float nmsThresh) 
+	int Detector::Predict(cv::Mat image, bool show, float confThresh, float nmsThresh) 
 	{
 		int originWidth = image.cols;
 		int originHeight = image.rows;
@@ -1312,6 +1321,6 @@ namespace mrcv
 		cv::resize(image, image, { originWidth,originHeight });
 		if (show)
 			showBbox(image, detection[0], nameList);
-		return;
+		return EXIT_SUCCESS;
 	}
 }
