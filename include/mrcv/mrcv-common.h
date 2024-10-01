@@ -51,7 +51,7 @@ namespace mrcv
 	static cv::Scalar OBJCOURSE_YELLOW = cv::Scalar(0, 255, 255);
 	static cv::Scalar OBJCOURSE_RED = cv::Scalar(0, 0, 255);
 	static cv::Scalar OBJCOURSE_GREEN = cv::Scalar(0, 255, 0);
-	static const bool OBJCOURSE_DRAW_LABEL = false;
+	static const bool OBJCOURSE_DRAW_LABEL = true;
 	
 	// Виды кодеков
 	enum class CODEC
@@ -101,7 +101,7 @@ namespace mrcv
 		cv::Mat perViewErrors;    // Вектор среднеквадратической ошибки перепроецирования для каждого вида
 		double RMS;               // Значение среднеквадратической ошибки перепроецирования
 	};
-	
+
 	// Структура для хранения параметров калибровки стерео камеры
 	struct CalibrationParametersStereo {
 		cv::Mat cameraMatrixL;	// Матрица левой камеры
@@ -116,6 +116,16 @@ namespace mrcv
 		cv::Mat tvecs;			// Кортеж векторов смещения для перехода из базиса объекта в базис камеры
 		cv::Mat perViewErrors;	// Вектор среднеквадратической ошибки перепроецирования для каждого вида
 		double RMS;				// Значение среднеквадратической ошибки перепроецирования
+	};
+
+	// Структура конфигурационного файла для калибровки
+	struct CalibrationConfig
+	{
+		std::string folder_name = "../calibration_images/";	// Путь к конфигурационному файлу
+		int keypoints_c = 9;								// Число ключевых точек вдоль одного столбца калибровочной доски
+		int keypoints_r = 6;								// Число ключевых точек вдоль одной строки калибровочной доски
+		float square_size = 20.1;							// Размер квадрата калибровочной доски в мм
+		int image_count = 50;								// Общее число пар изображений в фотосете
 	};
 
 	struct trainTricks {

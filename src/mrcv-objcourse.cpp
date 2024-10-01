@@ -130,7 +130,7 @@ namespace mrcv
 	cv::Mat ObjCourse::postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames)
 	{
         // Начальная инициализация
-        cv::Mat ret = img.clone();
+        cv::Mat processedImage = img.clone();
         _classesIdSet.clear();
         _confidencesSet.clear();
         _boxesSet.clear();
@@ -182,16 +182,20 @@ namespace mrcv
             data += dimensions;
         }
 
-        std::vector<int> indices;
-        cv::dnn::NMSBoxes(boxes, confidences, _scoreThreshold, _nmsThreshold, indices);
+        std::vector<int> indexes;
+        cv::dnn::NMSBoxes(boxes, confidences, _scoreThreshold, _nmsThreshold, indexes);
+
+        mrcv::writeLog("POST PROCESS ===>");
+        mrcv::writeLog("boxes.size(): " + std::to_string(boxes.size()));
+        mrcv::writeLog("confidences.size(): " + std::to_string(confidences.size()));
 
         int bigestArea = INT_MIN;
         int bigestIndex = -1;
         int boxIndex = -1;
 
-        for (size_t i = 0; i < indices.size(); i++)
+        for (size_t i = 0; i < indexes.size(); i++)
         {
-            int idx = indices[i];
+            int idx = indexes[i];
             cv::Rect box = boxes[idx];
 
             boxIndex++;
@@ -204,7 +208,7 @@ namespace mrcv
 
         if (bigestIndex > -1)
         {
-            int idx = indices[bigestIndex];
+            int idx = indexes[bigestIndex];
             cv::Rect box = boxes[idx];
 
             _boxesSet.push_back(box);
@@ -218,7 +222,7 @@ namespace mrcv
             int height = box.height;
             
             // Отрисовка боундинг бокса
-            cv::rectangle(ret, cv::Point(left, top), cv::Point(left + width, top + height), OBJCOURSE_GREEN, 3 * OBJCOURSE_THICKNESS);
+            cv::rectangle(processedImage, cv::Point(left, top), cv::Point(left + width, top + height), OBJCOURSE_GREEN, 3 * OBJCOURSE_THICKNESS);
             
             // Получаем метку класса
             std::string label = cv::format("%.2f", confidences[idx]);
@@ -226,11 +230,11 @@ namespace mrcv
             if (OBJCOURSE_DRAW_LABEL)
             {
                 // Отрисовка метки класса
-                drawLabel(ret, label, left, top);
+                drawLabel(processedImage, label, left, top);
             }
         }
 
-        return ret;
+        return processedImage;
 	}		
 	std::string ObjCourse::getInfo(void)
 	{
@@ -248,14 +252,15 @@ namespace mrcv
 	{
         std::vector<cv::Mat> detections;
         detections = preProcess(img, _network);
-        cv::Mat res = postProcess(img, detections, ObjCourse::_classes);
+        cv::Mat processResult = postProcess(img, detections, ObjCourse::_classes);
         std::vector<double> layersTimes;
         double freq = cv::getTickFrequency();
         ObjCourse::_inferenceTime = _network.getPerfProfile(layersTimes) / (float)freq;
-        return res;
+        return processResult;
 	}    
-    int ObjCourse::findAngle(double resolution, int cx)
+    int ObjCourse::findAngle(double resolution, double cameraAngle, int cx)
     {
+        _cameraAngle = cameraAngle;
         return (int)((cx * _cameraAngle / resolution) - _cameraAngle / 2);
     }
     std::string ObjCourse::getTimeStamp()
@@ -273,6 +278,15 @@ namespace mrcv
     int ObjCourse::getObjectCount(cv::Mat frame)
     {
         cv::Mat img = mainProcess(frame);
+
+        // Сохранить результат обработки на диск для отладки
+        if (IS_DEBUG_LOG_ENABLED)
+        {
+            std::filesystem::path outputFile("files\\output.bmp");
+            auto currentPath = std::filesystem::current_path();
+            auto outputPath = currentPath / outputFile;
+            cv::imwrite(outputPath.u8string(), img);
+        }
 
         // Результаты работы детектора       
         std::vector<int> ids = getClassIDs();
@@ -296,7 +310,7 @@ namespace mrcv
         
         return (int)boxes.size();
     }
-    float ObjCourse::getObjectCourse(cv::Mat frame, double frameWidth, double frameHeight)
+    float ObjCourse::getObjectCourse(cv::Mat frame, double frameWidth, double cameraAngle)
     {
         cv::Mat img = mainProcess(frame);
         std::string timestamp = getTimeStamp();
@@ -342,7 +356,7 @@ namespace mrcv
             center = (boxes[bigestIndex].br() + boxes[bigestIndex].tl()) * 0.5;
 
             // Угол между прицелом и целью
-            angle = findAngle(frameWidth, center.x);
+            angle = findAngle(frameWidth, cameraAngle, center.x);
 
             // Команда управления лево / право
             direction = center.x > frameWidth / 2 ? "RIGHT" : "LEFT";

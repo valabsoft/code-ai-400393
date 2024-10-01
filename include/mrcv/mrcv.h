@@ -138,6 +138,12 @@ namespace mrcv
 	 * @return - Структура для хранения калибровочных параметров.
 	 */
 	MRCV_EXPORT CalibrationParametersStereo readCalibrationParametersStereo(std::string fileName);
+	/**
+	 * @brief Функция чтения конфигурационного файла для калибровки
+	 * @param pathToConfigFile - Полный путь к конфигурационному файлу.
+	 * @return - Структура для хранения параметров процедуры калибровки.
+	 */
+	MRCV_EXPORT int readCalibrartionConfigFile(std::string pathToConfigFile, CalibrationConfig& config);
 	/////////////////////////////////////////////////////////////////////////////
 
 	MRCV_EXPORT class Segmentor
@@ -183,7 +189,7 @@ namespace mrcv
 		std::string getInfo(void);
 		cv::Mat mainProcess(cv::Mat& img);
 		int getObjectCount(cv::Mat frame);
-		float getObjectCourse(cv::Mat frame, double frameWidth, double frameHeight);
+		float getObjectCourse(cv::Mat frame, double frameWidth, double cameraAngle);
 	private:
 		cv::dnn::Net _network;
 		int _inputWidth = 640;
@@ -208,7 +214,7 @@ namespace mrcv
 		void drawLabel(cv::Mat& img, std::string label, int left, int top);
 		std::vector<cv::Mat> preProcess(cv::Mat& img, cv::dnn::Net& net);
 		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames);	
-		int findAngle(double resolution, int cx);
+		int findAngle(double resolution, double cameraAngle, int cx);
 		std::string getTimeStamp();
 	};
 

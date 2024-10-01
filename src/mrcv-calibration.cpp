@@ -405,4 +405,53 @@ namespace mrcv
         }
         return parameters;
     }
+
+    int readCalibrartionConfigFile(std::string pathToConfigFile, CalibrationConfig& config)
+    {
+        std::ifstream file(pathToConfigFile);
+        
+        if (!file.is_open())
+        {
+            writeLog("Failed to open file " + pathToConfigFile, mrcv::LOGTYPE::ERROR);
+            return 1;
+        }
+
+        // Парсинг файла с настройками процедуры калибровки
+        std::string line;
+        
+        while (std::getline(file, line))
+        {
+            std::istringstream iss(line);
+            std::string key;
+            char eq;
+            if (iss >> key >> eq)
+            {
+                if (eq != '=') {
+                    writeLog("Invalid string format: " + line, mrcv::LOGTYPE::ERROR);
+                    continue;
+                }
+                if (key == "image_count") {
+                    iss >> config.image_count;
+                }
+                else if (key == "folder_name") {
+                    iss >> config.folder_name;
+                    // Удаление кавычек, если они есть
+                    config.folder_name.erase(std::remove(config.folder_name.begin(), config.folder_name.end(), '\"'), config.folder_name.end());
+                }
+                else if (key == "keypoints_c") {
+                    iss >> config.keypoints_c;
+                }
+                else if (key == "keypoints_r") {
+                    iss >> config.keypoints_r;
+                }
+                else if (key == "square_size") {
+                    iss >> config.square_size;
+                }
+            }
+        }
+
+        file.close();
+
+        return EXIT_SUCCESS;
+    }
 }
