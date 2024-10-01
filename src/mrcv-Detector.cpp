@@ -1228,7 +1228,9 @@ namespace mrcv
 
 					statusCode = Train(trainValPath, imageType, numEpochs, batchSize, learningRate, savePath, pretrainedPath);
 
-					statusCode = LoadPretrained(savePath);
+					// TODO: Вернуть код работы функции
+					// statusCode = LoadPretrained(savePath);
+					LoadPretrained(savePath);
 					auto valLoss = Validate(trainValPath, imageType, batchSize); 
 					
 					if (valLoss < bestLoss) 
@@ -1265,7 +1267,7 @@ namespace mrcv
 		}
 		detector->to(device);
 		detector->eval();
-		return;
+		return EXIT_SUCCESS;
 	}
 
 	void Detector::Predict(cv::Mat image, bool show, float confThresh, float nmsThresh) 
