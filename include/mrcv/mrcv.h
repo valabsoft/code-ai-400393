@@ -15,6 +15,10 @@ namespace mrcv
 	 */
 	MRCV_EXPORT void writeLog(std::string logText, LOGTYPE logType = LOGTYPE::INFO);
 	/**
+	 * @brief Функция для записи строки-разделителя в текстовый лог-файл
+	 */
+	MRCV_EXPORT void writeLog();
+	/**
 	 * @brief Функция сложения двух целых чисел.
 	 * @param a - Первое слагаемое.
 	 * @param b - Второе слагаемое.
@@ -134,6 +138,12 @@ namespace mrcv
 	 * @return - Структура для хранения калибровочных параметров.
 	 */
 	MRCV_EXPORT CalibrationParametersStereo readCalibrationParametersStereo(std::string fileName);
+	/**
+	 * @brief Функция чтения конфигурационного файла для калибровки
+	 * @param pathToConfigFile - Полный путь к конфигурационному файлу.
+	 * @return - Структура для хранения параметров процедуры калибровки.
+	 */
+	MRCV_EXPORT int readCalibrartionConfigFile(std::string pathToConfigFile, CalibrationConfig& config);
 	/////////////////////////////////////////////////////////////////////////////
 
 	MRCV_EXPORT class Segmentor
@@ -190,6 +200,7 @@ namespace mrcv
 		trainTricks tricks;
 		FPN fpn{ nullptr };
 	};
+
 	MRCV_EXPORT class MRCVPoint
 	{
 	private:
@@ -215,7 +226,7 @@ namespace mrcv
 		std::string getInfo(void);
 		cv::Mat mainProcess(cv::Mat& img);
 		int getObjectCount(cv::Mat frame);
-		float getObjectCourse(cv::Mat frame, double frameWidth, double frameHeight);
+		float getObjectCourse(cv::Mat frame, double frameWidth, double cameraAngle);
 	private:
 		cv::dnn::Net _network;
 		int _inputWidth = 640;
@@ -240,7 +251,7 @@ namespace mrcv
 		void drawLabel(cv::Mat& img, std::string label, int left, int top);
 		std::vector<cv::Mat> preProcess(cv::Mat& img, cv::dnn::Net& net);
 		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames);	
-		int findAngle(double resolution, int cx);
+		int findAngle(double resolution, double cameraAngle, int cx);
 		std::string getTimeStamp();
 	};
 
@@ -325,5 +336,62 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
 	 */
 	int readCameraParametrsFromFile(const char* pathToFileCameraParametrs, cv::Mat& map11, cv::Mat& map12);
+	/**
+	 * @brief Класс для работы с плотным стерео и кластеризацией.
+	 *
+	 * Класс `DenseStereo` предоставляет функционал для загрузки данных,
+	 * выполнения кластеризации, вывода и визуализации кластеров.
+	 */
+	MRCV_EXPORT class DenseStereo {
+	public:
+		/**
+		 * @brief Выполняет кластеризацию загруженных данных.
+		 *
+		 * Функция для выполнения кластеризации данных, хранящихся
+		 * в `vuxyzrgb`. Результаты кластеризации сохраняются в `IDX`.
+		 */
+		void makeClustering();
 
+		/**
+		 * @brief Загружает данные из файла.
+		 *
+		 * Функция считывает данные из указанного файла и сохраняет их
+		 * во внутренней структуре `vuxyzrgb`.
+		 *
+		 * @param filename Имя файла, из которого будут загружены данные.
+		 */
+		void loadDataFromFile(const std::string& filename);
+
+		/**
+		 * @brief Печатает информацию о кластерах.
+		 *
+		 * Функция выводит на экран информацию о кластерах,
+		 * сформированных в результате выполнения кластеризации.
+		 */
+		void printClusters();
+
+	private:
+		/**
+		 * @brief Класс для хранения координат точек.
+		 *
+		 * В этом классе сохраняются трехмерные координаты точек,
+		 * используемых в процессе кластеризации.
+		 */
+		class Vuxyzrgb {
+		public:
+			std::vector<std::vector<double>> xyz; ///< Трехмерные координаты точек.
+		};
+
+		Vuxyzrgb vuxyzrgb; ///< Экземпляр класса для хранения данных.
+		std::mutex vuxyzrgb_mutex; ///< Мьютекс для защиты данных `vuxyzrgb`.
+
+		std::vector<int> IDX; ///< Вектор индексов кластеров для каждой точки.
+	};
+	
+	int flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode);
+
+	int rotateImage(cv::Mat& imageInput, cv::Mat& imageOutput, double angle);
+
+	int augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
+		std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod);
 }
