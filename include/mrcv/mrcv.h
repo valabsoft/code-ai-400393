@@ -213,6 +213,7 @@ namespace mrcv
 		void setY(int Y);
 		std::string gerCoordinates();
 	};
+
 	MRCV_EXPORT class ObjCourse
 	{
 	public:
@@ -503,4 +504,21 @@ namespace mrcv
 		*/
 		float Detector::Validate(std::string valDataPath, std::string imageType, int batchSize);
 	};
+	/**
+	 * @brief Функция для построения карты диспаратности
+	 * @param map - Буфер для карты диспаратности.
+	 * @param imageLeft - Изображение с левой камеры стереопары.
+	 * @param imageRight - Изображение с правой камеры стереопары.
+	 * @param minDisparity - Минимальный размер блока.
+	 * @param numDisparities - Кол-во итераций.
+	 * @param blockSize - Размер блока.
+	 * @param lambda - Параметр lambda.
+	 * @param sigma - Параметр sigma.
+	 * @param colorMap - Цветовая схема для расцвечивания карты.
+	 * @param disparityType - Тип карты диспаратности.
+	 * @param saveToFile - Признак сохранения карты в файл.
+	 * @param showImages - Признак отображения изображений в отдельных окнах.
+	 * @return - Карта диспаратности в cv::Mat формате.
+	 */
+	int disparityMap(cv::Mat& map, const cv::Mat& imageLeft, const cv::Mat& imageRight, int minDisparity, int numDisparities, int blockSize, double lambda, double sigma, DISPARITY_TYPE disparityType = DISPARITY_TYPE::ALL, int colorMap = cv::COLORMAP_TURBO, bool saveToFile = false, bool showImages = false);
 }

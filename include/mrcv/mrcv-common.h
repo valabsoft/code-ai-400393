@@ -21,6 +21,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/ximgproc.hpp>
 
 #include "mrcv-segmentation.h"
 
@@ -156,5 +157,14 @@ namespace mrcv
 		ROTATE_IMAGE_315,
 		FLIP_HORIZONTAL_AND_VERTICAL,
 		TEST
+	};
+
+	enum class DISPARITY_TYPE
+	{
+		ALL,
+		BASIC_DISPARITY,
+		BASIC_HEATMAP,
+		FILTERED_DISPARITY,
+		FILTERED_HEATMAP,
 	};
 }
