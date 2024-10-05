@@ -1,0 +1,5 @@
+image_count = 30
+folder_name = "calibration_images"
+keypoints_c = 9
+keypoints_r = 6
+square_size = 24
