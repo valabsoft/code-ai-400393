@@ -30,6 +30,8 @@
 #include <unistd.h>
 #endif
 
+#define Pi 3,1415926535
+
 namespace mrcv
 {
 	// Флаг отладочного лога, если false - лог не создается
@@ -127,6 +129,7 @@ namespace mrcv
 		float square_size = 20.1;							// Размер квадрата калибровочной доски в мм
 		int image_count = 50;								// Общее число пар изображений в фотосете
 	};
+
 
 	// Структура trianTricks предназначена для повышения производительности обучения
 	struct trainTricks {
