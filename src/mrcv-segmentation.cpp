@@ -6,7 +6,7 @@ namespace mrcv
 {
   SegmentationHeadImpl::SegmentationHeadImpl(int inChannels, int outChannels, int kernelSize, double _upsampling) {
     conv2d = torch::nn::Conv2d(conv_options(inChannels, outChannels, kernelSize, 1, kernelSize / 2));
-    upsampling = torch::nn::Upsample(upsample_options(std::vector<double>{_upsampling, _upsampling}));
+    upsampling = torch::nn::Upsample(optionsUpsample(std::vector<double>{_upsampling, _upsampling}));
     register_module("conv2d", conv2d);
   }
 
@@ -72,7 +72,7 @@ namespace mrcv
 
     if (encoderParameter[encoderName]["class_type"] == "resnet")
       encoder = new ResNetImpl(encoderParameter[encoderName]["layers"], 1000, encoderName);
-    else std::cout << "unknown error in backbone initialization";
+    else writeLog("unknown error in backbone initialization");
 
     encoder->load_pretrained(pretrainedPath);
     decoder = FPNDecoder(channelsEncoder, encoderDepth, decoderChannelPyramid,
@@ -104,7 +104,7 @@ namespace mrcv
   torch::Tensor Conv3x3GNReLUImpl::forward(torch::Tensor x) {
     x = block->forward(x);
     if (upsample) {
-      x = torch::nn::Upsample(upsample_options(std::vector<double>{2, 2}))->forward(x);
+      x = torch::nn::Upsample(optionsUpsample(std::vector<double>{2, 2}))->forward(x);
     }
     return x;
   }
@@ -144,16 +144,16 @@ namespace mrcv
   template<typename T>
   T sumTensor(std::vector<T> listX) {
 
-    T re = listX[0];
+    T rezult = listX[0];
     for (int i = 1; i < listX.size(); i++) {
-      re += listX[i];
+      rezult += listX[i];
     }
-    return re;
+    return rezult;
   }
 
   MergeBlockImpl::MergeBlockImpl(std::string policy) {
     if (policy != policies[0] && policy != policies[1]) {
-      std::cout << "policy должен быть add или cat";
+      writeLog("policy должен быть add или cat");
     }
     _policy = policy;
   }
@@ -163,7 +163,7 @@ namespace mrcv
     else if (_policy == "cat") return torch::cat(x, 1);
     else
     {
-      std::cout << "policy должен быть add или cat";
+      writeLog("policy должен быть add или cat");
       return torch::cat(x, 1);
     }
   }
@@ -172,7 +172,7 @@ namespace mrcv
     float dropout_, std::string merge_policy)
   {
     outChannels = merge_policy == "add" ? channelsSegmentation : channelsSegmentation * 4;
-    if (encoderDepth < 3) std::cout << "Encoder depth for FPN decoder cannot be less than 3";
+    if (encoderDepth < 3) writeLog("Encoder depth for FPN decoder cannot be less than 3");
     std::reverse(std::begin(channelsEncoder), std::end(channelsEncoder));
     channelsEncoder = std::vector<int>(channelsEncoder.begin(), channelsEncoder.begin() + encoderDepth + 1);
     p5 = torch::nn::Conv2d(conv_options(channelsEncoder[0], channelsPyramid, 1));
@@ -345,22 +345,22 @@ namespace mrcv
     return features;
   }
 
-  torch::Tensor ResNetImpl::features_at(torch::Tensor x, int stage_num) {
-    assert(stage_num > 0 && "the stage number must in range(1,5)");
+  torch::Tensor ResNetImpl::features_at(torch::Tensor x, int numStage) {
+    assert(numStage > 0 && "the stage number must in range(1,5)");
     x = conv1->forward(x);
     x = bn1->forward(x);
     x = torch::relu(x);
-    if (stage_num == 1) return x;
+    if (numStage == 1) return x;
     x = torch::max_pool2d(x, 3, 2, 1);
 
     x = layer1->forward(x);
-    if (stage_num == 2) return x;
+    if (numStage == 2) return x;
     x = layer2->forward(x);
-    if (stage_num == 3) return x;
+    if (numStage == 3) return x;
     x = layer3->forward(x);
-    if (stage_num == 4) return x;
+    if (numStage == 4) return x;
     x = layer4->forward(x);
-    if (stage_num == 5) return x;
+    if (numStage == 5) return x;
     return x;
   }
 
@@ -422,7 +422,8 @@ namespace mrcv
 
   void ResNetImpl::make_dilated(std::vector<int> listStage, std::vector<int> listDilation) {
     if (listStage.size() != listDilation.size()) {
-      std::cout << "make sure stage list len equal to dilation list len";
+     // std::cout << "make sure stage list len equal to dilation list len";
+      writeLog("make sure stage list len equal to dilation list len");
       return;
     }
     std::map<int, torch::nn::Sequential> stage_dict = {};
@@ -462,26 +463,21 @@ namespace mrcv
     return model;
   }
 
-  ResNet resnet101(int64_t numberClasses) {
-    std::vector<int> layers = { 3, 4, 23, 3 };
-    ResNet model(layers, numberClasses, "resnet101");
-    return model;
-  }
 
-  ResNet pretrained_resnet(int64_t numberClasses, std::string model_name, std::string weight_path) {
+  ResNet pretrained_resnet(int64_t numberClasses, std::string nameModel, std::string pathWeight) {
     std::map<std::string, std::vector<int>> name2layers = getParams();
     int groups = 1;
     int widthGroupPer = 64;
-    if (model_name == "resnext50_32x4d") {
+    if (nameModel == "resnext50_32x4d") {
       groups = 32; widthGroupPer = 4;
     }
-    if (model_name == "resnext101_32x8d") {
+    if (nameModel == "resnext101_32x8d") {
       groups = 32; widthGroupPer = 8;
     }
-    ResNet net_pretrained = ResNet(name2layers[model_name], 1000, model_name, groups, widthGroupPer);
-    torch::load(net_pretrained, weight_path);
+    ResNet net_pretrained = ResNet(name2layers[nameModel], 1000, nameModel, groups, widthGroupPer);
+    torch::load(net_pretrained, pathWeight);
     if (numberClasses == 1000) return net_pretrained;
-    ResNet module = ResNet(name2layers[model_name], numberClasses, model_name);
+    ResNet module = ResNet(name2layers[nameModel], numberClasses, nameModel);
 
     torch::OrderedDict<std::string, at::Tensor> pretrained_dict = net_pretrained->named_parameters();
     torch::OrderedDict<std::string, at::Tensor> model_dict = module->named_parameters();
@@ -494,10 +490,10 @@ namespace mrcv
       model_dict[(*n).key()] = (*n).value();
     }
 
-    torch::autograd::GradMode::set_enabled(false);  // make parameters copying possible
-    auto new_params = model_dict; // implement this
-    auto params = module->named_parameters(true /*recurse*/);
-    auto buffers = module->named_buffers(true /*recurse*/);
+    torch::autograd::GradMode::set_enabled(false);
+    auto new_params = model_dict;
+    auto params = module->named_parameters(true);
+    auto buffers = module->named_buffers(true);
     for (auto& val : new_params) {
       auto name = val.key();
       auto* t = params.find(name);
@@ -520,19 +516,17 @@ namespace mrcv
   class SegDataset :public torch::data::Dataset<SegDataset>
   {
   public:
-    SegDataset(int resize_width, int resize_height, std::vector<std::string> listImages,
-      std::vector<std::string> listLabels, std::vector<std::string> name_list,
+    SegDataset(int widthResize, int heightResize, std::vector<std::string> listImages,
+      std::vector<std::string> listLabels, std::vector<std::string> listName,
       trainTricks tricks, bool isTrain = false);
-    // Override get() function to return tensor at location index
     torch::data::Example<> get(size_t index) override;
-    // Return the length of data
     torch::optional<size_t> size() const override {
       return listLabels.size();
     };
   private:
-    void draw_mask(std::string json_path, cv::Mat& mask);
-    int resize_width = 512; int resize_height = 512; bool isTrain = false;
-    std::vector<std::string> name_list = {};
+    void draw_mask(std::string pathJson, cv::Mat& mask);
+    int widthResize = 512; int heightResize = 512; bool isTrain = false;
+    std::vector<std::string> listName = {};
     std::map<std::string, int> name2index = {};
     std::map<std::string, cv::Scalar> name2color = {};
     std::vector<std::string> listImages;
@@ -540,50 +534,36 @@ namespace mrcv
     trainTricks tricks;
   };
 
-  torch::Tensor DiceLoss(torch::Tensor prediction, torch::Tensor target, int num_class) {
-    auto target_onehot = torch::zeros_like(prediction); // N x C x H x W
+  torch::Tensor DiceLoss(torch::Tensor prediction, torch::Tensor target, int classNum) {
+    auto target_onehot = torch::zeros_like(prediction);
     target_onehot.scatter_(1, target, 1);
 
-    auto prediction_roi = prediction.slice(1, 1, num_class, 1);
-    auto target_roi = target_onehot.slice(1, 1, num_class, 1);
-    auto intersection = (prediction_roi * target_roi).sum();
-    auto union_ = prediction_roi.sum() + target_roi.sum() - intersection;
+    auto roiPrediction = prediction.slice(1, 1, classNum, 1);
+    auto target_roi = target_onehot.slice(1, 1, classNum, 1);
+    auto intersection = (roiPrediction * target_roi).sum();
+    auto union_ = roiPrediction.sum() + target_roi.sum() - intersection;
     auto dice = (intersection + 0.0001) / (union_ + 0.0001);
     return 1 - dice;
   }
 
-  // prediction [NCHW], target [NHW]
   torch::Tensor CELoss(torch::Tensor prediction, torch::Tensor target) {
-    return torch::nll_loss2d(torch::log_softmax(prediction, /*dim=*/1), target);
+    return torch::nll_loss2d(torch::log_softmax(prediction, 1), target);
   }
 
-  void Segmentor::Initialize(int gpu_id, int _width, int _height, std::vector<std::string>&& _name_list,
+  void Segmentor::Initialize(int gpu_id, int _width, int _height, std::vector<std::string>&& _listName,
     std::string encoderName, std::string pretrainedPath) {
     width = _width;
     height = _height;
-    name_list = _name_list;
-    //struct stat s {};
-    //lstat(pretrainedPath.c_str(), &s);
-    // TODO: Здесь функция должна выводить ошибку на верхний уровень
-#ifdef _WIN32
-    if ((_access(pretrainedPath.data(), 0)) == -1)
-    {
-      std::cout << "Pretrained path is invalid";
-    }
-#else
-    if (access(pretrainedPath.data(), F_OK) != 0)
-    {
-      std::cout << "Pretrained path is invalid";
-    }
-#endif
+    listName = _listName;
 
-    if (name_list.size() < 2) std::cout << "Class num is less than 1";
+
+    if (listName.size() < 2) writeLog("Class num is less than 1");
     int gpu_num = (int)torch::getNumGPUs();
-    if (gpu_id >= gpu_num) std::cout << "GPU id exceeds max number of gpus";
+    if (gpu_id >= gpu_num) writeLog("GPU id exceeds max number of gpus");
     if (gpu_id >= 0) device = torch::Device(torch::kCUDA, gpu_id);
 
-    fpn = FPN(name_list.size(), encoderName, pretrainedPath);
-    //  fpn = FPN(name_list.size(),encoderName,pretrainedPath);
+    fpn = FPN(listName.size(), encoderName, pretrainedPath);
+    //  fpn = FPN(listName.size(),encoderName,pretrainedPath);
     fpn->to(device);
   }
 
@@ -595,27 +575,26 @@ namespace mrcv
   void Segmentor::Train(float learning_rate, unsigned int epochs, int batch_size,
     std::string train_val_path, std::string imageType, std::string save_path) {
 
-    // TODO: Переписать код с использованием filesystem
     std::string train_dir = train_val_path + file_sepator() + "train";
     std::string val_dir = train_val_path + file_sepator() + "test";
 
-    std::vector<std::string> listImages_train = {};
-    std::vector<std::string> listLabels_train = {};
-    std::vector<std::string> listImages_val = {};
-    std::vector<std::string> listLabels_val = {};
+    std::vector<std::string> listImagesTrain = {};
+    std::vector<std::string> listLabelsTrain = {};
+    std::vector<std::string> listImagesVal = {};
+    std::vector<std::string> listLabelsVal = {};
 
-    loadDataFromFolder(train_dir, imageType, listImages_train, listLabels_train);
-    loadDataFromFolder(val_dir, imageType, listImages_val, listLabels_val);
+    loadDataFromFolder(train_dir, imageType, listImagesTrain, listLabelsTrain);
+    loadDataFromFolder(val_dir, imageType, listImagesVal, listLabelsVal);
 
-    auto custom_dataset_train = SegDataset(width, height, listImages_train, listLabels_train, \
-      name_list, tricks, true).map(torch::data::transforms::Stack<>());
-    auto custom_dataset_val = SegDataset(width, height, listImages_val, listLabels_val, \
-      name_list, tricks, false).map(torch::data::transforms::Stack<>());
+    auto customTrainDataset = SegDataset(width, height, listImagesTrain, listLabelsTrain, \
+      listName, tricks, true).map(torch::data::transforms::Stack<>());
+    auto customValidDataset = SegDataset(width, height, listImagesVal, listLabelsVal, \
+      listName, tricks, false).map(torch::data::transforms::Stack<>());
     auto options = torch::data::DataLoaderOptions();
     options.drop_last(true);
     options.batch_size(batch_size);
-    auto data_loader_train = torch::data::make_data_loader<torch::data::samplers::RandomSampler>(std::move(custom_dataset_train), options);
-    auto data_loader_val = torch::data::make_data_loader<torch::data::samplers::RandomSampler>(std::move(custom_dataset_val), options);
+    auto data_loader_train = torch::data::make_data_loader<torch::data::samplers::RandomSampler>(std::move(customTrainDataset), options);
+    auto data_loader_val = torch::data::make_data_loader<torch::data::samplers::RandomSampler>(std::move(customValidDataset), options);
 
     float best_loss = 1e10;
     for (unsigned int epoch = 0; epoch < epochs; epoch++) {
@@ -656,15 +635,11 @@ namespace mrcv
         target = target.to(torch::kLong).to(device).squeeze(1);
 
         optimizer.zero_grad();
-        // Execute the fpn
         torch::Tensor prediction = fpn->forward(data);
-        // Compute loss value
         torch::Tensor ce_loss = CELoss(prediction, target);
-        torch::Tensor dice_loss = DiceLoss(torch::softmax(prediction, 1), target.unsqueeze(1), (int)name_list.size());
+        torch::Tensor dice_loss = DiceLoss(torch::softmax(prediction, 1), target.unsqueeze(1), (int)listName.size());
         auto loss = dice_loss * tricks.dice_ce_ratio + ce_loss * (1 - tricks.dice_ce_ratio);
-        // Compute gradients
         loss.backward();
-        // Update the parameters
         optimizer.step();
         loss_sum += loss.item().toFloat();
         dice_coef_sum += (1 - dice_loss).item().toFloat();
@@ -676,7 +651,6 @@ namespace mrcv
           "," << " Dice coefficient: " << dice_coef << "\r";
       }
       std::cout << std::endl;
-      // validation part
       fpn->eval();
       loss_sum = 0; batch_count = 0; dice_coef_sum = 0;
       float loss_val = 0;
@@ -684,24 +658,18 @@ namespace mrcv
         auto data = batch.data;
         auto target = batch.target;
         data = data.to(torch::kF32).to(device).div(255.0);
-        target = target.to(torch::kLong).to(device).squeeze(1);//.clamp_max(1);
+        target = target.to(torch::kLong).to(device).squeeze(1);
 
-        // Execute the fpn
         torch::Tensor prediction = fpn->forward(data);
 
-        // Compute loss value
         torch::Tensor ce_loss = CELoss(prediction, target);
-        torch::Tensor dice_loss = DiceLoss(torch::softmax(prediction, 1), target.unsqueeze(1), (int)name_list.size());
+        torch::Tensor dice_loss = DiceLoss(torch::softmax(prediction, 1), target.unsqueeze(1), (int)listName.size());
         auto loss = dice_loss * tricks.dice_ce_ratio + ce_loss * (1 - tricks.dice_ce_ratio);
         loss_sum += loss.template item<float>();
         dice_coef_sum += (1 - dice_loss).item().toFloat();
         batch_count++;
         loss_val = loss_sum / batch_count / batch_size;
         auto dice_coef = dice_coef_sum / batch_count;
-
-        // TODO: Эта информация должна выводиться в диагностический лог-файл
-        // std::cout << "Epoch: " << epoch << "," << " Validation Loss: " << loss_val << \
-					"," << " Dice coefficient: " << dice_coef << "\r";
       }
       std::cout << std::endl;
       if (loss_val < best_loss) {
@@ -712,8 +680,8 @@ namespace mrcv
     return;
   }
 
-  void Segmentor::LoadWeight(std::string weight_path) {
-    torch::load(fpn, weight_path);
+  void Segmentor::LoadWeight(std::string pathWeight) {
+    torch::load(fpn, pathWeight);
     fpn->to(device);
     fpn->eval();
     return;
@@ -722,8 +690,8 @@ namespace mrcv
   void Segmentor::Predict(cv::Mat& image, const std::string& which_class) {
     cv::Mat srcImg = image.clone();
     int which_class_index = -1;
-    for (int i = 0; i < name_list.size(); i++) {
-      if (name_list[i] == which_class) {
+    for (int i = 0; i < listName.size(); i++) {
+      if (listName[i] == which_class) {
         which_class_index = i;
         break;
       }
@@ -756,7 +724,6 @@ namespace mrcv
     memcpy(image.data, re.data_ptr(), width * height * sizeof(unsigned char));
     cv::resize(image, image, cv::Size(image_width, image_height));
 
-    // draw the prediction
     cv::imwrite("prediction.jpg", image);
     cv::imshow("prediction", image);
     cv::imshow("srcImage", srcImg);
@@ -794,18 +761,14 @@ namespace mrcv
   Data Augmentations::Resize(Data mData, int width, int height, float probability) {
     float rand_number = RandomNum(0, 1);
     if (rand_number <= probability) {
-      // масштаб (не задействован)
-      //float h_scale = height * 1.0 / mData.image.rows;
-      //float w_scale = width * 1.0 / mData.image.cols;
-
       cv::resize(mData.image, mData.image, cv::Size(width, height));
       cv::resize(mData.mask, mData.mask, cv::Size(width, height));
     }
     return mData;
   }
 
-  std::vector<cv::Scalar> get_color_list() {
-    std::vector<cv::Scalar> color_list = {
+  std::vector<cv::Scalar> getListColor() {
+    std::vector<cv::Scalar> listColor = {
       cv::Scalar(0, 0, 0),
       cv::Scalar(128, 0, 0),
       cv::Scalar(0, 128, 0),
@@ -828,11 +791,11 @@ namespace mrcv
       cv::Scalar(128, 192, 0),
       cv::Scalar(0, 64, 128),
     };
-    return color_list;
+    return listColor;
   }
 
-  void SegDataset::draw_mask(std::string json_path, cv::Mat& mask) {
-    std::ifstream jfile(json_path);
+  void SegDataset::draw_mask(std::string pathJson, cv::Mat& mask) {
+    std::ifstream jfile(pathJson);
     nlohmann::json j;
     jfile >> j;
     size_t num_blobs = j["shapes"].size();
@@ -855,27 +818,28 @@ namespace mrcv
     }
   }
 
-  SegDataset::SegDataset(int resize_width, int resize_height, std::vector<std::string> listImages,
-    std::vector<std::string> listLabels, std::vector<std::string> name_list,
+  SegDataset::SegDataset(int widthResize, int heightResize, std::vector<std::string> listImages,
+    std::vector<std::string> listLabels, std::vector<std::string> listName,
     trainTricks tricks, bool isTrain)
   {
     this->tricks = tricks;
-    this->name_list = name_list;
-    this->resize_width = resize_width;
-    this->resize_height = resize_height;
+    this->listName = listName;
+    this->widthResize = widthResize;
+    this->heightResize = heightResize;
     this->listImages = listImages;
     this->listLabels = listLabels;
     this->isTrain = isTrain;
-    for (int i = 0; i < name_list.size(); i++) {
-      name2index.insert(std::pair<std::string, int>(name_list[i], i));
+    for (int i = 0; i < listName.size(); i++) {
+      name2index.insert(std::pair<std::string, int>(listName[i], i));
     }
-    std::vector<cv::Scalar> color_list = get_color_list();
-    // TODO: Информация должна выводиться в диагностический лог-файл
-    if (name_list.size() > color_list.size()) {
-      std::cout << "Количество классов превышает определенный список цветов, пожалуйста, добавьте цвет в список цветов";
+    std::vector<cv::Scalar> listColor = getListColor();
+
+    if (listName.size() > listColor.size()) {
+      //std::cout << "Количество классов превышает определенный список цветов, пожалуйста, добавьте цвет в список цветов";
+      writeLog("Количество классов превышает определенный список цветов, пожалуйста, добавьте цвет в список цветов");
     }
-    for (int i = 0; i < name_list.size(); i++) {
-      name2color.insert(std::pair<std::string, cv::Scalar>(name_list[i], color_list[i]));
+    for (int i = 0; i < listName.size(); i++) {
+      name2color.insert(std::pair<std::string, cv::Scalar>(listName[i], listColor[i]));
     }
   }
 
@@ -886,21 +850,19 @@ namespace mrcv
     cv::Mat mask = cv::Mat::zeros(image.rows, image.cols, CV_8UC3);
     draw_mask(label_path, mask);
 
-    // Data augmentation like flip or rotate could be implemented here...
     auto m_data = Data(image, mask);
     if (isTrain) {
-      m_data = Augmentations::Resize(m_data, resize_width, resize_height, 1);
+      m_data = Augmentations::Resize(m_data, widthResize, heightResize, 1);
     }
     else {
-      m_data = Augmentations::Resize(m_data, resize_width, resize_height, 1);
+      m_data = Augmentations::Resize(m_data, widthResize, heightResize, 1);
     }
-    torch::Tensor img_tensor = torch::from_blob(m_data.image.data, { m_data.image.rows, m_data.image.cols, 3 }, torch::kByte).permute({ 2, 0, 1 }); // Channels x Height x Width
+    torch::Tensor img_tensor = torch::from_blob(m_data.image.data, { m_data.image.rows, m_data.image.cols, 3 }, torch::kByte).permute({ 2, 0, 1 });
     torch::Tensor colorful_label_tensor = torch::from_blob(m_data.mask.data, { m_data.mask.rows, m_data.mask.cols, 3 }, torch::kByte);
     torch::Tensor label_tensor = torch::zeros({ m_data.image.rows, m_data.image.cols });
 
-    // encode "colorful" tensor to class_index meaning tensor, [w,h,3]->[w,h], pixel value is the index of a class
-    for (int i = 0; i < name_list.size(); i++) {
-      cv::Scalar color = name2color[name_list[i]];
+    for (int i = 0; i < listName.size(); i++) {
+      cv::Scalar color = name2color[listName[i]];
       torch::Tensor color_tensor = torch::tensor({ color.val[0],color.val[1],color.val[2] });
       label_tensor = label_tensor + torch::all(colorful_label_tensor == color_tensor, -1) * i;
     }
