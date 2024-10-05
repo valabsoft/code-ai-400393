@@ -74,18 +74,18 @@ namespace mrcv
 	// Калибровка
 	/////////////////////////////////////////////////////////////////////////////
 	/**
-     * @brief Функция общей калибровки.
-     * @param imagesL - Вектор строк имён изображений левой камеры.
-     * @param imagesR - Вектор строк имён изображений правой камеры.
-     * @param pathToImagesL - Путь к папке с изображениями левой камеры.
-     * @param pathToImagesR - Путь к папке с изображениями правой камеры.
-     * @param calibrationParametersL - Структура для хранения калибровочных параметров левой камеры.
-     * @param calibrationParametersR - Структура для хранения калибровочных параметров правой камеры.
-     * @param calibrationParameters - Структура для хранения калибровочных параметров стерео пары.
-     * @param chessboardColCount - Количество ключевых точек калибровочной доски по столбцам.
-     * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
-     * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
-     */
+	 * @brief Функция общей калибровки.
+	 * @param imagesL - Вектор строк имён изображений левой камеры.
+	 * @param imagesR - Вектор строк имён изображений правой камеры.
+	 * @param pathToImagesL - Путь к папке с изображениями левой камеры.
+	 * @param pathToImagesR - Путь к папке с изображениями правой камеры.
+	 * @param calibrationParametersL - Структура для хранения калибровочных параметров левой камеры.
+	 * @param calibrationParametersR - Структура для хранения калибровочных параметров правой камеры.
+	 * @param calibrationParameters - Структура для хранения калибровочных параметров стерео пары.
+	 * @param chessboardColCount - Количество ключевых точек калибровочной доски по столбцам.
+	 * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
+	 * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
+	 */
 	MRCV_EXPORT void cameraCalibration(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR, std::string pathToImagesL, std::string pathToImagesR, CalibrationParametersMono& calibrationParametersL, CalibrationParametersMono& calibrationParametersR, CalibrationParametersStereo& calibrationParameters, int chessboardColCount, int chessboardRowCount, float chessboardSquareSize);
 
 	/**
@@ -94,21 +94,21 @@ namespace mrcv
 	 * @param pathToImages - Путь к папке с изображениями камеры.
 	 * @param calibrationParameters - Структура для хранения калибровочных параметров камеры.
 	 * @param chessboardColCount - Количество ключевых точек калибровочной доски по столбцам.
-     * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
-     * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
+	 * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
+	 * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
 	 */
 	MRCV_EXPORT void cameraCalibrationMono(std::vector<cv::String> images, std::string pathToImages, CalibrationParametersMono& calibrationParameters, int chessboardColCount, int chessboardRowCount, float chessboardSquareSize);
 
 	/**
 	 * @brief Функция калибровки стерео пары.
 	 * @param imagesL - Вектор строк имён изображений левой камеры.
-     * @param imagesR - Вектор строк имён изображений правой камеры.
-     * @param pathToImagesL - Путь к папке с изображениями левой камеры.
-     * @param pathToImagesR - Путь к папке с изображениями правой камеры.
+	 * @param imagesR - Вектор строк имён изображений правой камеры.
+	 * @param pathToImagesL - Путь к папке с изображениями левой камеры.
+	 * @param pathToImagesR - Путь к папке с изображениями правой камеры.
 	 * @param calibrationParameters - Структура для хранения калибровочных параметров стерео пары.
 	 * @param chessboardColCount - Количество ключевых точек калибровочной доски по столбцам.
-     * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
-     * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
+	 * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
+	 * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
 	 */
 	MRCV_EXPORT void cameraCalibrationStereo(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR, std::string pathToImagesL, std::string pathToImagesR, CalibrationParametersStereo& calibrationParameters, int chessboardColCount, int chessboardRowCount, float chessboardSquareSize);
 
@@ -152,19 +152,56 @@ namespace mrcv
 	public:
 		Segmentor() { };
 		~Segmentor() { };
-		void Initialize(int gpu_id, int width, int height, std::vector<std::string>&& name_list, std::string encoder_name, std::string pretrained_path);
+		/**
+		 * @brief Функция инициализации
+		 * @param gpu_id - Подключение GPU.
+		 * @param width - Ширина пердаваемых изображений.
+		 * @param height - Высота пердаваемых изображений.
+		 * @param listName - Список классов.
+		 * @param encoderName - Имя кодировщика.
+		 * @param pretrainedPath - Путь к кодировщику.
+		 */
+		void Initialize(int gpu_id, int width, int height, std::vector<std::string>&& listName, std::string encoderName, std::string pretrainedPath);
+
+		/**
+		 * @brief функция для повышения производительности обучения
+		 * @param tricks - Структура дополнений для обучения таких как скорость оюучения, вращение изображения и вес при проигрыше .
+		 */
 		void SetTrainTricks(trainTricks& tricks);
-		void Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string image_type, std::string save_path);
-		void LoadWeight(std::string weight_path);
+
+		/**
+		 * @brief Функция обучения модели
+		 * @param learning_rate - Темп обучения.
+		 * @param epochs - Количество эпох.
+		 * @param batch_size - Количество обучающих примеров за одну итерацию.
+		 * @param train_val_path - Путь к изображениям для обучения.
+		 * @param imageType - Тип изображений.
+		 * @param save_path - Путь для сохранения своих весов.
+		 */
+		void Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string imageType, std::string save_path);
+
+		/**
+		 * @brief функция загрузки своих весов
+		 * @param pathWeight - Путь к своим весам.
+		 */
+		void LoadWeight(std::string pathWeight);
+
+		/**
+		 * @brief Функция прогноза
+		 * @param image - Тестируемое изображение.
+		 * @param which_class - Список классов.
+		 */
 		void Predict(cv::Mat& image, const std::string& which_class);
+
 	private:
 		int width = 512;
 		int height = 512;
-		std::vector<std::string> name_list;
+		std::vector<std::string> listName;
 		torch::Device device = torch::Device(torch::kCPU);
 		trainTricks tricks;
 		FPN fpn{ nullptr };
 	};
+
 	MRCV_EXPORT class MRCVPoint
 	{
 	private:
@@ -214,7 +251,7 @@ namespace mrcv
 #endif		
 		void drawLabel(cv::Mat& img, std::string label, int left, int top);
 		std::vector<cv::Mat> preProcess(cv::Mat& img, cv::dnn::Net& net);
-		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames);	
+		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames);
 		int findAngle(double resolution, double cameraAngle, int cx);
 		std::string getTimeStamp();
 	};
@@ -225,7 +262,7 @@ namespace mrcv
 
 	/**
 	 * @brief Функция формирования изображения в случаи ошибки.
-	 * 
+	 *
 	 *
 	 * @param textError - текс сообщения, которое будет записано в изображение.
 	 * @return - изображение с кодом ошибки (для информирование оператора в режиме рельного времени).
@@ -351,7 +388,7 @@ namespace mrcv
 
 		std::vector<int> IDX; ///< Вектор индексов кластеров для каждой точки.
 	};
-	
+
 	int flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode);
 
 	int rotateImage(cv::Mat& imageInput, cv::Mat& imageOutput, double angle);
@@ -359,16 +396,16 @@ namespace mrcv
 	int augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
 		std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod);
 
-/**
-	*	@brief Класс детектора
-	*	
-	*	Класс реализует атрибуты и методы детекции объектов на изображениях подводных объектов, 
-	*	а также аварийных ситуаций, связанных с подводными технологическими сооружениями.
-	*/
+	/**
+		*	@brief Класс детектора
+		*
+		*	Класс реализует атрибуты и методы детекции объектов на изображениях подводных объектов,
+		*	а также аварийных ситуаций, связанных с подводными технологическими сооружениями.
+		*/
 	MRCV_EXPORT class Detector
 	{
 	private:
-		int width = 416; 
+		int width = 416;
 		int height = 416;
 		std::vector<std::string> nameList;
 		torch::Device device = torch::Device(torch::kCPU);
@@ -380,7 +417,7 @@ namespace mrcv
 		Detector();
 		/**
 		* @brief Функция инициализации модели детектора
-		* 
+		*
 		* @param gpuID			- ID устройтсва, для которого будет инициализирована модель. Значение < 1 - исполнение программы на CPU, 0 и > 0 - исполнение программы на выбранном GPU-устройстве
 		* @param width			- Ширина изображения, до которой будет масштабировано исходное изображение
 		* @param height			- Высота изображения, до которой будет масштабировано исходное изображение
@@ -389,7 +426,7 @@ namespace mrcv
 		void Initialize(int gpuID, int width, int height, std::string nameListPath);
 		/**
 		* @brief Функция обучения модели детектора
-		* 
+		*
 		* @param trainValPath	- Путь к директории с обучающим и валидационным датасетами
 		* @param imageType		- Расширение изображений в директориях. Например, ".jpg", ".png" и т.д.
 		* @param numEpoch		- Число эпох, требуемых для обучения модели
@@ -397,9 +434,9 @@ namespace mrcv
 		* @param learningRate	- Темп обучения модели, который определяет размер шага на каждой итерации, при движении к минимуму функции потерь
 		* @param savePath		- Путь, по которому будут сохранены веса обученной модели в формате .pt
 		* @param pretrainedPath - Путь к предобученной модели YOLOv4_tiny.pt
-		* 
-		* @return Код результата выполнения функции. 
-		* Значения: 
+		*
+		* @return Код результата выполнения функции.
+		* Значения:
 		*			0	- Success;
 		*			1	- Путь к предобученной модели задан не корректно или не существует;
 		*			2	- Размер батча превышает число изображений в директории с обучающей выборкой или директория пуста;
@@ -410,27 +447,27 @@ namespace mrcv
 			std::string savePath = "detector.pt", std::string pretrainedPath = "detector.pt");
 		/**
 		* @brief Функция загрузки весов обученной модели
-		* 
+		*
 		* @param - Путь к весам
-		* 
+		*
 		* @return - Код результата выполнения функции. 0 - Success; -1 - Неизвестная ошибка.
 		*/
 		int LoadWeight(std::string weightPath);
 		/**
 		* @brief Функция загрузки предобученной модели
-		* 
+		*
 		* @param - Путь к предобученной модели в формате .pt
 		* @return - Код результата выполнения функции. 0 - Success; -1 - Неизвестная ошибка
 		*/
 		int LoadPretrained(std::string pretrainedPath);
 		/**
 		* @brief Функция детекции и идентификации объектов по изображению
-		* 
+		*
 		* @param image		- Изображение в формате cv::Mat
 		* @param show		- Флаг отображения изображения с нанесёнными ограничивающими рамками.
 		* @param confTresh	- Пороговое значение интервала "доверительности" для предсказаний модели. Если модель предсказывает, что вероятность присутствия объекта ниже этого значения, такой объект отбрасывается.
 		* @param nmsThresh	- Пороговое значение для Non-Maximum Suppression (NMS), алгоритма, который отбрасывает пересекающиеся предсказания объектов. Если несколько рамок сильно пересекаются и показывают высокую вероятность для одного и того же объекта, остаётся только та рамка, которая имеет наибольшую вероятность
-		* 
+		*
 		* @return - Код результата выполнения функции. 0 - Success; -1 - Неизвестная ошибка.
 		*/
 		int Predict(cv::Mat image, bool show = true, float confThresh = 0.3, float nmsThresh = 0.3);
