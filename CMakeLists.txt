@@ -25,7 +25,7 @@ string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_
 
 # MRCV_SHARED_LIBS option (undefined by default) can be used to force shared/static build
 option(MRCV_BUILD_TESTS "Build mrcv tests" OFF)
-option(MRCV_BUILD_EXAMPLES "Build mrcv examples" OFF)
+option(MRCV_BUILD_EXAMPLES "Build mrcv examples" ON)
 option(MRCV_INSTALL "Generate target for installing mrcv" ${is_top_level})
 set_if_undefined(MRCV_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/mrcv" CACHE STRING "Install path for mrcv package-related CMake files")
 
@@ -49,17 +49,62 @@ add_library(mrcv::mrcv ALIAS mrcv)
 ###############################################################################
 # Определение зависимостей библиотеки
 ###############################################################################
+set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release/;C:/yaml-cpp/")
 
-find_package( OpenCV REQUIRED )
+find_package(OpenCV REQUIRED)
+find_package(Torch REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
-set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
-set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
+# Диагностический вывод о наличии библиотек
+#if (OpenCV_FOUND)
+#    message(STATUS "OpenCV library found!")
+#else ()
+#    message(FATAL_ERROR "Could not locate OpenCV" \n)
+#endif()
 
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-link_directories(${OpenCV_LIB_DIR})
+#if (Torch_FOUND)
+#    message(STATUS "Torch library found!")
+#else ()
+#    message(FATAL_ERROR "Could not locate Torch" \n)
+#endif()
 
-target_link_libraries( mrcv ${OpenCV_LIBS} )
+# OpenCV DIRs
+IF (WIN32)
+    set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
+    set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
+ELSE()
+    set( OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4/" )
+    set( OpenCV_LIB_DIR "/usr/local/lib/" )
+ENDIF()
 
+# Torch DIRs
+IF (WIN32)
+    set( Torch_INCLUDE_DIRS "C:/libtorch-12.4/Release/include/" )
+    set( Torch_LIB_DIR "C:/libtorch-12.4/Release/lib/" )
+ELSE()
+    set( Torch_INCLUDE_DIRS "/usr/local/include/torch/" )
+    set( Torch_LIB_DIR "/usr/local/lib/" )
+ENDIF()
+
+include_directories( ${OpenCV_INCLUDE_DIRS}; ${Torch_INCLUDE_DIRS}; ${YAML_CPP_INCLUDE_DIR} )
+link_directories( ${OpenCV_LIB_DIR}; ${Torch_LIB_DIR}; ${YAML_CPP_LIBRARY_DIR} )
+
+set(MRCV_CUDA false) # Ключ сборки с/без CUDA
+
+IF (MRCV_CUDA)
+    set(ALL_LIBS
+        ${OpenCV_LIBS}
+        ${TORCH_LIBRARIES}
+        yaml-cpp::yaml-cpp
+        ${CUDA_LIBRARIES}
+        ${CUDA_CUBLAS_LIBRARIES}
+        ${CUDA_cudart_static_LIBRARY}
+    )
+    target_link_libraries( mrcv ${ALL_LIBS} )
+ELSE()
+    target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES}; yaml-cpp::yaml-cpp )
+ENDIF()
+# target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES} )
 ###############################################################################
 # Исходники библиотеки
 ###############################################################################
@@ -77,11 +122,25 @@ set(sources
     include/mrcv/export.h
     include/mrcv/mrcv.h
     include/mrcv/mrcv-common.h
+    include/mrcv/mrcv-json.hpp
+    include/mrcv/mrcv-segmentation.h
+    include/mrcv/mrcv-yolov5.h
+    include/mrcv/mrcv-detector.h
+    include/mrcv/tinystr.h
+    include/mrcv/tinyxml.h
     src/mrcv.cpp
     src/mrcv-utility.cpp
     src/mrcv-imgcollection.cpp
     src/mrcv-calibration.cpp
-)
+    src/mrcv-segmentation.cpp
+    src/mrcv-objcourse.cpp
+    src/mrcv-yolov5.cpp
+    src/mrcv-detector.cpp
+    src/tinystr.cpp
+    src/tinyxml.cpp
+    src/tinyxlmerror.cpp
+    src/tinyxmlparser.cpp
+    src/marcv-vae.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 ###############################################################################
@@ -90,7 +149,8 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "include/mrcv/mrcv-common.h" "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp")
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp" "src/mrcv-objcourse.cpp" "src/mrcv-imgpreprocessing.cpp" "include/mrcv/mrcv-yolov5.h" "include/mrcv/mrcv-detector.h" "src/mrcv-yolov5.cpp" "src/mrcv-clustering.cpp" "include/mrcv/mrcv-vae.h" "src/marcv-vae.cpp" "src/mrcv-detector.cpp" "include/mrcv/tinystr.h" "include/mrcv/tinyxml.h" "src/tinystr.cpp" "src/tinyxml.cpp" "src/mrcv-augmentation.cpp" "src/mrcv-disparity.cpp")
+
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
 target_include_directories(mrcv

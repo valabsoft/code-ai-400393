@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 
 #include <stdio.h>
 
@@ -9,9 +9,10 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <regex>
 #include <sstream>
 #include <string>
-#include <regex>
+#include <sys/stat.h>
 #include <vector>
 
 #include <opencv2/calib3d.hpp>
@@ -19,22 +20,43 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/ximgproc.hpp>
+
+#include "mrcv-segmentation.h"
+
+#if _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
+#define Pi 3,1415926535
 
 namespace mrcv
 {
-	// Флаг отладочного лога, если false - лог не создается
-	const bool IS_DEBUG_LOG_ENABLED = true;
+	// Р¤Р»Р°Рі РѕС‚Р»Р°РґРѕС‡РЅРѕРіРѕ Р»РѕРіР°, РµСЃР»Рё false - Р»РѕРі РЅРµ СЃРѕР·РґР°РµС‚СЃСЏ
+	static const bool IS_DEBUG_LOG_ENABLED = true;
 	
-	// Маска файла для функции записи видео
-	const std::string UTILITY_DEFAULT_RECORDER_FILENAME = "video";
+	// РњР°СЃРєР° С„Р°Р№Р»Р° РґР»СЏ С„СѓРЅРєС†РёРё Р·Р°РїРёСЃРё РІРёРґРµРѕ
+	static const std::string UTILITY_DEFAULT_RECORDER_FILENAME = "video";
 	
-	// Интервал записи видео файла по умолчанию
-	const int UTILITY_DEFAULT_RECORDER_INTERVAL = 5;
+	// РРЅС‚РµСЂРІР°Р» Р·Р°РїРёСЃРё РІРёРґРµРѕ С„Р°Р№Р»Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+	static const int UTILITY_DEFAULT_RECORDER_INTERVAL = 5;
 	
-	// FPS камеры по умолчанию
-	const int UTILITY_DEFAULT_CAMERA_FPS = 25;
+	// FPS РєР°РјРµСЂС‹ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+	static const int UTILITY_DEFAULT_CAMERA_FPS = 25;
+
+	// РљРѕРЅСЃС‚Р°РЅС‚С‹ РґР»СЏ Р·Р°РґР°С‡Рё OBJCOURSE
+	static const float OBJCOURSE_FONT_SCALE = 0.7f;
+	static const int OBJCOURSE_THICKNESS = 1;
+	static cv::Scalar OBJCOURSE_BLACK = cv::Scalar(0, 0, 0);
+	static cv::Scalar OBJCOURSE_YELLOW = cv::Scalar(0, 255, 255);
+	static cv::Scalar OBJCOURSE_RED = cv::Scalar(0, 0, 255);
+	static cv::Scalar OBJCOURSE_GREEN = cv::Scalar(0, 255, 0);
+	static const bool OBJCOURSE_DRAW_LABEL = true;
 	
-	// Виды кодеков
+	// Р’РёРґС‹ РєРѕРґРµРєРѕРІ
 	enum class CODEC
 	{
 		XVID,
@@ -43,42 +65,106 @@ namespace mrcv
 		h265
 	};
 	
-	// Виды записей в лог-файле
+	// Р’РёРґС‹ Р·Р°РїРёСЃРµР№ РІ Р»РѕРі-С„Р°Р№Р»Рµ
 	enum class LOGTYPE
 	{
-		DEBUG,		// Отладака			DEBG
-		ERROR,		// Ошибка			ERRR
-		EXCEPTION,	// Исключение		EXCP
-		INFO,		// Информация		INFO
-		WARNING		// Предупреждение	WARN
+		DEBUG,		// РћС‚Р»Р°РґР°РєР°			DEBG
+		ERROR,		// РћС€РёР±РєР°			ERRR
+		EXCEPTION,	// РСЃРєР»СЋС‡РµРЅРёРµ		EXCP
+		INFO,		// РРЅС„РѕСЂРјР°С†РёСЏ		INFO
+		WARNING		// РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ	WARN
 	};
-	
-	// Структура для хранения параметров калибровки одиночной камеры
-	typedef struct CalibrationParametersMono
+
+	// РњРµС‚РѕРґС‹ РїСЂРµРґРѕР±СЂР°Р±РѕС‚РєРё РёР·РѕР±СЂР°Р¶РµРЅРёР№
+	enum class IMG_PREPROCESSING_METHOD
 	{
-		cv::Mat cameraMatrix;     // Матрица камеры
-		cv::Mat distCoeffs;       // Вектор коэффициентов дисторсии
-		cv::Mat rvecs;            // Кортеж векторов поворота для перехода из базиса объекта в базис камеры
-		cv::Mat tvecs;            // Кортеж векторов смещения для перехода из базиса объекта в базис камеры
-		cv::Mat stdDevIntrinsics; // Вектор оценок внутренних параметров камеры
-		cv::Mat stdDevExtrinsics; // Вектор оценок внешних параметров камеры
-		cv::Mat perViewErrors;    // Вектор среднеквадратической ошибки перепроецирования для каждого вида
-		double RMS;               // Значение среднеквадратической ошибки перепроецирования
+		NONE,
+		BRIGHTNESSLEVELUP,
+		BRIGHTNESSLEVELDOWN,
+		EQUALIZEHIST,
+		CLAHE,
+		COLORLABCLAHE,
+		BGRTOGRAY,
+		SHARPENING01,
+		SHARPENING02,
+		NOISEFILTERINGMEDIANFILTER,
+		NOISEFILTERINGAVARAGEFILTER,
+		CORRECTIONGEOMETRICDEFORMATION
 	};
 	
-	// Структура для хранения параметров калибровки стерео камеры
-	typedef struct CalibrationParametersStereo {
-		cv::Mat cameraMatrixL;	// Матрица левой камеры
-		cv::Mat cameraMatrixR;	// Матрица правой камеры
-		cv::Mat distCoeffsL;	// Вектор коэффициентов дисторсии левой камеры
-		cv::Mat distCoeffsR;	// Вектор коэффициентов дисторсии правой камеры
-		cv::Mat R;				// Матрица поворотов
-		cv::Mat T;				// Вектор смещений
-		cv::Mat E;				// Матрица существенных параметров
-		cv::Mat F;				// Фундаментальная матрица
-		cv::Mat rvecs;			// Кортеж векторов поворота для перехода из базиса объекта в базис камеры
-		cv::Mat tvecs;			// Кортеж векторов смещения для перехода из базиса объекта в базис камеры
-		cv::Mat perViewErrors;	// Вектор среднеквадратической ошибки перепроецирования для каждого вида
-		double RMS;				// Значение среднеквадратической ошибки перепроецирования
+	// РЎС‚СЂСѓРєС‚СѓСЂР° РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РєР°Р»РёР±СЂРѕРІРєРё РѕРґРёРЅРѕС‡РЅРѕР№ РєР°РјРµСЂС‹
+	struct CalibrationParametersMono
+	{
+		cv::Mat cameraMatrix;     // РњР°С‚СЂРёС†Р° РєР°РјРµСЂС‹
+		cv::Mat distCoeffs;       // Р’РµРєС‚РѕСЂ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ РґРёСЃС‚РѕСЂСЃРёРё
+		cv::Mat rvecs;            // РљРѕСЂС‚РµР¶ РІРµРєС‚РѕСЂРѕРІ РїРѕРІРѕСЂРѕС‚Р° РґР»СЏ РїРµСЂРµС…РѕРґР° РёР· Р±Р°Р·РёСЃР° РѕР±СЉРµРєС‚Р° РІ Р±Р°Р·РёСЃ РєР°РјРµСЂС‹
+		cv::Mat tvecs;            // РљРѕСЂС‚РµР¶ РІРµРєС‚РѕСЂРѕРІ СЃРјРµС‰РµРЅРёСЏ РґР»СЏ РїРµСЂРµС…РѕРґР° РёР· Р±Р°Р·РёСЃР° РѕР±СЉРµРєС‚Р° РІ Р±Р°Р·РёСЃ РєР°РјРµСЂС‹
+		cv::Mat stdDevIntrinsics; // Р’РµРєС‚РѕСЂ РѕС†РµРЅРѕРє РІРЅСѓС‚СЂРµРЅРЅРёС… РїР°СЂР°РјРµС‚СЂРѕРІ РєР°РјРµСЂС‹
+		cv::Mat stdDevExtrinsics; // Р’РµРєС‚РѕСЂ РѕС†РµРЅРѕРє РІРЅРµС€РЅРёС… РїР°СЂР°РјРµС‚СЂРѕРІ РєР°РјРµСЂС‹
+		cv::Mat perViewErrors;    // Р’РµРєС‚РѕСЂ СЃСЂРµРґРЅРµРєРІР°РґСЂР°С‚РёС‡РµСЃРєРѕР№ РѕС€РёР±РєРё РїРµСЂРµРїСЂРѕРµС†РёСЂРѕРІР°РЅРёСЏ РґР»СЏ РєР°Р¶РґРѕРіРѕ РІРёРґР°
+		double RMS;               // Р—РЅР°С‡РµРЅРёРµ СЃСЂРµРґРЅРµРєРІР°РґСЂР°С‚РёС‡РµСЃРєРѕР№ РѕС€РёР±РєРё РїРµСЂРµРїСЂРѕРµС†РёСЂРѕРІР°РЅРёСЏ
+	};
+
+	// РЎС‚СЂСѓРєС‚СѓСЂР° РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РєР°Р»РёР±СЂРѕРІРєРё СЃС‚РµСЂРµРѕ РєР°РјРµСЂС‹
+	struct CalibrationParametersStereo {
+		cv::Mat cameraMatrixL;	// РњР°С‚СЂРёС†Р° Р»РµРІРѕР№ РєР°РјРµСЂС‹
+		cv::Mat cameraMatrixR;	// РњР°С‚СЂРёС†Р° РїСЂР°РІРѕР№ РєР°РјРµСЂС‹
+		cv::Mat distCoeffsL;	// Р’РµРєС‚РѕСЂ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ РґРёСЃС‚РѕСЂСЃРёРё Р»РµРІРѕР№ РєР°РјРµСЂС‹
+		cv::Mat distCoeffsR;	// Р’РµРєС‚РѕСЂ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ РґРёСЃС‚РѕСЂСЃРёРё РїСЂР°РІРѕР№ РєР°РјРµСЂС‹
+		cv::Mat R;				// РњР°С‚СЂРёС†Р° РїРѕРІРѕСЂРѕС‚РѕРІ
+		cv::Mat T;				// Р’РµРєС‚РѕСЂ СЃРјРµС‰РµРЅРёР№
+		cv::Mat E;				// РњР°С‚СЂРёС†Р° СЃСѓС‰РµСЃС‚РІРµРЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ
+		cv::Mat F;				// Р¤СѓРЅРґР°РјРµРЅС‚Р°Р»СЊРЅР°СЏ РјР°С‚СЂРёС†Р°
+		cv::Mat rvecs;			// РљРѕСЂС‚РµР¶ РІРµРєС‚РѕСЂРѕРІ РїРѕРІРѕСЂРѕС‚Р° РґР»СЏ РїРµСЂРµС…РѕРґР° РёР· Р±Р°Р·РёСЃР° РѕР±СЉРµРєС‚Р° РІ Р±Р°Р·РёСЃ РєР°РјРµСЂС‹
+		cv::Mat tvecs;			// РљРѕСЂС‚РµР¶ РІРµРєС‚РѕСЂРѕРІ СЃРјРµС‰РµРЅРёСЏ РґР»СЏ РїРµСЂРµС…РѕРґР° РёР· Р±Р°Р·РёСЃР° РѕР±СЉРµРєС‚Р° РІ Р±Р°Р·РёСЃ РєР°РјРµСЂС‹
+		cv::Mat perViewErrors;	// Р’РµРєС‚РѕСЂ СЃСЂРµРґРЅРµРєРІР°РґСЂР°С‚РёС‡РµСЃРєРѕР№ РѕС€РёР±РєРё РїРµСЂРµРїСЂРѕРµС†РёСЂРѕРІР°РЅРёСЏ РґР»СЏ РєР°Р¶РґРѕРіРѕ РІРёРґР°
+		double RMS;				// Р—РЅР°С‡РµРЅРёРµ СЃСЂРµРґРЅРµРєРІР°РґСЂР°С‚РёС‡РµСЃРєРѕР№ РѕС€РёР±РєРё РїРµСЂРµРїСЂРѕРµС†РёСЂРѕРІР°РЅРёСЏ
+	};
+
+	// РЎС‚СЂСѓРєС‚СѓСЂР° РєРѕРЅС„РёРіСѓСЂР°С†РёРѕРЅРЅРѕРіРѕ С„Р°Р№Р»Р° РґР»СЏ РєР°Р»РёР±СЂРѕРІРєРё
+	struct CalibrationConfig
+	{
+		std::string folder_name = "../calibration_images/";	// РџСѓС‚СЊ Рє РєРѕРЅС„РёРіСѓСЂР°С†РёРѕРЅРЅРѕРјСѓ С„Р°Р№Р»Сѓ
+		int keypoints_c = 9;								// Р§РёСЃР»Рѕ РєР»СЋС‡РµРІС‹С… С‚РѕС‡РµРє РІРґРѕР»СЊ РѕРґРЅРѕРіРѕ СЃС‚РѕР»Р±С†Р° РєР°Р»РёР±СЂРѕРІРѕС‡РЅРѕР№ РґРѕСЃРєРё
+		int keypoints_r = 6;								// Р§РёСЃР»Рѕ РєР»СЋС‡РµРІС‹С… С‚РѕС‡РµРє РІРґРѕР»СЊ РѕРґРЅРѕР№ СЃС‚СЂРѕРєРё РєР°Р»РёР±СЂРѕРІРѕС‡РЅРѕР№ РґРѕСЃРєРё
+		float square_size = 20.1;							// Р Р°Р·РјРµСЂ РєРІР°РґСЂР°С‚Р° РєР°Р»РёР±СЂРѕРІРѕС‡РЅРѕР№ РґРѕСЃРєРё РІ РјРј
+		int image_count = 50;								// РћР±С‰РµРµ С‡РёСЃР»Рѕ РїР°СЂ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІ С„РѕС‚РѕСЃРµС‚Рµ
+	};
+
+
+	// РЎС‚СЂСѓРєС‚СѓСЂР° trianTricks РїСЂРµРґРЅР°Р·РЅР°С‡РµРЅР° РґР»СЏ РїРѕРІС‹С€РµРЅРёСЏ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё РѕР±СѓС‡РµРЅРёСЏ
+	struct trainTricks {
+		unsigned int freeze_epochs = 0;					// Р—Р°РјРѕСЂР°Р¶РёРІР°РµС‚ РјР°РіРёСЃС‚СЂР°Р»СЊ РЅРµР№СЂРѕРЅРЅРѕР№ СЃРµС‚Рё РІРѕ РІСЂРµРјСЏ РїРµСЂРІС‹С… freeze_epochs, РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 0;
+		std::vector<unsigned int> decay_epochs = { 0 };	// РџСЂРё РєР°Р¶РґРѕРј decay_epochs СЃРєРѕСЂРѕСЃС‚СЊ РѕР±СѓС‡РµРЅРёСЏ Р±СѓРґРµС‚ СЃРЅРёР¶Р°С‚СЊСЃСЏ РЅР° 90 РїСЂРѕС†РµРЅС‚РѕРІ, РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 0;
+		float dice_ce_ratio = (float)0.5;				// Р’РµСЃ РІС‹РїР°РґРµРЅРёСЏ РєСѓР±РёРєРѕРІ РІ РѕР±С‰РµРј РїСЂРѕРёРіСЂС‹С€Рµ, РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 0,5;
+		float horizontal_flip_prob = (float)0.0;		// Р’РµСЂРѕСЏС‚РЅРѕСЃС‚СЊ СѓРІРµР»РёС‡РµРЅРёСЏ РїРѕРІРѕСЂРѕС‚Р° РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё, РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 0;
+		float vertical_flip_prob = (float)0.0;			// Р’РµСЂРѕСЏС‚РЅРѕСЃС‚СЊ СѓРІРµР»РёС‡РµРЅРёСЏ РїРѕРІРѕСЂРѕС‚Р° РїРѕ РІРµСЂС‚РёРєР°Р»Рё, РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 0;
+		float scale_rotate_prob = (float)0.0;			// Р’РµСЂРѕСЏС‚РЅРѕСЃС‚СЊ РІС‹РїРѕР»РЅРµРЅРёСЏ РїРѕРІРѕСЂРѕС‚Р° Рё СѓРІРµР»РёС‡РµРЅРёСЏ РјР°СЃС€С‚Р°Р±Р°, РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 0;
+		float scale_limit = (float)0.1;
+		float rotate_limit = (float)45.0;
+		int interpolation = cv::INTER_LINEAR;
+		int border_mode = cv::BORDER_CONSTANT;
+	};
+
+	enum class AUGMENTATION_METHOD
+	{
+		NONE,
+		FLIP_HORIZONTAL,
+		FLIP_VERTICAL,
+		ROTATE_IMAGE_90,
+		ROTATE_IMAGE_45,
+		ROTATE_IMAGE_270,
+		ROTATE_IMAGE_315,
+		FLIP_HORIZONTAL_AND_VERTICAL,
+		TEST
+	};
+
+	enum class DISPARITY_TYPE
+	{
+		ALL,
+		BASIC_DISPARITY,
+		BASIC_HEATMAP,
+		FILTERED_DISPARITY,
+		FILTERED_HEATMAP,
 	};
 }

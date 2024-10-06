@@ -1,16 +1,33 @@
-#include <mrcv/mrcv.h>
+п»ї#include <mrcv/mrcv.h>
 
 namespace mrcv
 {
     /**
-     * @brief Функция сложения двух целых чисел.
-     * @param a - Первое слагаемое.
-     * @param b - Второе слагаемое.
-     * @return - Резальтат вычсиления выражения a + b
+     * @brief Р¤СѓРЅРєС†РёСЏ СЃР»РѕР¶РµРЅРёСЏ РґРІСѓС… С†РµР»С‹С… С‡РёСЃРµР».
+     * @param a - РџРµСЂРІРѕРµ СЃР»Р°РіР°РµРјРѕРµ.
+     * @param b - Р’С‚РѕСЂРѕРµ СЃР»Р°РіР°РµРјРѕРµ.
+     * @return - Р РµР·Р°Р»СЊС‚Р°С‚ РІС‹С‡СЃРёР»РµРЅРёСЏ РІС‹СЂР°Р¶РµРЅРёСЏ a + b
      */
     int add(int a, int b)
     {
         return a + b;
     }
 
+    MRCVPoint::MRCVPoint()
+    {
+        _X = 0;
+        _Y = 0;
+    }
+    void MRCVPoint::setX(int X)
+    {
+        _X = X;
+    }
+    void MRCVPoint::setY(int Y)
+    {
+        _Y = Y;
+    }
+    std::string MRCVPoint::gerCoordinates()
+    {
+        return "(" + std::to_string(_X) + ";" + std::to_string(_Y) + ")";
+    }
 }

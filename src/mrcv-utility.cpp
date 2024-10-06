@@ -1,12 +1,12 @@
-#include <mrcv/mrcv.h>
+п»ї#include <mrcv/mrcv.h>
 
 namespace mrcv
 {
     /**
-     * @brief Функция генерации уникального имени файла.
-     * @param fileName - маска имени файла (префикс имени).
-     * @param fileExtension - расширение файл в формате ".abc".
-     * @return - Уникальное имя файла в формате filename_%d%m%Y_%H%M%S.abc.
+     * @brief Р¤СѓРЅРєС†РёСЏ РіРµРЅРµСЂР°С†РёРё СѓРЅРёРєР°Р»СЊРЅРѕРіРѕ РёРјРµРЅРё С„Р°Р№Р»Р°.
+     * @param fileName - РјР°СЃРєР° РёРјРµРЅРё С„Р°Р№Р»Р° (РїСЂРµС„РёРєСЃ РёРјРµРЅРё).
+     * @param fileExtension - СЂР°СЃС€РёСЂРµРЅРёРµ С„Р°Р№Р» РІ С„РѕСЂРјР°С‚Рµ ".abc".
+     * @return - РЈРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ С„Р°Р№Р»Р° РІ С„РѕСЂРјР°С‚Рµ filename_%d%m%Y_%H%M%S.abc.
      */
     std::string generateUniqueFileName(std::string fileName, std::string fileExtension)
     {
@@ -26,8 +26,8 @@ namespace mrcv
     }
 
     /**
-     * @brief Функция генерации уникального имени лог-файла.
-     * @return - Уникальное имя файла в формате dd-mm-yyyy.log.
+     * @brief Р¤СѓРЅРєС†РёСЏ РіРµРЅРµСЂР°С†РёРё СѓРЅРёРєР°Р»СЊРЅРѕРіРѕ РёРјРµРЅРё Р»РѕРі-С„Р°Р№Р»Р°.
+     * @return - РЈРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ С„Р°Р№Р»Р° РІ С„РѕСЂРјР°С‚Рµ dd-mm-yyyy.log.
      */
     std::string generateUniqueLogFileName()
     {
@@ -47,11 +47,11 @@ namespace mrcv
     }
 
     /**
-     * @brief Функция для создания текстового файла-лога работы функций библиотеки
-     * @param logText - текст сообщения для записи в лог-файл
-     * @param logType - тип сообщения в лог-файле
+     * @brief Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ С‚РµРєСЃС‚РѕРІРѕРіРѕ С„Р°Р№Р»Р°-Р»РѕРіР° СЂР°Р±РѕС‚С‹ С„СѓРЅРєС†РёР№ Р±РёР±Р»РёРѕС‚РµРєРё
+     * @param logText - С‚РµРєСЃС‚ СЃРѕРѕР±С‰РµРЅРёСЏ РґР»СЏ Р·Р°РїРёСЃРё РІ Р»РѕРі-С„Р°Р№Р»
+     * @param logType - С‚РёРї СЃРѕРѕР±С‰РµРЅРёСЏ РІ Р»РѕРі-С„Р°Р№Р»Рµ
      */
-    void writeLog(std::string logText, LOGTYPE logType = LOGTYPE::INFO)
+    void writeLog(std::string logText, LOGTYPE logType)
     {
         if (!IS_DEBUG_LOG_ENABLED)
             return;
@@ -61,12 +61,12 @@ namespace mrcv
             std::filesystem::path pathToLogDirectory = std::filesystem::current_path() / "log";
             std::filesystem::directory_entry directoryEntry{ pathToLogDirectory };
 
-            // Проверяем существование папки log в рабочем каталоге
+            // РџСЂРѕРІРµСЂСЏРµРј СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РїР°РїРєРё log РІ СЂР°Р±РѕС‡РµРј РєР°С‚Р°Р»РѕРіРµ
             bool isLogDirectoryExists = directoryEntry.exists();
 
             if (!isLogDirectoryExists)
             {
-                // Если папка log не существует, создаем ее
+                // Р•СЃР»Рё РїР°РїРєР° log РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, СЃРѕР·РґР°РµРј РµРµ
                 isLogDirectoryExists = std::filesystem::create_directory(pathToLogDirectory);
                 if (!isLogDirectoryExists)
                 {
@@ -74,7 +74,7 @@ namespace mrcv
                 }
             }
 
-            // Определяем тип записи
+            // РћРїСЂРµРґРµР»СЏРµРј С‚РёРї Р·Р°РїРёСЃРё
             std::string logTypeAbbreviation;
             switch (logType)
             {
@@ -98,7 +98,7 @@ namespace mrcv
                 break;
             }
 
-            // Определяем временную метку
+            // РћРїСЂРµРґРµР»СЏРµРј РІСЂРµРјРµРЅРЅСѓСЋ РјРµС‚РєСѓ
             struct tm currentTime;
             time_t nowTime = time(0);
 
@@ -112,20 +112,20 @@ namespace mrcv
             outStringStream << std::put_time(&currentTime, "%H:%M:%S");
             std::string logTime = outStringStream.str();
 
-            // Генерируем уникальное имя файла в формате dd-mm-yyyy.log
+            // Р“РµРЅРµСЂРёСЂСѓРµРј СѓРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ С„Р°Р№Р»Р° РІ С„РѕСЂРјР°С‚Рµ dd-mm-yyyy.log
             std::string logFileName = generateUniqueLogFileName();
             std::filesystem::path pathToLogFile = pathToLogDirectory / logFileName;
 
-            std::ofstream logFile; // Идентификатор лог-файла
+            std::ofstream logFile; // РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ Р»РѕРі-С„Р°Р№Р»Р°
 
             if (std::filesystem::exists(pathToLogFile))
             {
-                // Если файл лога существует, открываем файл для дозаписи и добавляем строку в конец            
+                // Р•СЃР»Рё С„Р°Р№Р» Р»РѕРіР° СЃСѓС‰РµСЃС‚РІСѓРµС‚, РѕС‚РєСЂС‹РІР°РµРј С„Р°Р№Р» РґР»СЏ РґРѕР·Р°РїРёСЃРё Рё РґРѕР±Р°РІР»СЏРµРј СЃС‚СЂРѕРєСѓ РІ РєРѕРЅРµС†            
                 logFile.open(pathToLogFile.c_str(), std::ios_base::app);
             }
             else
             {
-                // Если файл лога не существует, создаем его и добавляем строчку
+                // Р•СЃР»Рё С„Р°Р№Р» Р»РѕРіР° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, СЃРѕР·РґР°РµРј РµРіРѕ Рё РґРѕР±Р°РІР»СЏРµРј СЃС‚СЂРѕС‡РєСѓ
                 logFile.open(pathToLogFile.c_str(), std::ios_base::out);
             }
 
@@ -140,16 +140,67 @@ namespace mrcv
             return;
         }
     }
+    void writeLog()
+    {
+        if (!IS_DEBUG_LOG_ENABLED)
+            return;
+
+        try
+        {
+            std::filesystem::path pathToLogDirectory = std::filesystem::current_path() / "log";
+            std::filesystem::directory_entry directoryEntry{ pathToLogDirectory };
+
+            // РџСЂРѕРІРµСЂСЏРµРј СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РїР°РїРєРё log РІ СЂР°Р±РѕС‡РµРј РєР°С‚Р°Р»РѕРіРµ
+            bool isLogDirectoryExists = directoryEntry.exists();
+
+            if (!isLogDirectoryExists)
+            {
+                // Р•СЃР»Рё РїР°РїРєР° log РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, СЃРѕР·РґР°РµРј РµРµ
+                isLogDirectoryExists = std::filesystem::create_directory(pathToLogDirectory);
+                if (!isLogDirectoryExists)
+                {
+                    return;
+                }
+            }
+
+            // Р“РµРЅРµСЂРёСЂСѓРµРј СѓРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ С„Р°Р№Р»Р° РІ С„РѕСЂРјР°С‚Рµ dd-mm-yyyy.log
+            std::string logFileName = generateUniqueLogFileName();
+            std::filesystem::path pathToLogFile = pathToLogDirectory / logFileName;
+
+            std::ofstream logFile; // РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ Р»РѕРі-С„Р°Р№Р»Р°
+
+            if (std::filesystem::exists(pathToLogFile))
+            {
+                // Р•СЃР»Рё С„Р°Р№Р» Р»РѕРіР° СЃСѓС‰РµСЃС‚РІСѓРµС‚, РѕС‚РєСЂС‹РІР°РµРј С„Р°Р№Р» РґР»СЏ РґРѕР·Р°РїРёСЃРё Рё РґРѕР±Р°РІР»СЏРµРј СЃС‚СЂРѕРєСѓ РІ РєРѕРЅРµС†            
+                logFile.open(pathToLogFile.c_str(), std::ios_base::app);
+            }
+            else
+            {
+                // Р•СЃР»Рё С„Р°Р№Р» Р»РѕРіР° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, СЃРѕР·РґР°РµРј РµРіРѕ Рё РґРѕР±Р°РІР»СЏРµРј СЃС‚СЂРѕС‡РєСѓ
+                logFile.open(pathToLogFile.c_str(), std::ios_base::out);
+            }
+
+            if (logFile.is_open())
+            {
+                logFile << std::endl;
+                logFile.close();
+            }
+        }
+        catch (...)
+        {
+            return;
+        }
+    }
 
     /**
-     * @brief Функция загрузки изображения.
+     * @brief Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ.
      * 
-     * Функция используется для загрузки изображения с носителя и отображения загруженного изображения в модальном окне.
+     * Р¤СѓРЅРєС†РёСЏ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ Р·Р°РіСЂСѓР·РєРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃ РЅРѕСЃРёС‚РµР»СЏ Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ Р·Р°РіСЂСѓР¶РµРЅРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІ РјРѕРґР°Р»СЊРЅРѕРј РѕРєРЅРµ.
      * 
-     * @param image - объект cv::Mat для хранения загруженного изображения.
-     * @param pathToImage - полный путь к файлу с изображением.
-     * @param showImage - флаг, отвечающий за отображение модального окна (false по умолчанию).
-     * @return - код результата работы функции. 0 - Success; 1 - Невозможно открыть изображение; -1 - Unhandled Exception.
+     * @param image - РѕР±СЉРµРєС‚ cv::Mat РґР»СЏ С…СЂР°РЅРµРЅРёСЏ Р·Р°РіСЂСѓР¶РµРЅРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ.
+     * @param pathToImage - РїРѕР»РЅС‹Р№ РїСѓС‚СЊ Рє С„Р°Р№Р»Сѓ СЃ РёР·РѕР±СЂР°Р¶РµРЅРёРµРј.
+     * @param showImage - С„Р»Р°Рі, РѕС‚РІРµС‡Р°СЋС‰РёР№ Р·Р° РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РјРѕРґР°Р»СЊРЅРѕРіРѕ РѕРєРЅР° (false РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ).
+     * @return - РєРѕРґ СЂРµР·СѓР»СЊС‚Р°С‚Р° СЂР°Р±РѕС‚С‹ С„СѓРЅРєС†РёРё. 0 - Success; 1 - РќРµРІРѕР·РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёРµ; -1 - Unhandled Exception.
      */
     int readImage(cv::Mat& image, std::string pathToImage, bool showImage)
     {
@@ -178,116 +229,116 @@ namespace mrcv
     }
 
     /**
-     * @brief Функция записи видеопотока на диск.
+     * @brief Р¤СѓРЅРєС†РёСЏ Р·Р°РїРёСЃРё РІРёРґРµРѕРїРѕС‚РѕРєР° РЅР° РґРёСЃРє.
      * 
-     * Функция может использоваться дле реализации работы видеорегистратора.
+     * Р¤СѓРЅРєС†РёСЏ РјРѕР¶РµС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РґР»Рµ СЂРµР°Р»РёР·Р°С†РёРё СЂР°Р±РѕС‚С‹ РІРёРґРµРѕСЂРµРіРёСЃС‚СЂР°С‚РѕСЂР°.
      * 
-     * @param cameraID - ID камеры.
-     * @param recorderInterval - Интервал записи в секундах.
-     * @param fileName - Маска фала.
-     * @param codec - Кодек, используемый для создания видеофайла.
-     * @return - код результата работы функции. 0 - Success; 1 - ID камеры задан неверно; 2 - Интервал захвата меньше минимального; 3 - Не удалось захватить камеру; 4 - Не удалось создать объектс cv::VideoWriter; -1 - Unhandled Exception.
+     * @param cameraID - ID РєР°РјРµСЂС‹.
+     * @param recorderInterval - РРЅС‚РµСЂРІР°Р» Р·Р°РїРёСЃРё РІ СЃРµРєСѓРЅРґР°С….
+     * @param fileName - РњР°СЃРєР° С„Р°Р»Р°.
+     * @param codec - РљРѕРґРµРє, РёСЃРїРѕР»СЊР·СѓРµРјС‹Р№ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РІРёРґРµРѕС„Р°Р№Р»Р°.
+     * @return - РєРѕРґ СЂРµР·СѓР»СЊС‚Р°С‚Р° СЂР°Р±РѕС‚С‹ С„СѓРЅРєС†РёРё. 0 - Success; 1 - ID РєР°РјРµСЂС‹ Р·Р°РґР°РЅ РЅРµРІРµСЂРЅРѕ; 2 - РРЅС‚РµСЂРІР°Р» Р·Р°С…РІР°С‚Р° РјРµРЅСЊС€Рµ РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ; 3 - РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°С…РІР°С‚РёС‚СЊ РєР°РјРµСЂСѓ; 4 - РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ РѕР±СЉРµРєС‚СЃ cv::VideoWriter; -1 - Unhandled Exception.
      */
     int recordVideo(int cameraID, int recorderInterval, std::string fileName, CODEC codec)
     {
-        writeLog("Вызов ф-ции recordVideo(" + std::to_string(cameraID) + ", " + std::to_string(recorderInterval) +
+        writeLog("Р’С‹Р·РѕРІ С„-С†РёРё recordVideo(" + std::to_string(cameraID) + ", " + std::to_string(recorderInterval) +
             ", \"" + fileName + "\", " + std::to_string((int)codec) + ")");
-        writeLog("Старт записи видео");
+        writeLog("РЎС‚Р°СЂС‚ Р·Р°РїРёСЃРё РІРёРґРµРѕ");
         
         try
         {
             if (cameraID < 0)
             {
-                writeLog("ID камеры задан неверно", LOGTYPE::ERROR);
+                writeLog("ID РєР°РјРµСЂС‹ Р·Р°РґР°РЅ РЅРµРІРµСЂРЅРѕ", LOGTYPE::ERROR);
                 return 1;
             }   
 
             if (recorderInterval < UTILITY_DEFAULT_RECORDER_INTERVAL)
             {
-                writeLog("Интервал записи не может быть меньше UTILITY_DEFAULT_RECORDER_INTERVAL сек.", LOGTYPE::ERROR);
+                writeLog("РРЅС‚РµСЂРІР°Р» Р·Р°РїРёСЃРё РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РјРµРЅСЊС€Рµ UTILITY_DEFAULT_RECORDER_INTERVAL СЃРµРє.", LOGTYPE::ERROR);
                 return 2;
             }                
 
             if (fileName.empty())
                 fileName = UTILITY_DEFAULT_RECORDER_FILENAME;
 
-            // Создаем объект для записи видео
+            // РЎРѕР·РґР°РµРј РѕР±СЉРµРєС‚ РґР»СЏ Р·Р°РїРёСЃРё РІРёРґРµРѕ
             cv::VideoWriter videoWriter;
             std::string fileExtension;
 
-            // Определяем параметры videoWriter
-            // и расширение выходного файла в зависимости от кодека
+            // РћРїСЂРµРґРµР»СЏРµРј РїР°СЂР°РјРµС‚СЂС‹ videoWriter
+            // Рё СЂР°СЃС€РёСЂРµРЅРёРµ РІС‹С…РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р° РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РєРѕРґРµРєР°
             int fourccCode;
             switch (codec)
             {
             case CODEC::MJPG:
                 fourccCode = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
                 fileExtension = ".mp4";
-                writeLog("Тип кодека: MJPG");
+                writeLog("РўРёРї РєРѕРґРµРєР°: MJPG");
                 break;
             case CODEC::mp4v:
                 fourccCode = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
                 fileExtension = ".mp4";
-                writeLog("Тип кодека: mp4v");
+                writeLog("РўРёРї РєРѕРґРµРєР°: mp4v");
                 break;
             case CODEC::h265:
                 fourccCode = cv::VideoWriter::fourcc('h', '2', '6', '5');
                 fileExtension = ".mp4";
-                writeLog("Тип кодека: h265");
+                writeLog("РўРёРї РєРѕРґРµРєР°: h265");
                 break;
             case CODEC::XVID:
                 fourccCode = cv::VideoWriter::fourcc('X', 'V', 'I', 'D');
                 fileExtension = ".avi";
-                writeLog("Тип кодека: XVID");
+                writeLog("РўРёРї РєРѕРґРµРєР°: XVID");
                 break;
             default:
                 fourccCode = cv::VideoWriter::fourcc('X', 'V', 'I', 'D');
                 fileExtension = ".avi";
-                writeLog("Тип кодека: XVID");
+                writeLog("РўРёРї РєРѕРґРµРєР°: XVID");
                 break;
             }
 
-            // Генерируем имя файла с привязкой к текущему времени
+            // Р“РµРЅРµСЂРёСЂСѓРµРј РёРјСЏ С„Р°Р№Р»Р° СЃ РїСЂРёРІСЏР·РєРѕР№ Рє С‚РµРєСѓС‰РµРјСѓ РІСЂРµРјРµРЅРё
             std::string fullFileName = generateUniqueFileName(fileName, fileExtension);
-            writeLog("Имя выходного файла: " + fullFileName);
+            writeLog("РРјСЏ РІС‹С…РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р°: " + fullFileName);
 
-            // Создаем объект для захвата камеры
+            // РЎРѕР·РґР°РµРј РѕР±СЉРµРєС‚ РґР»СЏ Р·Р°С…РІР°С‚Р° РєР°РјРµСЂС‹
             cv::VideoCapture videoCapture(cameraID);
 
             if (!videoCapture.isOpened())
             {
-                writeLog("Не удалось захватить камеру", LOGTYPE::ERROR);
+                writeLog("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°С…РІР°С‚РёС‚СЊ РєР°РјРµСЂСѓ", LOGTYPE::ERROR);
                 return 3;
             }   
 
-            // Разрешение камеры
+            // Р Р°Р·СЂРµС€РµРЅРёРµ РєР°РјРµСЂС‹
             cv::Size cameraResolution(
                 (int)videoCapture.get(cv::CAP_PROP_FRAME_WIDTH),
                 (int)videoCapture.get(cv::CAP_PROP_FRAME_HEIGHT));
 
-            // FPS камеры
+            // FPS РєР°РјРµСЂС‹
             int cameraFPS = (int)videoCapture.get(cv::CAP_PROP_FPS);
             if (cameraFPS == 0)
                 cameraFPS = UTILITY_DEFAULT_CAMERA_FPS;
 
-            writeLog("Создание объекта cv::VideoWriter():");
+            writeLog("РЎРѕР·РґР°РЅРёРµ РѕР±СЉРµРєС‚Р° cv::VideoWriter():");
             writeLog("\tfullFileName: " + fullFileName);
             writeLog("\tfourccCode: " + std::to_string(fourccCode));
             writeLog("\tcameraFPS: " + std::to_string(cameraFPS));
             writeLog("\tcameraResolution (width): " + std::to_string(cameraResolution.width));
             writeLog("\tcameraResolution (height): " + std::to_string(cameraResolution.height));
 
-            // Объект для записи видеопотока
+            // РћР±СЉРµРєС‚ РґР»СЏ Р·Р°РїРёСЃРё РІРёРґРµРѕРїРѕС‚РѕРєР°
             videoWriter = cv::VideoWriter(fullFileName, fourccCode, cameraFPS, cameraResolution);
 
             if (!videoWriter.isOpened())
             {
-                writeLog("Не удалось создать объект cv::VideoWriter", LOGTYPE::ERROR);
+                writeLog("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ РѕР±СЉРµРєС‚ cv::VideoWriter", LOGTYPE::ERROR);
                 
-                // Освобождение объекта записи видеопотока
+                // РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕР±СЉРµРєС‚Р° Р·Р°РїРёСЃРё РІРёРґРµРѕРїРѕС‚РѕРєР°
                 videoWriter.release();
 
-                // Освобождение объекта захвата камеры
+                // РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕР±СЉРµРєС‚Р° Р·Р°С…РІР°С‚Р° РєР°РјРµСЂС‹
                 if (videoCapture.isOpened())
                     videoCapture.release();
                 
@@ -297,37 +348,37 @@ namespace mrcv
             clock_t timerStart = clock();
             cv::Mat videoFrame;
 
-            // Цикл записи видеопотока в файл
+            // Р¦РёРєР» Р·Р°РїРёСЃРё РІРёРґРµРѕРїРѕС‚РѕРєР° РІ С„Р°Р№Р»
             while ((clock() - timerStart) < (recorderInterval * CLOCKS_PER_SEC))
             {
                 videoCapture >> videoFrame;
                 videoWriter.write(videoFrame);
             }
 
-            // Освобождение объекта записи видеопотока
-            writeLog("Освобождение объекта cv::VideoWriter()");
+            // РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕР±СЉРµРєС‚Р° Р·Р°РїРёСЃРё РІРёРґРµРѕРїРѕС‚РѕРєР°
+            writeLog("РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕР±СЉРµРєС‚Р° cv::VideoWriter()");
             videoWriter.release();
 
-            // Освобождение объекта захвата камеры
-            writeLog("Освобождение объекта cv::VideoCapture()");
+            // РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕР±СЉРµРєС‚Р° Р·Р°С…РІР°С‚Р° РєР°РјРµСЂС‹
+            writeLog("РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕР±СЉРµРєС‚Р° cv::VideoCapture()");
             if (videoCapture.isOpened())
                 videoCapture.release();
 
-            // Возврат кода нормального завершения работы
-            writeLog("Стоп записи видео");
+            // Р’РѕР·РІСЂР°С‚ РєРѕРґР° РЅРѕСЂРјР°Р»СЊРЅРѕРіРѕ Р·Р°РІРµСЂС€РµРЅРёСЏ СЂР°Р±РѕС‚С‹
+            writeLog("РЎС‚РѕРї Р·Р°РїРёСЃРё РІРёРґРµРѕ");
             return 0;
         }
         catch (...)
         {
-            writeLog("Неизвестное исключение...", LOGTYPE::EXCEPTION);
+            writeLog("РќРµРёР·РІРµСЃС‚РЅРѕРµ РёСЃРєР»СЋС‡РµРЅРёРµ...", LOGTYPE::EXCEPTION);
             return -1;
         }
         
     }
     
     /**
-     * @brief Функция вывода информации о текущей сборке OpenCV.
-     * @return Строка с диагностической информацией.
+     * @brief Р¤СѓРЅРєС†РёСЏ РІС‹РІРѕРґР° РёРЅС„РѕСЂРјР°С†РёРё Рѕ С‚РµРєСѓС‰РµР№ СЃР±РѕСЂРєРµ OpenCV.
+     * @return РЎС‚СЂРѕРєР° СЃ РґРёР°РіРЅРѕСЃС‚РёС‡РµСЃРєРѕР№ РёРЅС„РѕСЂРјР°С†РёРµР№.
      */
     std::string getOpenCVBuildInformation()
     {
