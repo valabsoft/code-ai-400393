@@ -26,12 +26,8 @@ namespace mrcv
 
         std::pair<torch::Tensor, torch::Tensor> encode(torch::Tensor x) 
         {
-            std::cout << "Input tensor size: " << x.sizes() << std::endl;
-
             x = torch::relu(encoder1->forward(x));
-            std::cout << "After encoder1: " << x.sizes() << std::endl;
             x = torch::relu(encoder2->forward(x));
-            std::cout << "After encoder2: " << x.sizes() << std::endl;
             auto mu = this->mu->forward(x);
             auto logvar = this->logvar->forward(x);
             return { mu, logvar };
@@ -39,7 +35,6 @@ namespace mrcv
 
         torch::Tensor decode(torch::Tensor z) 
         {
-            std::cout << "Input tensor size in decode: " << z.sizes() << std::endl;
             z = torch::relu(decoder1->forward(z));
             z = torch::sigmoid(decoder2->forward(z));
             return z;
@@ -54,24 +49,21 @@ namespace mrcv
 
         std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> forward(torch::Tensor x) 
         {
-            std::cout << "Input tensor size in forward: " << x.sizes() << std::endl;
             auto [mu, logvar] = encode(x);
             auto z = reparameterize(mu, logvar);
-
             x = torch::relu(decoder1->forward(z));
             x = decoder2->forward(x);
-
             return std::make_tuple(x, mu, logvar);
         }
     };
 
-   MRCV_EXPORT class CustomDataset : public torch::data::datasets::Dataset<CustomDataset> 
+   MRCV_EXPORT class LoadImageDataset : public torch::data::datasets::Dataset<LoadImageDataset> 
    {
         std::vector<std::string> images;
         int numColor;
 
     public:
-        CustomDataset(const std::string& root, int numColor) : numColor(numColor) 
+        LoadImageDataset(const std::string& root, int numColor) : numColor(numColor) 
         {
             for (const auto& entry : std::filesystem::directory_iterator(root)) 
             {
@@ -80,17 +72,19 @@ namespace mrcv
                     images.push_back(entry.path().string());
                 }
             }
-            std::cout << "Total images loaded: " << images.size() << std::endl;
+            auto str = std::to_string(images.size());
+            writeLog("Loaded Images: " + str, mrcv::LOGTYPE::INFO);
         }
 
         torch::data::Example<> get(size_t index) override 
         {
+           
             auto path = images[index];
             cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
 
             if (image.empty()) 
             {
-                std::cerr << "Failed to load image: " << path << std::endl;
+                writeLog("Failed to Loade Image: " + path, mrcv::LOGTYPE::ERROR);
                 return {};
             }
             if (numColor == 1) 
@@ -127,9 +121,8 @@ namespace mrcv
    static cv::Scalar RED = cv::Scalar(0, 0, 255);
    static cv::Scalar GREEN = cv::Scalar(0, 255, 0);
 
-
-   MRCV_EXPORT class NNPreLabeler
-   {
+   /** Класс детектора */
+   class NNPreLabeler {
    private:
        /** Ширина и высота исходного изображения */
        cv::Size sourceSize;
@@ -153,12 +146,11 @@ namespace mrcv
        int initNetwork(const std::string modelPath,
            const std::string classesPath);
        /** Отрисовка метки */
-       int drawLabel(cv::Mat& img, std::string label, int left, int top);
+       void drawLabel(cv::Mat& img, std::string label, int left, int top);
        /** Предобработка результатов */
        std::vector<cv::Mat> preProcess(cv::Mat& img);
        /** Постобработка результатов */
-       cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs,
-           const std::vector<std::string>& class_name);
+       cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& class_name);
    public:
        NNPreLabeler(const std::string model, const std::string classes, int width, int height);
        std::vector<float> getConfidences(void) { return confidencesSet; }
@@ -167,8 +159,9 @@ namespace mrcv
        std::vector<std::string> getClasses(void) { return classesSet; }
        float getInference(void) { return inferenceTime; }
        cv::Mat process(cv::Mat& img);
-       int writeLabels(const std::string& filename);
+       void writeLabels(const std::string& filename);
    };
+ 
    //////////////////////////////////////////////////////////
 
    /**
@@ -203,6 +196,32 @@ namespace mrcv
     * @return - изображение формата cv::Mat.
     */
    MRCV_EXPORT cv::Mat neuralNetworkAugmentationAsMat(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate);
-
+   /**
+    * @brief функция полуавтоматической разметки.
+    *
+    * Функция может использоваться для полуавтоматической разметки в формате YOLO.
+    *
+    * @param inputImage - изображение формата cv::Mat.
+    * @param height - высота изображения.
+    * @param width - ширина изображения.
+    * @param outputPath - полный путь к папке к сохранению результата.
+    * @param modelPath -  полный путь к обученной модели.
+    * @param classesPath - полный путь к файлу с классами.
+    * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
+	*/
    MRCV_EXPORT int semiAutomaticLabeler(cv::Mat& inputImage, const int64_t height, const int64_t width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
+   /**
+      * @brief функция полуавтоматической разметки.
+      *
+      * Функция может использоваться для полуавтоматической разметки в формате YOLO.
+      *
+      * @param root - полный путь к изображению.
+      * @param height - высота изображения.
+      * @param width - ширина изображения.
+      * @param outputPath - полный путь к папке к сохранению результата.
+      * @param modelPath -  полный путь к обученной модели.
+      * @param classesPath - полный путь к файлу с классами.
+      * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
+      */
+   MRCV_EXPORT int semiAutomaticLabeler(const std::string& root, const int64_t height, const int64_t width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
 }

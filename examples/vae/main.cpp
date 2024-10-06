@@ -10,24 +10,27 @@ int main()
    std::filesystem::path resultFile("files\\result");
     
 
-    auto currentPath = std::filesystem::current_path();
+   auto currentPath = std::filesystem::current_path();
 
-    auto imagePath = currentPath / imageFile;
-    auto modelPath = currentPath / modelFile;
-    auto classPath = currentPath / classFile;
-    auto resultPath = currentPath / resultFile;
+   auto imagePath = currentPath / imageFile;
+   auto modelPath = currentPath / modelFile;
+   auto classPath = currentPath / classFile;
+   auto resultPath = currentPath / resultFile;
 
-    std::string imagePathSrt{ imagePath.u8string() };
-    std::string modelPathStr{ modelPath.u8string() };
-    std::string classPathStr{ classPath.u8string() };
-    std::string resultPathStr{ resultPath.u8string() };
+   int height = 640;
+   int width = 640;
 
-    int height = 640;
-    int width = 640;
+   cv::Mat genImage = mrcv::neuralNetworkAugmentationAsMat(imagePath.u8string(), height, width, 800, 8, 800, 32, 3E-4);
 
-    cv::Mat genImage = mrcv::neuralNetworkAugmentationAsMat(imagePathSrt, height, width, 200, 2, 1000, 32, 3E-4);
+   cv::Mat colorGenImage;
+   cv::cvtColor(genImage, colorGenImage, cv::COLOR_GRAY2BGR);
 
-    mrcv::semiAutomaticLabeler(genImage, height, width, resultPathStr, modelPathStr, classPathStr);
+   cv::imshow("", colorGenImage);
+   cv::waitKey(0);
+
+   cv::imwrite(resultPath.u8string() + "/generated.jpg", colorGenImage);
+
+   mrcv::semiAutomaticLabeler(resultPath.u8string() + "/generated.jpg", height, width, resultPath.u8string(), modelPath.u8string(), classPath.u8string());
     
-    return EXIT_SUCCESS;
+   return EXIT_SUCCESS;
 }
