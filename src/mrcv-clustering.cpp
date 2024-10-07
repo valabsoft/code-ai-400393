@@ -1,5 +1,6 @@
 ﻿#include <mrcv/mrcv.h>
 #include <mrcv/mrcv-common.h>
+#include <fstream>  // Добавлено для записи в файл
 
 namespace mrcv
 {
@@ -201,16 +202,23 @@ namespace mrcv
             numClaster++;
             clastersData.push_back(xyz2);
         }
+
+        // Запись кластеров и точек в файл
+        std::ofstream outputFile("files/clusters_data.txt");
+        if (outputFile.is_open()) {
+            outputFile << "Координаты точки, номер точки, номер кластера" << std::endl;
+            for (size_t i = 0; i < Len3D; ++i) {
+                outputFile << x3D[i] << ", " << y3D[i] << ", " << z3D[i]
+                    << ", " << i << ", " << IDX[i] << std::endl;
+            }
+            outputFile.close();
+        }
     }
 
-    // Логирование кластеров
+    // Логирование успешной кластеризации
     void DenseStereo::printClusters() {
         std::ostringstream logStream;  // Строковый поток для формирования сообщения лога
-
-        logStream << "Clusters: " << std::endl;
-        for (size_t i = 0; i < IDX.size(); ++i) {
-            logStream << i << "      " << IDX[i] << std::endl;
-        }
+        logStream << "Кластеризация выполнена успешно. Количество точек: " << IDX.size() << ", количество кластеров: " << *std::max_element(IDX.begin(), IDX.end()) + 1;
         // Записываем сообщение в лог
         writeLog(logStream.str(), mrcv::LOGTYPE::INFO);
     }
