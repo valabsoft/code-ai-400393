@@ -549,25 +549,25 @@ namespace mrcv
 
 		/**
 		 * @brief Функция обучения LSTM сети
-		 * 
-		 * @param coordinates - Вектор входных координат
-		 * @param imageLeft - Флаг обучения. Используется для дообучения модели. (true - первое обучение, false - дообучение)
+		 *
+		 * @param coordinates - Вектор входных координат.
+		 * @param imageLeft - Флаг обучения. Используется для дообучения модели. (true - первое обучение, false - дообучение).
 		 */
 		void trainLSTMNet(const std::vector<std::pair<float, float>> coordinates, bool isTraining = false);
 
 		/**
 		 * @brief Функция дообучения LSTM сети
-		 * 
+		 *
 		 * @param coordinate - Входные координаты.
 		 */
 		void continueTraining(const std::pair<float, float> coordinate);
 
 		/**
 		 * @brief Функция предсказания следующей координаты
-		 * 
-		 * @return - предсказанные сетью координаты
+		 *
+		 * @return - Предсказанные сетью координаты.
 		 */
-		std::pair<float, float> predictNextCoordinate();	
+		std::pair<float, float> predictNextCoordinate();
 
 	private:
 		std::pair<float, float> Predictor::denormilizeOutput(std::pair<float, float> coords);
@@ -580,7 +580,7 @@ namespace mrcv
 		int64_t inputSize;
 		int64_t hiddenSize;
 		int64_t numLayers;
-		unsigned int imgWidth; 
+		unsigned int imgWidth;
 		unsigned int imgHeight;
 		unsigned int pointsNumber;
 		std::vector<torch::Tensor> trainingData;
@@ -608,19 +608,19 @@ namespace mrcv
 		/**
 		 * @brief Функция оптимизации размера ROI
 		 *
-		 * @param prevCoord - предыдущие координаты объекта
-		 * @param nextCoord - следующие (предсказанные) координаты объекта
-		 * @param objectSize - реальный размер объекта
-		 * @param averagePredictionError - средняя ошибка предсказания положения объекта
-		 * 
-		 * @return - предсказанный сетью размер ROI
+		 * @param prevCoord - Предыдущие координаты объекта.
+		 * @param nextCoord - Следующие (предсказанные) координаты объекта.
+		 * @param objectSize - Реальный размер объекта.
+		 * @param averagePredictionError - Средняя ошибка предсказания положения объекта.
+		 *
+		 * @return - Предсказанный сетью размер ROI
 		 */
 		float optimizeRoiSize(const std::pair<float, float>& prevCoord,
 			const std::pair<float, float>& nextCoord,
 			const float& objectSize,
 			const float& averagePredictionError
 		);
-	private:		
+	private:
 		void generateSyntheticData();
 		void trainModel();
 		torch::nn::Sequential model;
@@ -629,20 +629,20 @@ namespace mrcv
 		float objectSize;
 		float averagePredictionError;
 		std::pair<float, float> prevCoord;
-		std::pair<float, float> nextCoord;	
+		std::pair<float, float> nextCoord;
 		torch::Tensor inputs;
-		torch::Tensor targets;		
+		torch::Tensor targets;
 	};
 
 	/**
-		 * @brief Функция извлечения ROI из изображения
-		 *
-		 * @param image - исходное изображение
-		 * @param center - координаты центра ROI
-		 * @param roiSize - размер ROI
-		 *
-		 * @return - извлеченный ROI
-		 */
+	* @brief Функция извлечения ROI из изображения
+	*
+	* @param image - Исходное изображение.
+	* @param center - Координаты центра ROI.
+	* @param roiSize - Размер ROI.
+	*
+	* @return - извлеченный ROI
+	*/
 	cv::Mat extractROI(const cv::Mat& image, const cv::Point& center, const cv::Size& roiSize);
 }
 
