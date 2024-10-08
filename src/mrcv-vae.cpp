@@ -91,7 +91,7 @@ namespace mrcv
             tensor = torch::sigmoid(tensor).view({ numColor, width, height });
             return tensor.clone();
         }
-        //Сохранение логов
+        // Сохранение логов
         writeLog("Generated tensor is DONE!", mrcv::LOGTYPE::INFO);
     }
 
@@ -121,7 +121,10 @@ namespace mrcv
         {
             writeLog("Generated image empty!", mrcv::LOGTYPE::ERROR);
         }
-        //Сохранение логов
+
+        image.convertTo(image, -1, 1.5, 50);
+
+        // Сохранение логов
         writeLog("Generated image is DONE!", mrcv::LOGTYPE::INFO);
 
         return image.clone();
@@ -169,40 +172,39 @@ namespace mrcv
         return err;
     }
 
-    // Draw the predicted bounding box.
+    // Нарисовать прогнозируемый ограничивающий прямоугольник
     void NNPreLabeler::drawLabel(cv::Mat& img, std::string label, int left, int top) {
-        // Display the label at the top of the bounding box.
+        // Отобразить метку в верхней части ограничивающей рамки
         int baseline;
         cv::Size labelSize = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX,
             FONT_SCALE, THICKNESS, &baseline);
         top = std::max(top, labelSize.height);
-        // Top left corner.
+        // Верхний левый угол
         cv::Point tlc = cv::Point(left, top);
-        // Bottom right corner.
+        // Правый нижний угол
         cv::Point brc = cv::Point(left + labelSize.width,
             top + labelSize.height + baseline);
-        // Draw black rectangle.
+        // Нарисуйте черный прямоугольник
         cv::rectangle(img, tlc, brc, BLACK, cv::FILLED);
-        // Put the label on the black rectangle.
+        // Наклейте этикетку на черный прямоугольник
         cv::putText(img, label, cv::Point(left, top + labelSize.height),
             cv::FONT_HERSHEY_SIMPLEX, FONT_SCALE, YELLOW, THICKNESS);
     }
 
     std::vector<cv::Mat> NNPreLabeler::preProcess(cv::Mat& img) {
-        // Convert to blob.
+        // Преобразовать в blob
         cv::Mat blob;
         cv::dnn::blobFromImage(img, blob, 1.0 / 255, cv::Size(inputWidth, inputHeight),
             cv::Scalar(), true, false);
-        network.setInput(blob);
-        // Forward propagate.
+        network.setInput(blob);       
         std::vector<cv::Mat> outputs;
         network.forward(outputs, network.getUnconnectedOutLayersNames());
         return outputs;
     }
 
     cv::Mat NNPreLabeler::postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& className) {
-        // Initialize vectors to hold respective outputs while unwrapping detections.
-        cv::Mat ret = img.clone(); // тормозит на 0.1 сек
+        // Инициализируйте векторы для хранения соответствующих выходных данных при развертывании обнаружений
+        cv::Mat ret = img.clone();
         classesIdSet.clear();
         confidencesSet.clear();
         boxesSet.clear();
@@ -211,7 +213,7 @@ namespace mrcv
         std::vector<float> confidences;
         std::vector<cv::Rect> boxes;
 
-        // Resizing factor.
+        // Изменения размера
         float xFactor = img.cols / (float)inputWidth;
         float yFactor = img.rows / (float)inputHeight;
 
@@ -219,43 +221,43 @@ namespace mrcv
         int rows = outputs[0].size[1];
         float* data = (float*)outputs[0].data;
 
-        // Iterate through detections.
+        // Повтор обнаружения
         for (int i = 0; i < rows; ++i) {
             float confidence = data[4];
-            // Discard bad detections and continue.
+            // Отмените неудачные обнаружения и продолжите
             if (confidence >= CONFIDENCE_THRESHOLD) {
                 float* classesScores = data + 5;
-                // Create a 1x85 Mat and store class scores of 80 classes.
+                // Создайте мат размером 1x85 и сохраните баллы 80 классов
                 cv::Mat scores(1, className.size(), CV_32FC1, classesScores);
-                // Perform minMaxLoc and acquire index of best class score.
+                // Выполните minMaxLoc и получите индекс наилучшего результата класса
                 cv::Point classId;
                 double maxClassScore;
                 cv::minMaxLoc(scores, 0, &maxClassScore, 0, &classId);
-                // Continue if the class score is above the threshold.
+                // Продолжайте, если баллы класса превышают пороговое значение
                 if (maxClassScore > SCORE_THRESHOLD) {
-                    // Store class ID and confidence in the pre-defined respective vectors.
+                    // Сохраните идентификатор класса и уровень уверенности в соответствующих предопределенных векторах
                     confidences.push_back(confidence);
                     classIds.push_back(classId.x);
-                    // Center.
+                    // Центр
                     float cx = data[0];
                     float cy = data[1];
-                    // Box dimension.
+                    // Размеры коробки
                     float w = data[2];
                     float h = data[3];
-                    // Bounding box coordinates.
+                    // Координаты ограничивающего прямоугольника
                     int left = int((cx - 0.5 * w) * xFactor);
                     int top = int((cy - 0.5 * h) * yFactor);
                     int width = int(w * xFactor);
                     int height = int(h * yFactor);
-                    // Store good detections in the boxes vector.
+                    // Сохраняйте хорошие обнаружения в векторе
                     boxes.push_back(cv::Rect(left, top, width, height));
                 }
             }
-            // Jump to the next column.
+            // Перейти к следующему столбцу
             data += dimensions;
         }
 
-        // Perform Non Maximum Suppression and draw predictions.
+        // Выполнить немаксимальное подавление и составить прогнозы
         std::vector<int> indices;
         cv::dnn::NMSBoxes(boxes, confidences, SCORE_THRESHOLD, NMS_THRESHOLD, indices);
         for (int i = 0; i < indices.size(); i++) {
@@ -271,12 +273,12 @@ namespace mrcv
             int top = box.y;
             int width = box.width;
             int height = box.height;
-            // Draw bounding box.
+            // Нарисуйте ограничивающую рамку
             cv::rectangle(ret, cv::Point(left, top), cv::Point(left + width, top + height), GREEN, 3 * THICKNESS);
-            // Get the label for the class name and its confidence.
+            // Получите метку для имени класса и его достоверности
             std::string label = cv::format("%.2f", confidences[idx]);
             label = className[classIds[idx]] + ": " + label;
-            // Draw class labels.
+            // Нарисуйте метки классов
             drawLabel(ret, label, left, top);
         }
         return ret;
@@ -288,8 +290,6 @@ namespace mrcv
         std::vector<cv::Mat> detections;
         detections = preProcess(img);
         cv::Mat res = postProcess(img, detections, NNPreLabeler::classes);
-        // Put efficiency information.
-        // The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
         std::vector<double> layersTimes;
         double freq = cv::getTickFrequency();
         NNPreLabeler::inferenceTime = network.getPerfProfile(layersTimes) / freq;
@@ -334,12 +334,6 @@ namespace mrcv
         std::vector<cv::Rect> boxes = labeler.getBoxes();
         std::vector<std::string> classes = labeler.getClasses();
 
-        for (auto element : classIds) {
-            writeLog("classIds: " + element, mrcv::LOGTYPE::INFO);
-        }
-        for (auto element : classes) {
-            writeLog("classes: " + element, mrcv::LOGTYPE::INFO);
-        }
         for (auto element : confidences) {
             auto str = std::to_string(element);
             writeLog("confidences: " + str, mrcv::LOGTYPE::INFO);
@@ -364,16 +358,7 @@ namespace mrcv
         std::vector<float> confidences = labeler.getConfidences();
         std::vector<cv::Rect> boxes = labeler.getBoxes();
         std::vector<std::string> classes = labeler.getClasses();
-        /*
-        for (auto element : classIds) {
-            auto str = std::to_string(element);
-            writeLog("classIds: " + str, mrcv::LOGTYPE::INFO);
-        }
-        for (auto element : classes) {
-            //auto str = std::to_string(element);
-            writeLog("classes: " + element, mrcv::LOGTYPE::INFO);
-        }
-        */
+        
         for (auto element : confidences) {
             auto str = std::to_string(element);
             writeLog("confidences: " + str, mrcv::LOGTYPE::INFO);

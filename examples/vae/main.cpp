@@ -19,7 +19,7 @@ int main()
 
    int height = 640;
    int width = 640;
-
+   
    cv::Mat genImage = mrcv::neuralNetworkAugmentationAsMat(imagePath.u8string(), height, width, 800, 8, 800, 32, 3E-4);
 
    cv::Mat colorGenImage;
@@ -27,9 +27,9 @@ int main()
 
    cv::imshow("", colorGenImage);
    cv::waitKey(0);
-
+   
    cv::imwrite(resultPath.u8string() + "/generated.jpg", colorGenImage);
-
+   
    mrcv::semiAutomaticLabeler(resultPath.u8string() + "/generated.jpg", height, width, resultPath.u8string(), modelPath.u8string(), classPath.u8string());
     
    return EXIT_SUCCESS;
