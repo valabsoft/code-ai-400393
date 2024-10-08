@@ -521,4 +521,129 @@ namespace mrcv
 	 * @return - Карта диспаратности в cv::Mat формате.
 	 */
 	int disparityMap(cv::Mat& map, const cv::Mat& imageLeft, const cv::Mat& imageRight, int minDisparity, int numDisparities, int blockSize, double lambda, double sigma, DISPARITY_TYPE disparityType = DISPARITY_TYPE::ALL, int colorMap = cv::COLORMAP_TURBO, bool saveToFile = false, bool showImages = false);
+
+
+	/**
+	*	@brief Класс предиктора
+	*
+	*	Класс реализует методы предсказания положения объекта интереса при поиощи LSTM сети.
+	*/
+	MRCV_EXPORT class Predictor {
+	public:
+		Predictor(const int64_t& inputSize_, const int64_t& hiddenSize_, const int64_t& numLayers_,
+			const unsigned int& pointsNumber_, const std::pair<int, int>& imgSize_)
+			: inputSize(inputSize_),
+			hiddenSize(hiddenSize_),
+			numLayers(numLayers_),
+			pointsNumber(pointsNumber_),
+			imgWidth(imgSize_.first),
+			imgHeight(imgSize_.second),
+			lstm(torch::nn::LSTM(torch::nn::LSTMOptions(inputSize_, hiddenSize_).num_layers(numLayers_))),
+			linear(torch::nn::Linear(hiddenSize_, inputSize_)),
+			hiddenState(torch::zeros({ numLayers_, 1, hiddenSize_ })),
+			cellState(torch::zeros({ numLayers_, 1, hiddenSize_ }))
+		{
+			lstm->to(torch::kFloat32);
+			linear->to(torch::kFloat32);
+		};
+
+		/**
+		 * @brief Функция обучения LSTM сети
+		 *
+		 * @param coordinates - Вектор входных координат.
+		 * @param imageLeft - Флаг обучения. Используется для дообучения модели. (true - первое обучение, false - дообучение).
+		 */
+		void trainLSTMNet(const std::vector<std::pair<float, float>> coordinates, bool isTraining = false);
+
+		/**
+		 * @brief Функция дообучения LSTM сети
+		 *
+		 * @param coordinate - Входные координаты.
+		 */
+		void continueTraining(const std::pair<float, float> coordinate);
+
+		/**
+		 * @brief Функция предсказания следующей координаты
+		 *
+		 * @return - Предсказанные сетью координаты.
+		 */
+		std::pair<float, float> predictNextCoordinate();
+
+	private:
+		std::pair<float, float> Predictor::denormilizeOutput(std::pair<float, float> coords);
+		std::pair<float, float> Predictor::normilizePair(std::pair<float, float> coords);
+		std::vector<std::pair<float, float>> normilizeInput(std::vector<std::pair<float, float>> coords);
+		torch::nn::LSTM lstm{ nullptr };
+		torch::nn::Linear linear{ nullptr };
+		torch::Tensor hiddenState;
+		torch::Tensor cellState;
+		int64_t inputSize;
+		int64_t hiddenSize;
+		int64_t numLayers;
+		unsigned int imgWidth;
+		unsigned int imgHeight;
+		unsigned int pointsNumber;
+		std::vector<torch::Tensor> trainingData;
+	};
+
+	/**
+	*	@brief Класс оптимизатора
+	*
+	*	Класс реализует методы оптимизации размера ROI исходя из размеров объекта, его пермещения и ошибки предсказания положения.
+	*/
+	MRCV_EXPORT class Optimizer {
+	public:
+		Optimizer(size_t sampleSize_, size_t epochs_)
+			: sampleSize(sampleSize_),
+			epochs(epochs_),
+			model(torch::nn::Sequential(
+				torch::nn::Linear(3, 16),
+				torch::nn::ReLU(),
+				torch::nn::Linear(16, 8),
+				torch::nn::ReLU(),
+				torch::nn::Linear(8, 1)))
+		{
+		};
+
+		/**
+		 * @brief Функция оптимизации размера ROI
+		 *
+		 * @param prevCoord - Предыдущие координаты объекта.
+		 * @param nextCoord - Следующие (предсказанные) координаты объекта.
+		 * @param objectSize - Реальный размер объекта.
+		 * @param averagePredictionError - Средняя ошибка предсказания положения объекта.
+		 *
+		 * @return - Предсказанный сетью размер ROI
+		 */
+		float optimizeRoiSize(const std::pair<float, float>& prevCoord,
+			const std::pair<float, float>& nextCoord,
+			const float& objectSize,
+			const float& averagePredictionError
+		);
+	private:
+		void generateSyntheticData();
+		void trainModel();
+		torch::nn::Sequential model;
+		size_t sampleSize;
+		size_t epochs;
+		float objectSize;
+		float averagePredictionError;
+		std::pair<float, float> prevCoord;
+		std::pair<float, float> nextCoord;
+		torch::Tensor inputs;
+		torch::Tensor targets;
+	};
+
+	/**
+	* @brief Функция извлечения ROI из изображения
+	*
+	* @param image - Исходное изображение.
+	* @param center - Координаты центра ROI.
+	* @param roiSize - Размер ROI.
+	*
+	* @return - извлеченный ROI
+	*/
+	cv::Mat extractROI(const cv::Mat& image, const cv::Point& center, const cv::Size& roiSize);
 }
+
+
