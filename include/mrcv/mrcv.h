@@ -74,18 +74,18 @@ namespace mrcv
 	// Калибровка
 	/////////////////////////////////////////////////////////////////////////////
 	/**
-     * @brief Функция общей калибровки.
-     * @param imagesL - Вектор строк имён изображений левой камеры.
-     * @param imagesR - Вектор строк имён изображений правой камеры.
-     * @param pathToImagesL - Путь к папке с изображениями левой камеры.
-     * @param pathToImagesR - Путь к папке с изображениями правой камеры.
-     * @param calibrationParametersL - Структура для хранения калибровочных параметров левой камеры.
-     * @param calibrationParametersR - Структура для хранения калибровочных параметров правой камеры.
-     * @param calibrationParameters - Структура для хранения калибровочных параметров стерео пары.
-     * @param chessboardColCount - Количество ключевых точек калибровочной доски по столбцам.
-     * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
-     * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
-     */
+	 * @brief Функция общей калибровки.
+	 * @param imagesL - Вектор строк имён изображений левой камеры.
+	 * @param imagesR - Вектор строк имён изображений правой камеры.
+	 * @param pathToImagesL - Путь к папке с изображениями левой камеры.
+	 * @param pathToImagesR - Путь к папке с изображениями правой камеры.
+	 * @param calibrationParametersL - Структура для хранения калибровочных параметров левой камеры.
+	 * @param calibrationParametersR - Структура для хранения калибровочных параметров правой камеры.
+	 * @param calibrationParameters - Структура для хранения калибровочных параметров стерео пары.
+	 * @param chessboardColCount - Количество ключевых точек калибровочной доски по столбцам.
+	 * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
+	 * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
+	 */
 	MRCV_EXPORT void cameraCalibration(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR, std::string pathToImagesL, std::string pathToImagesR, CalibrationParametersMono& calibrationParametersL, CalibrationParametersMono& calibrationParametersR, CalibrationParametersStereo& calibrationParameters, int chessboardColCount, int chessboardRowCount, float chessboardSquareSize);
 
 	/**
@@ -94,21 +94,21 @@ namespace mrcv
 	 * @param pathToImages - Путь к папке с изображениями камеры.
 	 * @param calibrationParameters - Структура для хранения калибровочных параметров камеры.
 	 * @param chessboardColCount - Количество ключевых точек калибровочной доски по столбцам.
-     * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
-     * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
+	 * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
+	 * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
 	 */
 	MRCV_EXPORT void cameraCalibrationMono(std::vector<cv::String> images, std::string pathToImages, CalibrationParametersMono& calibrationParameters, int chessboardColCount, int chessboardRowCount, float chessboardSquareSize);
 
 	/**
 	 * @brief Функция калибровки стерео пары.
 	 * @param imagesL - Вектор строк имён изображений левой камеры.
-     * @param imagesR - Вектор строк имён изображений правой камеры.
-     * @param pathToImagesL - Путь к папке с изображениями левой камеры.
-     * @param pathToImagesR - Путь к папке с изображениями правой камеры.
+	 * @param imagesR - Вектор строк имён изображений правой камеры.
+	 * @param pathToImagesL - Путь к папке с изображениями левой камеры.
+	 * @param pathToImagesR - Путь к папке с изображениями правой камеры.
 	 * @param calibrationParameters - Структура для хранения калибровочных параметров стерео пары.
 	 * @param chessboardColCount - Количество ключевых точек калибровочной доски по столбцам.
-     * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
-     * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
+	 * @param chessboardRowCount - Количество ключевых точек калибровочной доски по строкам.
+	 * @param chessboardSquareSize - Размер поля калиброчно доски в мм.
 	 */
 	MRCV_EXPORT void cameraCalibrationStereo(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR, std::string pathToImagesL, std::string pathToImagesR, CalibrationParametersStereo& calibrationParameters, int chessboardColCount, int chessboardRowCount, float chessboardSquareSize);
 
@@ -152,19 +152,56 @@ namespace mrcv
 	public:
 		Segmentor() { };
 		~Segmentor() { };
-		void Initialize(int gpu_id, int width, int height, std::vector<std::string>&& name_list, std::string encoder_name, std::string pretrained_path);
+		/**
+		 * @brief Функция инициализации
+		 * @param gpu_id - Подключение GPU.
+		 * @param width - Ширина пердаваемых изображений.
+		 * @param height - Высота пердаваемых изображений.
+		 * @param listName - Список классов.
+		 * @param encoderName - Имя кодировщика.
+		 * @param pretrainedPath - Путь к кодировщику.
+		 */
+		void Initialize(int gpu_id, int width, int height, std::vector<std::string>&& listName, std::string encoderName, std::string pretrainedPath);
+
+		/**
+		 * @brief функция для повышения производительности обучения
+		 * @param tricks - Структура дополнений для обучения таких как скорость оюучения, вращение изображения и вес при проигрыше .
+		 */
 		void SetTrainTricks(trainTricks& tricks);
-		void Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string image_type, std::string save_path);
-		void LoadWeight(std::string weight_path);
+
+		/**
+		 * @brief Функция обучения модели
+		 * @param learning_rate - Темп обучения.
+		 * @param epochs - Количество эпох.
+		 * @param batch_size - Количество обучающих примеров за одну итерацию.
+		 * @param train_val_path - Путь к изображениям для обучения.
+		 * @param imageType - Тип изображений.
+		 * @param save_path - Путь для сохранения своих весов.
+		 */
+		void Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string imageType, std::string save_path);
+
+		/**
+		 * @brief функция загрузки своих весов
+		 * @param pathWeight - Путь к своим весам.
+		 */
+		void LoadWeight(std::string pathWeight);
+
+		/**
+		 * @brief Функция прогноза
+		 * @param image - Тестируемое изображение.
+		 * @param which_class - Список классов.
+		 */
 		void Predict(cv::Mat& image, const std::string& which_class);
+
 	private:
 		int width = 512;
 		int height = 512;
-		std::vector<std::string> name_list;
+		std::vector<std::string> listName;
 		torch::Device device = torch::Device(torch::kCPU);
 		trainTricks tricks;
 		FPN fpn{ nullptr };
 	};
+
 	MRCV_EXPORT class MRCVPoint
 	{
 	private:
@@ -176,6 +213,7 @@ namespace mrcv
 		void setY(int Y);
 		std::string gerCoordinates();
 	};
+
 	MRCV_EXPORT class ObjCourse
 	{
 	public:
@@ -214,7 +252,7 @@ namespace mrcv
 #endif		
 		void drawLabel(cv::Mat& img, std::string label, int left, int top);
 		std::vector<cv::Mat> preProcess(cv::Mat& img, cv::dnn::Net& net);
-		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames);	
+		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames);
 		int findAngle(double resolution, double cameraAngle, int cx);
 		std::string getTimeStamp();
 	};
@@ -225,7 +263,7 @@ namespace mrcv
 
 	/**
 	 * @brief Функция формирования изображения в случаи ошибки.
-	 * 
+	 *
 	 *
 	 * @param textError - текс сообщения, которое будет записано в изображение.
 	 * @return - изображение с кодом ошибки (для информирование оператора в режиме рельного времени).
@@ -351,7 +389,7 @@ namespace mrcv
 
 		std::vector<int> IDX; ///< Вектор индексов кластеров для каждой точки.
 	};
-	
+
 	int flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode);
 
 	int rotateImage(cv::Mat& imageInput, cv::Mat& imageOutput, double angle);
@@ -359,16 +397,16 @@ namespace mrcv
 	int augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
 		std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod);
 
-/**
-	*	@brief Класс детектора
-	*	
-	*	Класс реализует атрибуты и методы детекции объектов на изображениях подводных объектов, 
-	*	а также аварийных ситуаций, связанных с подводными технологическими сооружениями.
-	*/
+	/**
+		*	@brief Класс детектора
+		*
+		*	Класс реализует атрибуты и методы детекции объектов на изображениях подводных объектов,
+		*	а также аварийных ситуаций, связанных с подводными технологическими сооружениями.
+		*/
 	MRCV_EXPORT class Detector
 	{
 	private:
-		int width = 416; 
+		int width = 416;
 		int height = 416;
 		std::vector<std::string> nameList;
 		torch::Device device = torch::Device(torch::kCPU);
@@ -380,7 +418,7 @@ namespace mrcv
 		Detector();
 		/**
 		* @brief Функция инициализации модели детектора
-		* 
+		*
 		* @param gpuID			- ID устройтсва, для которого будет инициализирована модель. Значение < 1 - исполнение программы на CPU, 0 и > 0 - исполнение программы на выбранном GPU-устройстве
 		* @param width			- Ширина изображения, до которой будет масштабировано исходное изображение
 		* @param height			- Высота изображения, до которой будет масштабировано исходное изображение
@@ -389,7 +427,7 @@ namespace mrcv
 		void Initialize(int gpuID, int width, int height, std::string nameListPath);
 		/**
 		* @brief Функция обучения модели детектора
-		* 
+		*
 		* @param trainValPath	- Путь к директории с обучающим и валидационным датасетами
 		* @param imageType		- Расширение изображений в директориях. Например, ".jpg", ".png" и т.д.
 		* @param numEpoch		- Число эпох, требуемых для обучения модели
@@ -397,9 +435,9 @@ namespace mrcv
 		* @param learningRate	- Темп обучения модели, который определяет размер шага на каждой итерации, при движении к минимуму функции потерь
 		* @param savePath		- Путь, по которому будут сохранены веса обученной модели в формате .pt
 		* @param pretrainedPath - Путь к предобученной модели YOLOv4_tiny.pt
-		* 
-		* @return Код результата выполнения функции. 
-		* Значения: 
+		*
+		* @return Код результата выполнения функции.
+		* Значения:
 		*			0	- Success;
 		*			1	- Путь к предобученной модели задан не корректно или не существует;
 		*			2	- Размер батча превышает число изображений в директории с обучающей выборкой или директория пуста;
@@ -410,27 +448,27 @@ namespace mrcv
 			std::string savePath = "detector.pt", std::string pretrainedPath = "detector.pt");
 		/**
 		* @brief Функция загрузки весов обученной модели
-		* 
+		*
 		* @param - Путь к весам
-		* 
+		*
 		* @return - Код результата выполнения функции. 0 - Success; -1 - Неизвестная ошибка.
 		*/
 		int LoadWeight(std::string weightPath);
 		/**
 		* @brief Функция загрузки предобученной модели
-		* 
+		*
 		* @param - Путь к предобученной модели в формате .pt
 		* @return - Код результата выполнения функции. 0 - Success; -1 - Неизвестная ошибка
 		*/
 		int LoadPretrained(std::string pretrainedPath);
 		/**
 		* @brief Функция детекции и идентификации объектов по изображению
-		* 
+		*
 		* @param image		- Изображение в формате cv::Mat
 		* @param show		- Флаг отображения изображения с нанесёнными ограничивающими рамками.
 		* @param confTresh	- Пороговое значение интервала "доверительности" для предсказаний модели. Если модель предсказывает, что вероятность присутствия объекта ниже этого значения, такой объект отбрасывается.
 		* @param nmsThresh	- Пороговое значение для Non-Maximum Suppression (NMS), алгоритма, который отбрасывает пересекающиеся предсказания объектов. Если несколько рамок сильно пересекаются и показывают высокую вероятность для одного и того же объекта, остаётся только та рамка, которая имеет наибольшую вероятность
-		* 
+		*
 		* @return - Код результата выполнения функции. 0 - Success; -1 - Неизвестная ошибка.
 		*/
 		int Predict(cv::Mat image, bool show = true, float confThresh = 0.3, float nmsThresh = 0.3);
@@ -466,4 +504,145 @@ namespace mrcv
 		*/
 		float Validate(std::string valDataPath, std::string imageType, int batchSize);
 	};
+	/**
+	 * @brief Функция для построения карты диспаратности
+	 * @param map - Буфер для карты диспаратности.
+	 * @param imageLeft - Изображение с левой камеры стереопары.
+	 * @param imageRight - Изображение с правой камеры стереопары.
+	 * @param minDisparity - Минимальный размер блока.
+	 * @param numDisparities - Кол-во итераций.
+	 * @param blockSize - Размер блока.
+	 * @param lambda - Параметр lambda.
+	 * @param sigma - Параметр sigma.
+	 * @param colorMap - Цветовая схема для расцвечивания карты.
+	 * @param disparityType - Тип карты диспаратности.
+	 * @param saveToFile - Признак сохранения карты в файл.
+	 * @param showImages - Признак отображения изображений в отдельных окнах.
+	 * @return - Карта диспаратности в cv::Mat формате.
+	 */
+	int disparityMap(cv::Mat& map, const cv::Mat& imageLeft, const cv::Mat& imageRight, int minDisparity, int numDisparities, int blockSize, double lambda, double sigma, DISPARITY_TYPE disparityType = DISPARITY_TYPE::ALL, int colorMap = cv::COLORMAP_TURBO, bool saveToFile = false, bool showImages = false);
+
+
+	/**
+	*	@brief Класс предиктора
+	*
+	*	Класс реализует методы предсказания положения объекта интереса при поиощи LSTM сети.
+	*/
+	MRCV_EXPORT class Predictor {
+	public:
+		Predictor(const int64_t& hiddenSize_, const int64_t& numLayers_,
+			const unsigned int& pointsNumber_, const std::pair<int, int>& imgSize_)
+			:hiddenSize(hiddenSize_),
+			numLayers(numLayers_),
+			pointsNumber(pointsNumber_),
+			imgWidth(imgSize_.first),
+			imgHeight(imgSize_.second),
+			lstm(torch::nn::LSTM(torch::nn::LSTMOptions(2, hiddenSize_).num_layers(numLayers_))),
+			linear(torch::nn::Linear(hiddenSize_, 2)),
+			hiddenState(torch::zeros({ numLayers_, 1, hiddenSize_ })),
+			cellState(torch::zeros({ numLayers_, 1, hiddenSize_ }))
+		{
+			lstm->to(torch::kFloat32);
+			linear->to(torch::kFloat32);
+		};
+
+		/**
+		 * @brief Функция обучения LSTM сети
+		 *
+		 * @param coordinates - Вектор входных координат.
+		 * @param imageLeft - Флаг обучения. Используется для дообучения модели. (true - первое обучение, false - дообучение).
+		 */
+		void trainLSTMNet(const std::vector<std::pair<float, float>> coordinates, bool isTraining = false);
+
+		/**
+		 * @brief Функция дообучения LSTM сети
+		 *
+		 * @param coordinate - Входные координаты.
+		 */
+		void continueTraining(const std::pair<float, float> coordinate);
+
+		/**
+		 * @brief Функция предсказания следующей координаты
+		 *
+		 * @return - Предсказанные сетью координаты.
+		 */
+		std::pair<float, float> predictNextCoordinate();
+
+	private:
+		std::pair<float, float> denormilizeOutput(std::pair<float, float> coords);
+		std::pair<float, float> normilizePair(std::pair<float, float> coords);
+		std::vector<std::pair<float, float>> normilizeInput(std::vector<std::pair<float, float>> coords);
+		torch::nn::LSTM lstm{ nullptr };
+		torch::nn::Linear linear{ nullptr };
+		torch::Tensor hiddenState;
+		torch::Tensor cellState;
+		int64_t inputSize = 2;
+		int64_t hiddenSize;
+		int64_t numLayers;
+		unsigned int imgWidth;
+		unsigned int imgHeight;
+		unsigned int pointsNumber;
+		std::vector<torch::Tensor> trainingData;
+	};
+
+	/**
+	*	@brief Класс оптимизатора
+	*
+	*	Класс реализует методы оптимизации размера ROI исходя из размеров объекта, его пермещения и ошибки предсказания положения.
+	*/
+	MRCV_EXPORT class Optimizer {
+	public:
+		Optimizer(size_t sampleSize_, size_t epochs_)
+			: sampleSize(sampleSize_),
+			epochs(epochs_),
+			model(torch::nn::Sequential(
+				torch::nn::Linear(3, 16),
+				torch::nn::ReLU(),
+				torch::nn::Linear(16, 8),
+				torch::nn::ReLU(),
+				torch::nn::Linear(8, 1)))
+		{
+		};
+
+		/**
+		 * @brief Функция оптимизации размера ROI
+		 *
+		 * @param prevCoord - Предыдущие координаты объекта.
+		 * @param nextCoord - Следующие (предсказанные) координаты объекта.
+		 * @param objectSize - Реальный размер объекта.
+		 * @param averagePredictionError - Средняя ошибка предсказания положения объекта.
+		 *
+		 * @return - Предсказанный сетью размер ROI
+		 */
+		float optimizeRoiSize(const std::pair<float, float>& prevCoord,
+			const std::pair<float, float>& nextCoord,
+			const float& objectSize,
+			const float& averagePredictionError
+		);
+	private:
+		void generateSyntheticData();
+		void trainModel();
+		torch::nn::Sequential model;
+		size_t sampleSize;
+		size_t epochs;
+		float objectSize;
+		float averagePredictionError;
+		std::pair<float, float> prevCoord;
+		std::pair<float, float> nextCoord;
+		torch::Tensor inputs;
+		torch::Tensor targets;
+	};
+
+	/**
+	* @brief Функция извлечения ROI из изображения
+	*
+	* @param image - Исходное изображение.
+	* @param center - Координаты центра ROI.
+	* @param roiSize - Размер ROI.
+	*
+	* @return - извлеченный ROI
+	*/
+	cv::Mat extractROI(const cv::Mat& image, const cv::Point& center, const cv::Size& roiSize);
 }
+
+

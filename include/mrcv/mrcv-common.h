@@ -21,6 +21,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/ximgproc.hpp>
 
 #include "mrcv-segmentation.h"
 
@@ -130,6 +131,8 @@ namespace mrcv
 		int image_count = 50;								// Общее число пар изображений в фотосете
 	};
 
+
+	// Структура trianTricks предназначена для повышения производительности обучения
 	struct trainTricks {
 		unsigned int freeze_epochs = 0;					// Замораживает магистраль нейронной сети во время первых freeze_epochs, по умолчанию 0;
 		std::vector<unsigned int> decay_epochs = { 0 };	// При каждом decay_epochs скорость обучения будет снижаться на 90 процентов, по умолчанию 0;
@@ -141,7 +144,7 @@ namespace mrcv
 		float rotate_limit = (float)45.0;
 		int interpolation = cv::INTER_LINEAR;
 		int border_mode = cv::BORDER_CONSTANT;
-	};	
+	};
 
 	enum class AUGMENTATION_METHOD
 	{
@@ -154,5 +157,14 @@ namespace mrcv
 		ROTATE_IMAGE_315,
 		FLIP_HORIZONTAL_AND_VERTICAL,
 		TEST
+	};
+
+	enum class DISPARITY_TYPE
+	{
+		ALL,
+		BASIC_DISPARITY,
+		BASIC_HEATMAP,
+		FILTERED_DISPARITY,
+		FILTERED_HEATMAP,
 	};
 }
