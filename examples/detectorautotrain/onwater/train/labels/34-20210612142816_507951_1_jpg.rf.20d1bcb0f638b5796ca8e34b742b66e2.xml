@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>34-20210612142816_507951_1_jpg.rf.20d1bcb0f638b5796ca8e34b742b66e2.jpg</filename>
+	<path>34-20210612142816_507951_1_jpg.rf.20d1bcb0f638b5796ca8e34b742b66e2.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>fish-b</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>1</xmin>
+			<xmax>639</xmax>
+			<ymin>1</ymin>
+			<ymax>590</ymax>
+		</bndbox>
+	</object>
+</annotation>

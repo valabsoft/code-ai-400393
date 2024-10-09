@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>images_jpg.rf.d80d402819c48900e79fb1ab9518f0b6.jpg</filename>
+	<path>images_jpg.rf.d80d402819c48900e79fb1ab9518f0b6.jpg</path>
+	<source>
+		<database>roboflow.ai</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>rupture</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>325</xmin>
+			<xmax>429</xmax>
+			<ymin>216</ymin>
+			<ymax>367</ymax>
+		</bndbox>
+	</object>
+</annotation>
