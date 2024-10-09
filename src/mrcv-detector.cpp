@@ -7,7 +7,8 @@
 namespace mrcv
 { 
 	template<typename T>
-	int vecIndex(std::vector<T> vec, T value) {
+	int vecIndex(std::vector<T> vec, T value) 
+	{
 		int a = 0;
 		for (auto temp : vec)
 		{
@@ -25,7 +26,8 @@ namespace mrcv
 	}
 
 	template<typename T>
-	bool inVec(std::vector<T> vec, T value) {
+	bool inVec(std::vector<T> vec, T value) 
+	{
 		for (auto temp : vec)
 		{
 			if (temp == value)
@@ -225,7 +227,8 @@ namespace mrcv
 		return m;
 	}
 
-	YoloBody_tinyImpl::YoloBody_tinyImpl(int numAnchors, int numСlasses) {
+	YoloBody_tinyImpl::YoloBody_tinyImpl(int numAnchors, int numСlasses) 
+	{
 		backbone = CSPdarknet53_tiny();
 		convForP5 = BasicConv(512, 256, 1);
 		yoloHeadP5 = yoloHead({ 512, numAnchors * (5 + numСlasses) }, 256);
@@ -268,47 +271,46 @@ namespace mrcv
 		this->normalize = normalize;
 	}
 	
-	// Incorrect
-	torch::Tensor jaccard(torch::Tensor _box_a, torch::Tensor _box_b) {
-		//auto TensorType = _box_b.options();
-		auto b1_x1 = _box_a.select(1, 0) - _box_a.select(1, 2) / 2;
-		auto b1_x2 = _box_a.select(1, 0) + _box_a.select(1, 2) / 2;
-		auto b1_y1 = _box_a.select(1, 1) - _box_a.select(1, 3) / 2;
-		auto b1_y2 = _box_a.select(1, 1) + _box_a.select(1, 3) / 2;
+	torch::Tensor jaccard(torch::Tensor _boxA, torch::Tensor _boxB) 
+	{
+		auto b1X1 = _boxA.select(1, 0) - _boxA.select(1, 2) / 2;
+		auto b1X2 = _boxA.select(1, 0) + _boxA.select(1, 2) / 2;
+		auto b1Y1 = _boxA.select(1, 1) - _boxA.select(1, 3) / 2;
+		auto b1Y2 = _boxA.select(1, 1) + _boxA.select(1, 3) / 2;
 
-		auto b2_x1 = _box_b.select(1, 0) - _box_b.select(1, 2) / 2;
-		auto b2_x2 = _box_b.select(1, 0) + _box_b.select(1, 2) / 2;
-		auto b2_y1 = _box_b.select(1, 1) - _box_b.select(1, 3) / 2;
-		auto b2_y2 = _box_b.select(1, 1) + _box_b.select(1, 3) / 2;
+		auto b2X1 = _boxB.select(1, 0) - _boxB.select(1, 2) / 2;
+		auto b2X2 = _boxB.select(1, 0) + _boxB.select(1, 2) / 2;
+		auto b2Y1 = _boxB.select(1, 1) - _boxB.select(1, 3) / 2;
+		auto b2Y2 = _boxB.select(1, 1) + _boxB.select(1, 3) / 2;
 
 
-		auto box_a = torch::zeros_like(_box_a);
-		auto box_b = torch::zeros_like(_box_b);
+		auto boxA = torch::zeros_like(_boxA);
+		auto boxB = torch::zeros_like(_boxB);
 
-		box_a.select(1, 0) = b1_x1;
-		box_a.select(1, 1) = b1_y1;
-		box_a.select(1, 2) = b1_x2;
-		box_a.select(1, 3) = b1_y2;
+		boxA.select(1, 0) = b1X1;
+		boxA.select(1, 1) = b1Y1;
+		boxA.select(1, 2) = b1X2;
+		boxA.select(1, 3) = b1Y2;
 
-		box_b.select(1, 0) = b2_x1;
-		box_b.select(1, 1) = b2_y1;
-		box_b.select(1, 2) = b2_x2;
-		box_b.select(1, 3) = b2_y2;
+		boxB.select(1, 0) = b2X1;
+		boxB.select(1, 1) = b2Y1;
+		boxB.select(1, 2) = b2X2;
+		boxB.select(1, 3) = b2Y2;
 
-		auto A = box_a.size(0);
-		auto B = box_b.size(0);
+		auto A = boxA.size(0);
+		auto B = boxB.size(0);
 
-		auto max_xy = torch::min(box_a.narrow(1, 2, 2).unsqueeze(1).expand({ A, B, 2 }), box_b.narrow(1, 2, 2).unsqueeze(0).expand({ A, B, 2 }));
-		auto min_xy = torch::max(box_a.narrow(1, 0, 2).unsqueeze(1).expand({ A, B, 2 }), box_b.narrow(1, 0, 2).unsqueeze(0).expand({ A, B, 2 }));
+		auto maxXy = torch::min(boxA.narrow(1, 2, 2).unsqueeze(1).expand({ A, B, 2 }), boxB.narrow(1, 2, 2).unsqueeze(0).expand({ A, B, 2 }));
+		auto minXy = torch::max(boxA.narrow(1, 0, 2).unsqueeze(1).expand({ A, B, 2 }), boxB.narrow(1, 0, 2).unsqueeze(0).expand({ A, B, 2 }));
 
-		auto inter = torch::clamp((max_xy - min_xy), 0);
+		auto inter = torch::clamp((maxXy - minXy), 0);
 		inter = inter.select(2, 0) * inter.select(2, 1);
 
-		auto area_a = ((box_a.select(1, 2) - box_a.select(1, 0)) * (box_a.select(1, 3) - box_a.select(1, 1))).unsqueeze(1).expand_as(inter); // [A, B]
-		auto area_b = ((box_b.select(1, 2) - box_b.select(1, 0)) * (box_b.select(1, 3) - box_b.select(1, 1))).unsqueeze(0).expand_as(inter);  // [A, B]
+		auto areaA = ((boxA.select(1, 2) - boxA.select(1, 0)) * (boxA.select(1, 3) - boxA.select(1, 1))).unsqueeze(1).expand_as(inter); 
+		auto areaB = ((boxB.select(1, 2) - boxB.select(1, 0)) * (boxB.select(1, 3) - boxB.select(1, 1))).unsqueeze(0).expand_as(inter); 
 
-		auto uni = area_a + area_b - inter;
-		return inter / uni;  // [A, B]
+		auto uni = areaA + areaB - inter;
+		return inter / uni;
 	}
 
 	torch::Tensor smoothLabel(torch::Tensor yTrue, int labelSmoothing, int numСlasses) 
@@ -316,49 +318,47 @@ namespace mrcv
 		return yTrue * (1.0 - labelSmoothing) + labelSmoothing / numСlasses;
 	}
 
-	// Incrorect 
 	torch::Tensor boxCiou(torch::Tensor b1, torch::Tensor b2)
 	{
-		auto b1_xy = b1.narrow(-1, 0, 2);
-		auto b1_wh = b1.narrow(-1, 2, 2);
-		auto b1_wh_half = b1_wh / 2.0;
-		auto b1_mins = b1_xy - b1_wh_half;
-		auto b1_maxes = b1_xy + b1_wh_half;
+		auto b1XY = b1.narrow(-1, 0, 2);
+		auto b1WH = b1.narrow(-1, 2, 2);
+		auto b1WhHalf = b1WH / 2.0;
+		auto b1Mins = b1XY - b1WhHalf;
+		auto b1Maxes = b1XY + b1WhHalf;
 
-		auto b2_xy = b2.narrow(-1, 0, 2);
-		auto b2_wh = b2.narrow(-1, 2, 2);
-		auto b2_wh_half = b2_wh / 2.0;
-		auto b2_mins = b2_xy - b2_wh_half;
-		auto b2_maxes = b2_xy + b2_wh_half;
+		auto b2XY = b2.narrow(-1, 0, 2);
+		auto b2WH = b2.narrow(-1, 2, 2);
+		auto b2WhHalf = b2WH / 2.0;
+		auto b2Mins = b2XY - b2WhHalf;
+		auto b2Maxes = b2XY + b2WhHalf;
 
-		auto intersectmins = torch::max(b1_mins, b2_mins);
-		auto intersect_maxes = torch::min(b1_maxes, b2_maxes);
-		auto intersect_wh = torch::max(intersect_maxes - intersectmins, torch::zeros_like(intersect_maxes));
-		auto intersect_area = intersect_wh.select(-1, 0) * intersect_wh.select(-1, 1);
-		auto b1_area = b1_wh.select(-1, 0) * b1_wh.select(-1, 1);
-		auto b2_area = b2_wh.select(-1, 0) * b2_wh.select(-1, 1);
-		auto union_area = b1_area + b2_area - intersect_area;
-		auto iou = intersect_area / torch::clamp(union_area, 1e-6);
+		auto intersectmins = torch::max(b1Mins, b2Mins);
+		auto intersectMaxes = torch::min(b1Maxes, b2Maxes);
+		auto intersectWH = torch::max(intersectMaxes - intersectmins, torch::zeros_like(intersectMaxes));
+		auto intersectArea = intersectWH.select(-1, 0) * intersectWH.select(-1, 1);
+		auto b1Area = b1WH.select(-1, 0) * b1WH.select(-1, 1);
+		auto b2Area = b2WH.select(-1, 0) * b2WH.select(-1, 1);
+		auto unionArea = b1Area + b2Area - intersectArea;
+		auto iou = intersectArea / torch::clamp(unionArea, 1e-6);
 
+		auto centerDistance = torch::sum(torch::pow((b1XY - b2XY), 2), -1);
 
-		auto center_distance = torch::sum(torch::pow((b1_xy - b2_xy), 2), -1);
+		auto enclosemins = torch::min(b1Mins, b2Mins);
+		auto enclosemaxes = torch::max(b1Maxes, b2Maxes);
+		auto encloseWH = torch::max(enclosemaxes - enclosemins, torch::zeros_like(intersectMaxes));
 
-		auto enclose_mins = torch::min(b1_mins, b2_mins);
-		auto enclose_maxes = torch::max(b1_maxes, b2_maxes);
-		auto enclose_wh = torch::max(enclose_maxes - enclose_mins, torch::zeros_like(intersect_maxes));
+		auto encloseDiagonal = torch::sum(torch::pow(encloseWH, 2), -1);
+		auto ciou = iou - 1.0 * (centerDistance) / (encloseDiagonal + 1e-7);
 
-
-		auto enclose_diagonal = torch::sum(torch::pow(enclose_wh, 2), -1);
-		auto ciou = iou - 1.0 * (center_distance) / (enclose_diagonal + 1e-7);
-
-		auto v = (4 / (Pi * Pi)) * torch::pow((torch::atan(b1_wh.select(-1, 0) / b1_wh.select(-1, 1)) - torch::atan(b2_wh.select(-1, 0) / b2_wh.select(-1, 1))), 2);
+		auto v = (4 / (Pi * Pi)) * torch::pow((torch::atan(b1WH.select(-1, 0) / b1WH.select(-1, 1)) - torch::atan(b2WH.select(-1, 0) / b2WH.select(-1, 1))), 2);
 		auto alpha = v / (1.0 - iou + v);
 		ciou = ciou - alpha * v;
 
 		return ciou;
 	}
 
-	torch::Tensor clipByTensor(torch::Tensor t, float tmin, float tmax) {
+	torch::Tensor clipByTensor(torch::Tensor t, float tmin, float tmax) 
+	{
 		t = t.to(torch::kFloat32);
 		auto result = (t >= tmin).to(torch::kFloat32) * t + (t < tmin).to(torch::kFloat32) * tmin;
 		result = (result <= tmax).to(torch::kFloat32) * result + (result > tmax).to(torch::kFloat32) * tmax;
@@ -379,9 +379,7 @@ namespace mrcv
 
 	UpsampleImpl::UpsampleImpl(int inChannels, int outChannels)
 	{
-		upsample = torch::nn::Sequential(
-			BasicConv(inChannels, outChannels, 1)
-		);
+		upsample = torch::nn::Sequential(BasicConv(inChannels, outChannels, 1));
 		register_module("upsample", upsample);
 	}
 
@@ -392,97 +390,96 @@ namespace mrcv
 		return x;
 	}
 
-	// Incorrect
 	std::vector<torch::Tensor> YOLOLossImpl::forward(torch::Tensor input, std::vector<torch::Tensor> targets)
 	{
-
 		auto bs = input.size(0);
-		auto in_h = input.size(2);
-		auto in_w = input.size(3);
+		auto inH = input.size(2);
+		auto inW = input.size(3);
 
-		auto stride_h = imageSize[1] / in_h;
-		auto stride_w = imageSize[0] / in_w;
+		auto strideH = imageSize[1] / inH;
+		auto strideW = imageSize[0] / inW;
 
-		auto scaled_anchors = anchors.clone();
-		scaled_anchors.select(1, 0) = scaled_anchors.select(1, 0) / stride_w;
-		scaled_anchors.select(1, 1) = scaled_anchors.select(1, 1) / stride_h;
+		auto scaledAnchors = anchors.clone();
+		scaledAnchors.select(1, 0) = scaledAnchors.select(1, 0) / strideW;
+		scaledAnchors.select(1, 1) = scaledAnchors.select(1, 1) / strideH;
 
-		auto prediction = input.view({ bs, int(numAnchors / 2), bboxAttrs, in_h, in_w }).permute({ 0, 1, 3, 4, 2 }).contiguous();
+		auto prediction = input.view({ bs, int(numAnchors / 2), bboxAttrs, inH, inW }).permute({ 0, 1, 3, 4, 2 }).contiguous();
 		
 		auto conf = torch::sigmoid(prediction.select(-1, 4));
-		auto pred_cls = torch::sigmoid(prediction.narrow(-1, 5, numClasses)); 
+		auto predcls = torch::sigmoid(prediction.narrow(-1, 5, numClasses)); 
 
-		auto temp = getTarget(targets, scaled_anchors, in_w, in_h, ignoreThreshold);
+		auto temp = getTarget(targets, scaledAnchors, inW, inH, ignoreThreshold);
 		auto BoolType = torch::ones(1).to(torch::kBool).to(device).options();
 		auto FloatType = torch::ones(1).to(torch::kFloat).to(device).options();
 		auto mask = temp[0].to(BoolType);
-		auto noobj_mask = temp[1].to(device);
-		auto t_box = temp[2];
+		auto noobjMask = temp[1].to(device);
+		auto tbox = temp[2];
 		auto tconf = temp[3];
 		auto tcls = temp[4];
-		auto box_loss_scale_x = temp[5];
-		auto box_loss_scale_y = temp[6];
+		auto boxLossScalex = temp[5];
+		auto boxLossScaley = temp[6];
 
-		auto temp_ciou = getIgnore(prediction, targets, scaled_anchors, in_w, in_h, noobj_mask);
-		noobj_mask = temp_ciou[0];
-		auto pred_boxes_for_ciou = temp_ciou[1];
+		auto tempCiou = getIgnore(prediction, targets, scaledAnchors, inW, inH, noobjMask);
+		noobjMask = tempCiou[0];
+		auto predBoxesForCiou = tempCiou[1];
 
 		mask = mask.to(device);
-		noobj_mask = noobj_mask.to(device);
-		box_loss_scale_x = box_loss_scale_x.to(device);
-		box_loss_scale_y = box_loss_scale_y.to(device);
+		noobjMask = noobjMask.to(device);
+		boxLossScalex = boxLossScalex.to(device);
+		boxLossScaley = boxLossScaley.to(device);
 		tconf = tconf.to(device);
 		tcls = tcls.to(device);
-		pred_boxes_for_ciou = pred_boxes_for_ciou.to(device);
-		t_box = t_box.to(device);
+		predBoxesForCiou = predBoxesForCiou.to(device);
+		tbox = tbox.to(device);
 
-		auto box_loss_scale = 2 - box_loss_scale_x * box_loss_scale_y;
-		auto ciou = (1 - boxCiou(pred_boxes_for_ciou.index({ mask }), t_box.index({ mask }))) * box_loss_scale.index({ mask });
-		auto loss_loc = torch::sum(ciou / bs);
+		auto boxLossScale = 2 - boxLossScalex * boxLossScaley;
+		auto ciou = (1 - boxCiou(predBoxesForCiou.index({ mask }), tbox.index({ mask }))) * boxLossScale.index({ mask });
+		auto lossLoc = torch::sum(ciou / bs);
 
-		auto loss_conf = torch::sum(BCELoss(conf, mask.to(FloatType)) * mask.to(FloatType) / bs) + \
-			torch::sum(BCELoss(conf, mask.to(FloatType)) * noobj_mask / bs);
+		auto lossConf = torch::sum(BCELoss(conf, mask.to(FloatType)) * mask.to(FloatType) / bs) + \
+			torch::sum(BCELoss(conf, mask.to(FloatType)) * noobjMask / bs);
 
-		auto loss_cls = torch::sum(BCELoss(pred_cls.index({ mask == 1 }), smoothLabel(tcls.index({ mask == 1 }), labelSmooth, numClasses)) / bs);
-		auto loss = loss_conf * lambdaConf + loss_cls * lambdaCls + loss_loc * lambdaLoc;
+		auto lossCls = torch::sum(BCELoss(predcls.index({ mask == 1 }), smoothLabel(tcls.index({ mask == 1 }), labelSmooth, numClasses)) / bs);
+		auto loss = lossConf * lambdaConf + lossCls * lambdaCls + lossLoc * lambdaLoc;
 
-		torch::Tensor num_pos = torch::tensor({ 0 }).to(device);
-		if (normalize) {
-			num_pos = torch::sum(mask);
-			num_pos = torch::max(num_pos, torch::ones_like(num_pos));
+		torch::Tensor numPos = torch::tensor({ 0 }).to(device);
+		if (normalize) 
+		{
+			numPos = torch::sum(mask);
+			numPos = torch::max(numPos, torch::ones_like(numPos));
 		}
 		else
-			num_pos[0] = bs / 2;
-		return std::vector<torch::Tensor>({ loss, num_pos });
+			numPos[0] = bs / 2;
+		return std::vector<torch::Tensor>({ loss, numPos });
 	}
 
-	// Incorrect
-	std::vector<torch::Tensor> YOLOLossImpl::getTarget(std::vector<torch::Tensor> targets, torch::Tensor scaled_anchors, int in_w, int in_h, float ignore_threshold)
+	std::vector<torch::Tensor> YOLOLossImpl::getTarget(std::vector<torch::Tensor> targets, torch::Tensor scaledAnchors, int inW, int inH, float ignoreThreshold)
 	{
 
 		int bs = targets.size();
-		auto scaled_anchorsType = scaled_anchors.options();
-		
-		int index = vecIndex(featureLength, in_w);
-		std::vector<std::vector<int>> anchor_vec_inVec = { {3, 4, 5} ,{1, 2, 3} };
-		std::vector<int> anchor_index = anchor_vec_inVec[index];
-		int subtract_index = 3 * index;
+		auto scaledAnchorsType = scaledAnchors.options();
 
-		torch::TensorOptions grad_false(torch::requires_grad(false));
+		int index = vecIndex(featureLength, inW);
+		std::vector<std::vector<int>> anchorVecInVec = { {3, 4, 5} ,{1, 2, 3} };
+		std::vector<int> anchorIndex = anchorVecInVec[index];
+		int subtractIndex = 3 * index;
+
+		torch::TensorOptions gradFalse(torch::requires_grad(false));
 		auto TensorType = targets[0].options();
-		auto mask = torch::zeros({ bs, int(numAnchors / 2), in_h, in_w }, grad_false);
-		auto noobj_mask = torch::ones({ bs, int(numAnchors / 2), in_h, in_w }, grad_false);
+		auto mask = torch::zeros({ bs, int(numAnchors / 2), inH, inW }, gradFalse);
+		auto noobjMask = torch::ones({ bs, int(numAnchors / 2), inH, inW }, gradFalse);
 
-		auto tx = torch::zeros({ bs, int(numAnchors / 2), in_h, in_w }, grad_false);
-		auto ty = torch::zeros({ bs, int(numAnchors / 2), in_h, in_w }, grad_false);
-		auto tw = torch::zeros({ bs, int(numAnchors / 2), in_h, in_w }, grad_false);
-		auto th = torch::zeros({ bs, int(numAnchors / 2), in_h, in_w }, grad_false);
-		auto t_box = torch::zeros({ bs, int(numAnchors / 2), in_h, in_w, 4 }, grad_false);
-		auto tconf = torch::zeros({ bs, int(numAnchors / 2), in_h, in_w }, grad_false);
-		auto tcls = torch::zeros({ bs, int(numAnchors / 2), in_h, in_w, numClasses }, grad_false);
+		auto tx = torch::zeros({ bs, int(numAnchors / 2), inH, inW }, gradFalse);
+		auto ty = torch::zeros({ bs, int(numAnchors / 2), inH, inW }, gradFalse);
+		auto tw = torch::zeros({ bs, int(numAnchors / 2), inH, inW }, gradFalse);
+		auto th = torch::zeros({ bs, int(numAnchors / 2), inH, inW }, gradFalse);
+		auto tbox = torch::zeros({ bs, int(numAnchors / 2), inH, inW, 4 }, gradFalse);
+		auto tconf = torch::zeros({ bs, int(numAnchors / 2), inH, inW }, gradFalse);
+		auto tcls = torch::zeros({ bs, int(numAnchors / 2), inH, inW, numClasses }, gradFalse);
 
-		auto box_loss_scale_x = torch::zeros({ bs, int(numAnchors / 2), in_h, in_w }, grad_false);
-		auto box_loss_scale_y = torch::zeros({ bs, int(numAnchors / 2), in_h, in_w }, grad_false);
+		auto boxLossScalex = torch::zeros({ bs, int(numAnchors / 2), inH, inW }, gradFalse);
+		auto boxLossScaley = torch::zeros({ bs, int(numAnchors / 2), inH, inW }, gradFalse);
+
 		for (int b = 0; b < bs; b++)
 		{
 			if (targets[b].sizes().size() == 1)
@@ -490,28 +487,27 @@ namespace mrcv
 				continue;
 			}
 
-			auto gxs = targets[b].narrow(-1, 0, 1) * in_w;
-			auto gys = targets[b].narrow(-1, 1, 1) * in_h;
+			auto gxs = targets[b].narrow(-1, 0, 1) * inW;
+			auto gys = targets[b].narrow(-1, 1, 1) * inH;
 
-			auto gws = targets[b].narrow(-1, 2, 1) * in_w;
-			auto ghs = targets[b].narrow(-1, 3, 1) * in_h;
+			auto gws = targets[b].narrow(-1, 2, 1) * inW;
+			auto ghs = targets[b].narrow(-1, 3, 1) * inH;
 
 			auto gis = torch::floor(gxs);
 			auto gjs = torch::floor(gys);
 
-		
-			auto gt_box = torch::Tensor(torch::cat({ torch::zeros_like(gws), torch::zeros_like(ghs), gws, ghs }, 1)).to(torch::kFloat32);
 
-			auto anchor_shapes = torch::Tensor(torch::cat({ torch::zeros({ numAnchors, 2 }).to(scaled_anchorsType), torch::Tensor(scaled_anchors) }, 1)).to(TensorType);
-			
-			auto anch_ious = jaccard(gt_box, anchor_shapes);
+			auto gtBox = torch::Tensor(torch::cat({ torch::zeros_like(gws), torch::zeros_like(ghs), gws, ghs }, 1)).to(torch::kFloat32);
 
-			//Find the best matching anchor box
-			auto best_ns = torch::argmax(anch_ious, -1);
+			auto anchorShapes = torch::Tensor(torch::cat({ torch::zeros({ numAnchors, 2 }).to(scaledAnchorsType), torch::Tensor(scaledAnchors) }, 1)).to(TensorType);
 
-			for (int i = 0; i < best_ns.sizes()[0]; i++)
+			auto anchIous = jaccard(gtBox, anchorShapes);
+
+			auto bestNs = torch::argmax(anchIous, -1);
+
+			for (int i = 0; i < bestNs.sizes()[0]; i++)
 			{
-				if (!inVec(anchor_index, best_ns[i].item().toInt()))
+				if (!inVec(anchorIndex, bestNs[i].item().toInt()))
 				{
 					continue;
 				}
@@ -521,48 +517,49 @@ namespace mrcv
 				auto gy = gys[i].item().toFloat();
 				auto gw = gws[i].item().toFloat();
 				auto gh = ghs[i].item().toFloat();
-				if (gj < in_h && gi < in_w) {
-					auto best_n = vecIndex(anchor_index, best_ns[i].item().toInt());// (best_ns[i] - subtract_index).item().toInt();
+				if (gj < inH && gi < inW)
+				{
+					auto bestN = vecIndex(anchorIndex, bestNs[i].item().toInt());
 
-					noobj_mask[b][best_n][gj][gi] = 0;
-					mask[b][best_n][gj][gi] = 1;
-					
-					tx[b][best_n][gj][gi] = gx;
-					ty[b][best_n][gj][gi] = gy;
-					
-					tw[b][best_n][gj][gi] = gw;
-					th[b][best_n][gj][gi] = gh;
-					
-					box_loss_scale_x[b][best_n][gj][gi] = targets[b][i][2];
-					box_loss_scale_y[b][best_n][gj][gi] = targets[b][i][3];
-					
-					tconf[b][best_n][gj][gi] = 1;
-					
-					tcls[b][best_n][gj][gi][targets[b][i][4].item().toLong()] = 1;
+					noobjMask[b][bestN][gj][gi] = 0;
+					mask[b][bestN][gj][gi] = 1;
+
+					tx[b][bestN][gj][gi] = gx;
+					ty[b][bestN][gj][gi] = gy;
+
+					tw[b][bestN][gj][gi] = gw;
+					th[b][bestN][gj][gi] = gh;
+
+					boxLossScalex[b][bestN][gj][gi] = targets[b][i][2];
+					boxLossScaley[b][bestN][gj][gi] = targets[b][i][3];
+
+					tconf[b][bestN][gj][gi] = 1;
+
+					tcls[b][bestN][gj][gi][targets[b][i][4].item().toLong()] = 1;
 				}
 				else {
 					std::cout << gxs << gys << std::endl;
 					std::cout << gis << gjs << std::endl;
 					std::cout << targets[b];
 					std::cout << "Step out of boundary;" << std::endl;
-				}
 
+				}
 			}
+			tbox.select(-1, 0) = tx;
+			tbox.select(-1, 1) = ty;
+			tbox.select(-1, 2) = tw;
+			tbox.select(-1, 3) = th;
+			std::vector<torch::Tensor> output = { mask, noobjMask, tbox, tconf, tcls, boxLossScalex, boxLossScaley };
+			return output;
 		}
-		t_box.select(-1, 0) = tx;
-		t_box.select(-1, 1) = ty;
-		t_box.select(-1, 2) = tw;
-		t_box.select(-1, 3) = th;
-		std::vector<torch::Tensor> output = { mask, noobj_mask, t_box, tconf, tcls, box_loss_scale_x, box_loss_scale_y };
-		return output;
 	}
 
-	std::vector<torch::Tensor> YOLOLossImpl::getIgnore(torch::Tensor prediction, std::vector<torch::Tensor> targets, torch::Tensor scaled_anchors, int in_w, int in_h, torch::Tensor noobj_mask)
+	std::vector<torch::Tensor> YOLOLossImpl::getIgnore(torch::Tensor prediction, std::vector<torch::Tensor> targets, torch::Tensor scaledAnchors, int inW, int inH, torch::Tensor noobjMask)
 	{
 		int bs = targets.size();
-		int index = vecIndex(featureLength, in_w);
-		std::vector<std::vector<int>> anchor_vec_inVec = { {3, 4, 5}, {0, 1, 2} };
-		std::vector<int> anchor_index = anchor_vec_inVec[index];
+		int index = vecIndex(featureLength, inW);
+		std::vector<std::vector<int>> anchorVecInVec = { {3, 4, 5}, {0, 1, 2} };
+		std::vector<int> anchorIndex = anchorVecInVec[index];
 
 		auto x = torch::sigmoid(prediction.select(-1, 0));
 		auto y = torch::sigmoid(prediction.select(-1, 1));
@@ -573,49 +570,51 @@ namespace mrcv
 		auto FloatType = prediction.options();
 		auto LongType = prediction.to(torch::kLong).options();
 
-		auto grid_x = torch::linspace(0, in_w - 1, in_w).repeat({ in_h, 1 }).repeat(
+		auto gridX = torch::linspace(0, inW - 1, inW).repeat({ inH, 1 }).repeat(
 			{ int(bs * numAnchors / 2), 1, 1 }).view(x.sizes()).to(FloatType);
-		auto grid_y = torch::linspace(0, in_h - 1, in_h).repeat({ in_w, 1 }).t().repeat(
+		auto gridY = torch::linspace(0, inH - 1, inH).repeat({ inW, 1 }).t().repeat(
 			{ int(bs * numAnchors / 2), 1, 1 }).view(y.sizes()).to(FloatType);
 
-		auto anchor_w = scaled_anchors.narrow(0, anchor_index[0], 3).narrow(-1, 0, 1).to(FloatType);
-		auto anchor_h = scaled_anchors.narrow(0, anchor_index[0], 3).narrow(-1, 1, 1).to(FloatType);
-		anchor_w = anchor_w.repeat({ bs, 1 }).repeat({ 1, 1, in_h * in_w }).view(w.sizes());
-		anchor_h = anchor_h.repeat({ bs, 1 }).repeat({ 1, 1, in_h * in_w }).view(h.sizes());
+		auto anchorW = scaledAnchors.narrow(0, anchorIndex[0], 3).narrow(-1, 0, 1).to(FloatType);
+		auto anchorH = scaledAnchors.narrow(0, anchorIndex[0], 3).narrow(-1, 1, 1).to(FloatType);
+		anchorW = anchorW.repeat({ bs, 1 }).repeat({ 1, 1, inH * inW }).view(w.sizes());
+		anchorH = anchorH.repeat({ bs, 1 }).repeat({ 1, 1, inH * inW }).view(h.sizes());
 
-		auto pred_boxes = torch::randn_like(prediction.narrow(-1, 0, 4)).to(FloatType);
-		pred_boxes.select(-1, 0) = x + grid_x;
-		pred_boxes.select(-1, 1) = y + grid_y;
+		auto predBoxes = torch::randn_like(prediction.narrow(-1, 0, 4)).to(FloatType);
+		predBoxes.select(-1, 0) = x + gridX;
+		predBoxes.select(-1, 1) = y + gridY;
 
-		pred_boxes.select(-1, 2) = w.exp() * anchor_w;
-		pred_boxes.select(-1, 3) = h.exp() * anchor_h;
+		predBoxes.select(-1, 2) = w.exp() * anchorW;
+		predBoxes.select(-1, 3) = h.exp() * anchorH;
 
 		for (int i = 0; i < bs; i++)
 		{
-			auto pred_boxes_for_ignore = pred_boxes[i];
-			pred_boxes_for_ignore = pred_boxes_for_ignore.view({ -1, 4 });
-			if (targets[i].sizes().size() > 1) {
-				auto gx = targets[i].narrow(-1, 0, 1) * in_w;
-				auto gy = targets[i].narrow(-1, 1, 1) * in_h;
-				auto gw = targets[i].narrow(-1, 2, 1) * in_w;
-				auto gh = targets[i].narrow(-1, 3, 1) * in_h;
-				auto gt_box = torch::cat({ gx, gy, gw, gh }, -1).to(FloatType);
+			auto predBoxesForIgnore = predBoxes[i];
+			predBoxesForIgnore = predBoxesForIgnore.view({ -1, 4 });
+			if (targets[i].sizes().size() > 1) 
+			{
+				auto gx = targets[i].narrow(-1, 0, 1) * inW;
+				auto gy = targets[i].narrow(-1, 1, 1) * inH;
+				auto gw = targets[i].narrow(-1, 2, 1) * inW;
+				auto gh = targets[i].narrow(-1, 3, 1) * inH;
+				auto gtBox = torch::cat({ gx, gy, gw, gh }, -1).to(FloatType);
 
-				auto anch_ious = jaccard(gt_box, pred_boxes_for_ignore);
-				auto anch_ious_max_tuple = torch::max(anch_ious, 0);
-				auto anch_ious_max = std::get<0>(anch_ious_max_tuple);
+				auto anchIous = jaccard(gtBox, predBoxesForIgnore);
+				auto anchIousMaxTuple = torch::max(anchIous, 0);
+				auto anchIousMax = std::get<0>(anchIousMaxTuple);
 
-				anch_ious_max = anch_ious_max.view(pred_boxes.sizes().slice(1, 3));
-				noobj_mask[i] = (anch_ious_max <= ignoreThreshold).to(FloatType) * noobj_mask[i];
+				anchIousMax = anchIousMax.view(predBoxes.sizes().slice(1, 3));
+				noobjMask[i] = (anchIousMax <= ignoreThreshold).to(FloatType) * noobjMask[i];
 			}
 
 		}
 
-		std::vector<torch::Tensor> output = { noobj_mask, pred_boxes };
+		std::vector<torch::Tensor> output = { noobjMask, predBoxes };
 		return output;
 	}
 
-	std::vector<int> nmsLibtorch(torch::Tensor bboxes, torch::Tensor scores, float thresh) {
+	std::vector<int> nmsLibtorch(torch::Tensor bboxes, torch::Tensor scores, float thresh) 
+	{
 		auto x1 = bboxes.select(-1, 0);
 		auto y1 = bboxes.select(-1, 1);
 		auto x2 = bboxes.select(-1, 2);
@@ -625,13 +624,16 @@ namespace mrcv
 		auto order = std::get<1>(tuple_sorted);
 
 		std::vector<int>	keep;
-		while (order.numel() > 0) {
-			if (order.numel() == 1) {
+		while (order.numel() > 0) 
+		{
+			if (order.numel() == 1) 
+			{
 				auto i = order.item();
 				keep.push_back(i.toInt());
 				break;
 			}
-			else {
+			else 
+			{
 				auto i = order[0].item();
 				keep.push_back(i.toInt());
 			}
@@ -647,7 +649,8 @@ namespace mrcv
 
 			auto iou = inter / (areas[keep.back()] + areas.index({ order.narrow(0,1,order.size(-1) - 1) }) - inter);//[N - 1, ]
 			auto idx = (iou <= thresh).nonzero().squeeze();
-			if (idx.numel() == 0) {
+			if (idx.numel() == 0) 
+			{
 				break;
 			}
 			order = order.index({ idx + 1 });
@@ -655,15 +658,16 @@ namespace mrcv
 		return keep;
 	}
 
-	std::vector<torch::Tensor> nonMaximumSuppression(torch::Tensor prediction, int numСlasses, float confThres, float nmsThres) {
-
+	std::vector<torch::Tensor> nonMaximumSuppression(torch::Tensor prediction, int numСlasses, float confThres, float nmsThres) 
+	{
 		prediction.select(-1, 0) -= prediction.select(-1, 2) / 2;
 		prediction.select(-1, 1) -= prediction.select(-1, 3) / 2;
 		prediction.select(-1, 2) += prediction.select(-1, 0);
 		prediction.select(-1, 3) += prediction.select(-1, 1);
 
 		std::vector<torch::Tensor> output;
-		for (int imageID = 0; imageID < prediction.sizes()[0]; imageID++) {
+		for (int imageID = 0; imageID < prediction.sizes()[0]; imageID++) 
+		{
 			auto imagePred = prediction[imageID];
 			auto maxOutTuple = torch::max(imagePred.narrow(-1, 5, numСlasses), -1, true);
 			auto classConf = std::get<0>(maxOutTuple);
@@ -673,7 +677,8 @@ namespace mrcv
 			classConf = classConf.index({ confMask }).to(torch::kFloat);
 			classPred = classPred.index({ confMask }).to(torch::kFloat);
 
-			if (!imagePred.sizes()[0]) {
+			if (!imagePred.sizes()[0]) 
+			{
 				output.push_back(torch::full({ 1, 7 }, 0));
 				continue;
 			}
@@ -697,11 +702,13 @@ namespace mrcv
 				if (!found) imgClasses.push_back(detections[m][6]);
 			}
 			std::vector<torch::Tensor> tempClassDetections;
-			for (auto c : imgClasses) {
+			for (auto c : imgClasses) 
+			{
 				auto detectionsClass = detections.index({ detections.select(-1,-1) == c });
 				auto keep = nmsLibtorch(detectionsClass.narrow(-1, 0, 4), detectionsClass.select(-1, 4) * detectionsClass.select(-1, 5), nmsThres);
 				std::vector<torch::Tensor> tempMaxDetections;
-				for (auto v : keep) {
+				for (auto v : keep) 
+				{
 					tempMaxDetections.push_back(detectionsClass[v]);
 				}
 				auto maxDetections = torch::cat(tempMaxDetections, 0);
@@ -730,9 +737,11 @@ namespace mrcv
 		return  (ymax + ymin) / 2.0;
 	}
 
-	DetectorData DetAugmentations::Resize(DetectorData mData, int width, int height, float probability) {
+	DetectorData DetAugmentations::Resize(DetectorData mData, int width, int height, float probability) 
+	{
 		float rand_number = RandomNum<float>(0, 1);
-		if (rand_number <= probability) {
+		if (rand_number <= probability) 
+		{
 
 			float hScale = height * 1.0 / mData.image.rows;
 			float wScale = width * 1.0 / mData.image.cols;
@@ -743,14 +752,13 @@ namespace mrcv
 				mData.bboxes[i].ymin = int(hScale * mData.bboxes[i].ymin);
 				mData.bboxes[i].ymax = int(hScale * mData.bboxes[i].ymax);
 			}
-
 			cv::resize(mData.image, mData.image, cv::Size(width, height));
-
 		}
 		return mData;
 	}
 	
-	bool doesExist(const std::string& name) {
+	bool doesExist(const std::string& name) 
+	{
 		struct stat buffer;
 		return (stat(name.c_str(), &buffer) == 0);
 	}
@@ -770,10 +778,12 @@ namespace mrcv
 	}
 
 	// Замена всех вхождений подстроки в строке
-	std::string replaceAll(const std::string& str, const std::string& from, const std::string& to) {
+	std::string replaceAll(const std::string& str, const std::string& from, const std::string& to) 
+	{
 		std::string result = str;
 		size_t startPos = 0;
-		while ((startPos = result.find(from, startPos)) != std::string::npos) {
+		while ((startPos = result.find(from, startPos)) != std::string::npos) 
+		{
 			result.replace(startPos, from.length(), to);
 			startPos += to.length();
 		}
@@ -782,14 +792,17 @@ namespace mrcv
 
 	// Загрузка данных датасета 
 	void loadXMLDataFromFolder(const std::string& folder, const std::string& imageType,
-		std::vector<std::string>& listImages, std::vector<std::string>& listLabels) {
-
-		for (const auto& entry : std::filesystem::recursive_directory_iterator(folder)) {
-			if (entry.is_regular_file()) {
+		std::vector<std::string>& listImages, std::vector<std::string>& listLabels) 
+	{
+		for (const auto& entry : std::filesystem::recursive_directory_iterator(folder)) 
+		{
+			if (entry.is_regular_file()) 
+			{
 				std::string fullPath = entry.path().string();
 				std::string lowerName = toLowerCase(entry.path().filename().string());
 
-				if (endsWith(lowerName, ".xml")) {
+				if (endsWith(lowerName, ".xml")) 
+				{
 					listLabels.push_back(fullPath);
 
 					std::string imagePath = replaceAll(fullPath, ".xml", imageType);
@@ -802,16 +815,16 @@ namespace mrcv
 	}
 
 	// Функция отрисовки ограничевающего прямоугольника
-	void showBbox(cv::Mat image, torch::Tensor bboxes, std::vector<std::string> nameList) {
-
+	void showBbox(cv::Mat image, torch::Tensor bboxes, std::vector<std::string> nameList) 
+	{
 		int fontFace = cv::FONT_HERSHEY_COMPLEX;
 		double fontScale = 0.4;
 		int thickness = 1;
 		float* bbox = new float[bboxes.size(0)]();
 		
-		if (bboxes.equal(torch::zeros_like(bboxes))) {
+		if (bboxes.equal(torch::zeros_like(bboxes))) 
+		{
 			std::cout << "Boxes not detected" << std::endl;
-			//return;
 		} 
 		memcpy(bbox, bboxes.cpu().data_ptr(), bboxes.size(0) * sizeof(float));
 		for (int i = 0; i < bboxes.size(0); i = i + 7)
@@ -830,7 +843,6 @@ namespace mrcv
 		cv::destroyAllWindows();
 	}
 
-	// Функция декодирования обрамляющих прямоугольников
 	torch::Tensor DecodeBox(torch::Tensor input, torch::Tensor anchors, int numСlasses, int imgSize[])
 	{
 		int numAnchors = anchors.sizes()[0];
@@ -892,16 +904,18 @@ namespace mrcv
 
 	}
 
-	// Функция инициализации модели
 	void Detector::Initialize(int gpuID, int width, int height,
-		std::string nameListPath) {
+		std::string nameListPath) 
+	{
 		if (gpuID >= 0) {
-			if (gpuID >= torch::getNumGPUs()) {
+			if (gpuID >= torch::getNumGPUs()) 
+			{
 				std::cout << "No GPU id " << gpuID << " available" << std::endl;
 			}
 			device = torch::Device(torch::kCUDA, gpuID);
 		}
-		else {
+		else 
+		{
 			device = torch::Device(torch::kCPU);
 		}
 		nameList = {};
@@ -924,7 +938,8 @@ namespace mrcv
 
 		this->width = width;
 		this->height = height;
-		if (width % 32 || height % 32) {
+		if (width % 32 || height % 32) 
+		{
 			std::cout << "Width or height is not divisible by 32" << std::endl;
 			return;
 		}
@@ -934,10 +949,18 @@ namespace mrcv
 		return;
 	}
 
-	// Загрузка предобученной модели
-	int Detector::LoadPretrained(std::string pretrainedPath) {
+	int Detector::LoadPretrained(std::string pretrainedPath) 
+	{
 		auto netPretrained = YoloBody_tiny(3, 80);
-		torch::load(netPretrained, pretrainedPath);
+		try
+		{
+			torch::load(netPretrained, pretrainedPath);
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << e.what();
+		}
+
 		if (this->nameList.size() == 80)
 		{
 			detector = netPretrained;
@@ -946,44 +969,50 @@ namespace mrcv
 		torch::OrderedDict<std::string, at::Tensor> pretrainedDict = netPretrained->named_parameters();
 		torch::OrderedDict<std::string, at::Tensor> modelDict = detector->named_parameters();
 
-
 		for (auto n = pretrainedDict.begin(); n != pretrainedDict.end(); n++)
 		{
-			if (strstr((*n).key().c_str(), "yolo_head")) {
+			if (strstr((*n).key().c_str(), "yolo_head")) 
+			{
 				continue;
 			}
 			modelDict[(*n).key()] = (*n).value();
 		}
 
-		torch::autograd::GradMode::set_enabled(false);  // make parameters copying possible
-		auto newParams = modelDict; // implement this
-		auto params = detector->named_parameters(true /*recurse*/);
-		auto buffers = detector->named_buffers(true /*recurse*/);
-		for (auto& val : newParams) {
+		torch::autograd::GradMode::set_enabled(false); 
+		auto newParams = modelDict;
+		auto params = detector->named_parameters(true);
+		auto buffers = detector->named_buffers(true);
+		for (auto& val : newParams) 
+		{
 			auto name = val.key();
 			auto* t = params.find(name);
-			if (t != nullptr) {
+			if (t != nullptr) 
+			{
 				t->copy_(val.value());
 			}
-			else {
+			else 
+			{
 				t = buffers.find(name);
-				if (t != nullptr) {
+				if (t != nullptr) 
+				{
 					t->copy_(val.value());
 				}
 			}
 		}
 		torch::autograd::GradMode::set_enabled(true);
+		return 0;
 	}
 
-	// Обучение модели детектора
 	int Detector::Train(std::string trainValPath, std::string imageType, int numEpochs, int batchSize,
-		float learningRate, std::string savePath, std::string pretrainedPath) {
+		float learningRate, std::string savePath, std::string pretrainedPath) 
+	{
 		if (!doesExist(pretrainedPath))
 		{
 			std::cout << "Pretrained path is invalid: " << pretrainedPath << "\t random initialzed the model" << std::endl;
 			return 1;
 		}
-		else {
+		else 
+		{
 			LoadPretrained(pretrainedPath);
 		}
 
@@ -998,7 +1027,8 @@ namespace mrcv
 		loadXMLDataFromFolder(trainLabelPath, imageType, listImagesTrain, listLabelsTrain);
 		loadXMLDataFromFolder(valLabelPath, imageType, listImagesVal, listLabelsVal);
 
-		if (listImagesTrain.size() < batchSize || listImagesVal.size() < batchSize) {
+		if (listImagesTrain.size() < batchSize || listImagesVal.size() < batchSize) 
+		{
 			std::cout << "Image numbers less than batch size or empty image folder" << std::endl;
 			return 2;
 		}
@@ -1023,16 +1053,21 @@ namespace mrcv
 		auto pretrainedDict = detector->named_parameters();
 		auto FloatType = torch::ones(1).to(torch::kFloat).to(device).options();
 
-		for (int epochCount = 0; epochCount < numEpochs; epochCount++) {
+		for (int epochCount = 0; epochCount < numEpochs; epochCount++) 
+		{
 			float lossSum = 0;
 			int batchCount = 0;
 			float lossTrain = 0;
 			float lossVal = 0;
 			float bestLoss = 1e10;
 
-			if (epochCount == int(numEpochs / 2)) { learningRate /= 10; }
+			if (epochCount == int(numEpochs / 2)) 
+			{ 
+				learningRate /= 10; 
+			}
 			torch::optim::Adam optimizer(detector->parameters(), learningRate);
-			if (epochCount < int(numEpochs / 10)) {
+			if (epochCount < int(numEpochs / 10)) 
+			{
 				for (auto mm : pretrainedDict)
 				{
 					if (strstr(mm.key().c_str(), "yolo_head"))
@@ -1045,13 +1080,16 @@ namespace mrcv
 					}
 				}
 			}
-			else {
-				for (auto mm : pretrainedDict) {
+			else 
+			{
+				for (auto mm : pretrainedDict) 
+				{
 					mm.value().set_requires_grad(true);
 				}
 			}
 			detector->train();
-			for (auto& batch : *dataLoaderTrain) {
+			for (auto& batch : *dataLoaderTrain) 
+			{
 				std::vector<torch::Tensor> imagesVec = {};
 				std::vector<torch::Tensor> targetsVec = {};
 				if (batch.size() < batchSize) continue;
@@ -1068,8 +1106,8 @@ namespace mrcv
 				std::vector<torch::Tensor> lossNumPos2 = critia1.forward(outputs[1], targetsVec);
 
 				auto loss = lossNumPos1[0] + lossNumPos2[0];
-				auto num_pos = lossNumPos1[1] + lossNumPos2[1];
-				loss = loss / num_pos;
+				auto numPos = lossNumPos1[1] + lossNumPos2[1];
+				loss = loss / numPos;
 				loss.backward();
 				optimizer.step();
 				lossSum += loss.item().toFloat();
@@ -1081,7 +1119,8 @@ namespace mrcv
 			std::cout << std::endl;
 			detector->eval();
 			lossSum = 0; batchCount = 0;
-			for (auto& batch : *dataLoaderVal) {
+			for (auto& batch : *dataLoaderVal) 
+			{
 				std::vector<torch::Tensor> imagesVec = {};
 				std::vector<torch::Tensor> targetsVec = {};
 				if (batch.size() < batchSize) continue;
@@ -1096,8 +1135,8 @@ namespace mrcv
 				std::vector<torch::Tensor> lossNumPos1 = critia1.forward(outputs[1], targetsVec);
 				std::vector<torch::Tensor> lossNumPos2 = critia1.forward(outputs[0], targetsVec);
 				auto loss = lossNumPos1[0] + lossNumPos2[0];
-				auto num_pos = lossNumPos1[1] + lossNumPos2[1];
-				loss = loss / num_pos;
+				auto numPos = lossNumPos1[1] + lossNumPos2[1];
+				loss = loss / numPos;
 
 				lossSum += loss.item<float>();
 				batchCount++;
@@ -1106,7 +1145,8 @@ namespace mrcv
 				std::cout << "Epoch: " << epochCount << "," << " Valid Loss: " << lossVal << "\r";
 			}
 			printf("\n");
-			if (bestLoss >= lossVal) {
+			if (bestLoss >= lossVal) 
+			{
 				bestLoss = lossVal;
 			}
 			torch::save(detector, savePath);
@@ -1114,8 +1154,8 @@ namespace mrcv
 		return 0;
 	}
 
-	// Функция валидации модели
-	float Detector::Validate(std::string valDataPath, std::string imageType, int batchSize) {
+	float Detector::Validate(std::string valDataPath, std::string imageType, int batchSize) 
+	{
 		std::string valLabelPath = valDataPath + "/val/labels/";
 
 		std::vector<std::string> listImagesVal = {};
@@ -1123,7 +1163,8 @@ namespace mrcv
 
 		loadXMLDataFromFolder(valLabelPath, imageType, listImagesVal, listLabelsVal);
 
-		if (listImagesVal.size() < batchSize) {
+		if (listImagesVal.size() < batchSize) 
+		{
 			std::cout << "Image numbers less than batch size or empty image folder" << std::endl;
 			return 1e10; 
 		}
@@ -1145,12 +1186,14 @@ namespace mrcv
 
 		auto FloatType = torch::ones(1).to(torch::kFloat).to(device).options();
 
-		for (auto& batch : *dataLoaderVal) {
+		for (auto& batch : *dataLoaderVal) 
+		{
 			std::vector<torch::Tensor> imagesVec = {};
 			std::vector<torch::Tensor> targetsVec = {};
 			if (batch.size() < batchSize) continue;
 
-			for (int i = 0; i < batchSize; i++) {
+			for (int i = 0; i < batchSize; i++) 
+			{
 				imagesVec.push_back(batch[i].data.to(FloatType));
 				targetsVec.push_back(batch[i].target.to(FloatType));
 			}
@@ -1162,8 +1205,8 @@ namespace mrcv
 			std::vector<torch::Tensor> lossNumPos2 = critia2.forward(outputs[0], targetsVec);
 
 			auto loss = lossNumPos1[0] + lossNumPos2[0];
-			auto num_pos = lossNumPos1[1] + lossNumPos2[1];
-			loss = loss / num_pos;
+			auto numPos = lossNumPos1[1] + lossNumPos2[1];
+			loss = loss / numPos;
 
 			lossSum += loss.item<float>();
 			batchCount++;
@@ -1173,7 +1216,6 @@ namespace mrcv
 		return avgLoss;
 	}
 
-	// Функция автообучения модели
 	int Detector::AutoTrain(std::string trainValPath, std::string imageType, std::vector<int> epochsList, std::vector<int> batchSizes,
 		std::vector<float> learningRates, std::string savePath, std::string pretrainedPath)
 	{
@@ -1184,18 +1226,24 @@ namespace mrcv
 		
 		int statusCode = 0;
 
-		for (int numEpochs : epochsList) {
-			for (int batchSize : batchSizes) {
-				for (float learningRate : learningRates) {
+		for (int numEpochs : epochsList) 
+		{
+			for (int batchSize : batchSizes) 
+			{
+				for (float learningRate : learningRates) 
+				{
 					std::cout << "Training with epochs: " << numEpochs << ", batch size: " << batchSize
 						<< ", learning rate: " << learningRate << std::endl;
 
 					statusCode = Train(trainValPath, imageType, numEpochs, batchSize, learningRate, savePath, pretrainedPath);
 
-					statusCode = LoadPretrained(savePath);
+					// TODO: Вернуть код работы функции
+					// statusCode = LoadPretrained(savePath);
+					LoadPretrained(savePath);
 					auto valLoss = Validate(trainValPath, imageType, batchSize); 
 					
-					if (valLoss < bestLoss) {
+					if (valLoss < bestLoss) 
+					{
 						bestLoss = valLoss;
 						bestEpochs = numEpochs;
 						bestBatchSize = batchSize;
@@ -1216,7 +1264,6 @@ namespace mrcv
 		return statusCode;
 	}
 
-	// Функция загрузки весов модели
 	int Detector::LoadWeight(std::string weightPath) 
 	{
 		try
@@ -1229,11 +1276,10 @@ namespace mrcv
 		}
 		detector->to(device);
 		detector->eval();
-		return;
+		return EXIT_SUCCESS;
 	}
 
-	// Функция детекции по обученной модели
-	void Detector::Predict(cv::Mat image, bool show, float confThresh, float nmsThresh) 
+	int Detector::Predict(cv::Mat image, bool show, float confThresh, float nmsThresh) 
 	{
 		int originWidth = image.cols;
 		int originHeight = image.rows;
@@ -1275,6 +1321,6 @@ namespace mrcv
 		cv::resize(image, image, { originWidth,originHeight });
 		if (show)
 			showBbox(image, detection[0], nameList);
-		return;
+		return EXIT_SUCCESS;
 	}
 }

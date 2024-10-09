@@ -58,56 +58,58 @@ int mrcv::flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode)
 }
 
 /**
-     * @brief Функция предварительной обработки изображений (автоматическая коррекция контраста и яркости, резкости)
-     * Функция автоматической предобработки изображения, кооррекции яркости и контраста, резкости.
-     *
-     *
-     * @param image - изображение cv::Mat, над которым происходит преобразование.
-     * @param metodImagePerProcessingBrightnessContrast - вектор параметров, которые опрределяют, какие преобразования и в какой последовательноси  проводить.
-     *  none  - без изменений
-     * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
-     */
+ * @brief Функция аугментации изображений.
+ * Выполняет аугментацию для набора входных изображений на основе заданных методов и сохраняет результат.
+ *
+ * @param inputImagesAugmetation - вектор входных изображений (cv::Mat) для аугментации.
+ * @param outputImagesAugmetation - вектор для сохранения выходных (преобразованных) изображений.
+ * @param augmetationMethod - вектор методов аугментации (mrcv::AUGMENTATION_METHOD) для применения.
+ * @return Код результата выполнения функции. 0 - успех; -1 - исключение (OpenCV или файловой системы).
+ *
+ * Функция проверяет наличие директории для сохранения изображений и создает её при необходимости. Для каждого изображения
+ * выполняется указанная операция (например, поворот или отражение) с последующей проверкой и сохранением результата в директорию.
+ */
+
 
 int mrcv::augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
     std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod)
 {
+    std::set<std::string> methodsUsed; // Уникальные методы аугментации
+    int savedFilesCount = 0;
+
     try
     {
-        // Проверяем наличие директории и создаем её, если не существует
         std::string outputFolder = "files\\augmented_images/";
         if (!std::filesystem::exists(outputFolder)) {
-            std::filesystem::create_directories(outputFolder); // Создать директорию для сохранения изображений
-            std::cout << "Directory created: " << outputFolder << std::endl;
+            std::filesystem::create_directories(outputFolder);
         }
 
         for (int q = 0; q < (int)augmetationMethod.size(); q++)
         {
-            for (size_t i = 0; i < inputImagesAugmetation.size(); i++)  // Для всех входных изображений
+            for (size_t i = 0; i < inputImagesAugmetation.size(); i++)
             {
-                cv::Mat image = inputImagesAugmetation[i];  // Извлекаем текущее изображение
+                cv::Mat image = inputImagesAugmetation[i];
 
-                // Проверка, загружено ли изображение
                 if (image.empty()) {
-                    std::cerr << "Error: Input image at index " << i << " is empty or failed to load." << std::endl;
-                    continue; // Пропуск этой итерации, если изображение пустое
+                    continue;
                 }
 
                 cv::Mat resultImage;
                 std::string methodName;
-                int status = 0; // Инициализация переменной status
+                int status = 0;
 
                 switch (augmetationMethod.at(q))
                 {
                 case mrcv::AUGMENTATION_METHOD::FLIP_HORIZONTAL:
-                    status = mrcv::flipImage(image, resultImage, 1);  // Горизонтальное отражение
+                    status = mrcv::flipImage(image, resultImage, 1);
                     methodName = "flipHorizontal";
                     break;
                 case mrcv::AUGMENTATION_METHOD::FLIP_VERTICAL:
-                    status = mrcv::flipImage(image, resultImage, 0);  // Вертикальное отражение
+                    status = mrcv::flipImage(image, resultImage, 0);
                     methodName = "flipVertical";
                     break;
                 case mrcv::AUGMENTATION_METHOD::FLIP_HORIZONTAL_AND_VERTICAL:
-                    status = mrcv::flipImage(image, resultImage, -1);  // Горизонтальное и вертикальное отражение
+                    status = mrcv::flipImage(image, resultImage, -1);
                     methodName = "flipHorizontalandVertical";
                     break;
                 case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_90:
@@ -127,51 +129,58 @@ int mrcv::augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<
                     methodName = "rotate270";
                     break;
                 default:
-                    resultImage = image.clone();  // Если метод не применён, просто копируем изображение
+                    resultImage = image.clone();
                     methodName = "none";
                     break;
                 }
 
-                // Проверка на пустое изображение после обработки
                 if (resultImage.empty()) {
-                    std::cerr << "Error: Resulting image is empty after applying " << methodName << " on image " << i << std::endl;
-                    continue; // Пропуск, если результат пустой
+                    continue;
                 }
 
-                // Сохранение результата
                 outputImagesAugmetation.push_back(resultImage);
 
-                // Создание уникального имени файла для сохранения
                 std::stringstream ss;
-                ss << outputFolder << "augmented_" << i << "_" << methodName << ".bmp"; // Формат BMP
+                ss << outputFolder << "augmented_" << i << "_" << methodName << ".bmp";
 
-                // Сохранение изображения на диск
                 bool isSaved = cv::imwrite(ss.str(), resultImage);
-                if (!isSaved) {
-                    std::cerr << "Error: Failed to save image " << ss.str() << std::endl;
-                }
-                else {
-                    std::cout << "Image saved as: " << ss.str() << std::endl;
+                if (isSaved) {
+                    savedFilesCount++;
+                    methodsUsed.insert(methodName); // Добавляем метод в set
                 }
             }
         }
+
+        // Формируем строку с названиями методов
+        std::ostringstream methodsStream;
+        for (const auto& method : methodsUsed) {
+            methodsStream << method << ", ";
+        }
+        std::string methodsString = methodsStream.str();
+        if (!methodsString.empty()) {
+            methodsString.pop_back(); // Удаляем последнюю запятую
+            methodsString.pop_back(); // Удаляем пробел
+        }
+
+        // Записываем в лог успешное завершение с названиями методов
+        writeLog("Augmentation completed successfully. Methods used: " + methodsString + ". Files saved: " + std::to_string(savedFilesCount), mrcv::LOGTYPE::INFO);
     }
     catch (const cv::Exception& ex)
     {
-        std::cerr << "OpenCV Exception: " << ex.what() << std::endl;
-        return -1; // OpenCV exception
+        writeLog("Augmentation failed: " + std::string(ex.what()), mrcv::LOGTYPE::ERROR);
+        return -1;
     }
     catch (const std::filesystem::filesystem_error& ex)
     {
-        std::cerr << "Filesystem error: " << ex.what() << std::endl;
-        return -1; // Filesystem exception
+        writeLog("Filesystem error: " + std::string(ex.what()), mrcv::LOGTYPE::ERROR);
+        return -1;
     }
     catch (...)
     {
-        std::cerr << "Unhandled exception occurred." << std::endl;
-        return -1; // Unhandled Exception
+        writeLog("Unhandled exception occurred during augmentation.", mrcv::LOGTYPE::EXCEPTION);
+        return -1;
     }
 
-    return 0; // SUCCESS
+    return 0;
 }
 
