@@ -1,11 +1,11 @@
-#include "mrcv/mrcv.h"
+п»ї#include "mrcv/mrcv.h"
 
 namespace mrcv
 {
    void Predictor::trainLSTMNet(const std::vector<std::pair<float, float>> coordinates, bool isTraining) 
    {
         std::vector<std::pair<float, float>> coordinatesNormalized = normilizeInput(coordinates);
-        // Обновляем trainingData только если предоставлены новые координаты
+        // РћР±РЅРѕРІР»СЏРµРј trainingData С‚РѕР»СЊРєРѕ РµСЃР»Рё РїСЂРµРґРѕСЃС‚Р°РІР»РµРЅС‹ РЅРѕРІС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹
         if (!coordinatesNormalized.empty()) 
         {
             trainingData.clear();
@@ -16,35 +16,35 @@ namespace mrcv
                 trainingData.push_back(input);
             }
         }
-        // Определяем функцию потерь и оптимизатор
+        // РћРїСЂРµРґРµР»СЏРµРј С„СѓРЅРєС†РёСЋ РїРѕС‚РµСЂСЊ Рё РѕРїС‚РёРјРёР·Р°С‚РѕСЂ
         auto criterion = torch::nn::MSELoss();
         torch::optim::Adam optimizer(lstm->parameters(), torch::optim::AdamOptions(0.001));
-        // Цикл обучения
+        // Р¦РёРєР» РѕР±СѓС‡РµРЅРёСЏ
         lstm->train();
         for (size_t epoch = 0; epoch < 50; ++epoch) 
         {
             optimizer.zero_grad();
-            // Подготовка входных данных и целей
+            // РџРѕРґРіРѕС‚РѕРІРєР° РІС…РѕРґРЅС‹С… РґР°РЅРЅС‹С… Рё С†РµР»РµР№
             torch::Tensor inputs = torch::cat(trainingData, 0);
             torch::Tensor targets = inputs.clone();           
-            // Инициализируем скрытые состояния
-            if (!isTraining)    // Отключаем обнуление скрытых слоев и состояний в случае продолжения обучения
+            // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј СЃРєСЂС‹С‚С‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ
+            if (!isTraining)    // РћС‚РєР»СЋС‡Р°РµРј РѕР±РЅСѓР»РµРЅРёРµ СЃРєСЂС‹С‚С‹С… СЃР»РѕРµРІ Рё СЃРѕСЃС‚РѕСЏРЅРёР№ РІ СЃР»СѓС‡Р°Рµ РїСЂРѕРґРѕР»Р¶РµРЅРёСЏ РѕР±СѓС‡РµРЅРёСЏ
             {
                 hiddenState = torch::zeros({ numLayers, 1, hiddenSize }, torch::kFloat32);
                 cellState = torch::zeros({ numLayers, 1, hiddenSize }, torch::kFloat32);
             }
-            // Прямой проход
+            // РџСЂСЏРјРѕР№ РїСЂРѕС…РѕРґ
             auto outputs_tuple = lstm->forward(inputs, std::make_tuple(hiddenState, cellState));
             torch::Tensor outputs = std::get<0>(outputs_tuple);
             auto state_tuple = std::get<1>(outputs_tuple);
             hiddenState = std::get<0>(state_tuple).detach();
             cellState = std::get<1>(state_tuple).detach();            
-            // Проход через линейный слой
+            // РџСЂРѕС…РѕРґ С‡РµСЂРµР· Р»РёРЅРµР№РЅС‹Р№ СЃР»РѕР№
             torch::Tensor outputs_linear = linear->forward(outputs.view({ -1, hiddenSize })); // (seq_len * batch_size, inputSize)
             outputs_linear = outputs_linear.view({ -1, 1, inputSize }); // (seq_len, batch_size=1, inputSize)            
-            // Вычисление функции потерь
+            // Р’С‹С‡РёСЃР»РµРЅРёРµ С„СѓРЅРєС†РёРё РїРѕС‚РµСЂСЊ
             auto loss = criterion(outputs_linear, targets);
-            // Обратное распространение и шаг оптимизации
+            // РћР±СЂР°С‚РЅРѕРµ СЂР°СЃРїСЂРѕСЃС‚СЂР°РЅРµРЅРёРµ Рё С€Р°Рі РѕРїС‚РёРјРёР·Р°С†РёРё
             loss.backward();
             torch::nn::utils::clip_grad_norm_(lstm->parameters(), 0.1);
             optimizer.step();
@@ -56,12 +56,12 @@ namespace mrcv
         std::pair<float, float> coordinate_norm = normilizePair(coordinate);
         torch::Tensor input = torch::tensor({ coordinate_norm.first, coordinate_norm.second }).view({ 1, 1, inputSize });
         trainingData.push_back(input);
-        // Сохраняем только 100 последних координат
+        // РЎРѕС…СЂР°РЅСЏРµРј С‚РѕР»СЊРєРѕ 100 РїРѕСЃР»РµРґРЅРёС… РєРѕРѕСЂРґРёРЅР°С‚
         if (trainingData.size() > 100)
         {
             trainingData.erase(trainingData.begin());
         }
-        // Вызываем обучение без обновления trainingData
+        // Р’С‹Р·С‹РІР°РµРј РѕР±СѓС‡РµРЅРёРµ Р±РµР· РѕР±РЅРѕРІР»РµРЅРёСЏ trainingData
         trainLSTMNet({}, true);
     }
     std::pair<float, float> Predictor::predictNextCoordinate() {
