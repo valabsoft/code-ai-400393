@@ -1,16 +1,16 @@
-#include "mrcv/mrcv.h"
+п»ї#include "mrcv/mrcv.h"
 
 namespace mrcv
 {
     cv::Mat extractROI(const cv::Mat& image, const cv::Point& center, const cv::Size& roiSize) 
     {
-        // Левый верхний угол ROI
+        // Р›РµРІС‹Р№ РІРµСЂС…РЅРёР№ СѓРіРѕР» ROI
         int leftUpperCornerX = center.x - roiSize.width / 2;
         int leftUpperCornerY = center.y - roiSize.height / 2;
-        // Проверяем, чтобы координаты угла не выходили за границы изображения
+        // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚РѕР±С‹ РєРѕРѕСЂРґРёРЅР°С‚С‹ СѓРіР»Р° РЅРµ РІС‹С…РѕРґРёР»Рё Р·Р° РіСЂР°РЅРёС†С‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
         leftUpperCornerX = std::max(0, leftUpperCornerX);
         leftUpperCornerY = std::max(0, leftUpperCornerY);
-        // Корректируем ширину и высоту ROI, если ROI выходит за пределы изображения
+        // РљРѕСЂСЂРµРєС‚РёСЂСѓРµРј С€РёСЂРёРЅСѓ Рё РІС‹СЃРѕС‚Сѓ ROI, РµСЃР»Рё ROI РІС‹С…РѕРґРёС‚ Р·Р° РїСЂРµРґРµР»С‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
         int width = roiSize.width;
         int height = roiSize.height;
         if (leftUpperCornerX + width > image.cols) {
@@ -19,9 +19,9 @@ namespace mrcv
         if (leftUpperCornerY + height > image.rows) {
             height = image.rows - leftUpperCornerY;
         }
-        // Создаем прямоугольник ROI
+        // РЎРѕР·РґР°РµРј РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє ROI
         cv::Rect roiRect(leftUpperCornerX, leftUpperCornerY, width, height);
-        // Вырезаем ROI из исходного изображения
+        // Р’С‹СЂРµР·Р°РµРј ROI РёР· РёСЃС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
         cv::Mat roi = image(roiRect).clone();
         return roi;
     }

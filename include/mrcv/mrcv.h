@@ -530,16 +530,15 @@ namespace mrcv
 	*/
 	MRCV_EXPORT class Predictor {
 	public:
-		Predictor(const int64_t& inputSize_, const int64_t& hiddenSize_, const int64_t& numLayers_,
+		Predictor(const int64_t& hiddenSize_, const int64_t& numLayers_,
 			const unsigned int& pointsNumber_, const std::pair<int, int>& imgSize_)
-			: inputSize(inputSize_),
-			hiddenSize(hiddenSize_),
+			:hiddenSize(hiddenSize_),
 			numLayers(numLayers_),
 			pointsNumber(pointsNumber_),
 			imgWidth(imgSize_.first),
 			imgHeight(imgSize_.second),
-			lstm(torch::nn::LSTM(torch::nn::LSTMOptions(inputSize_, hiddenSize_).num_layers(numLayers_))),
-			linear(torch::nn::Linear(hiddenSize_, inputSize_)),
+			lstm(torch::nn::LSTM(torch::nn::LSTMOptions(2, hiddenSize_).num_layers(numLayers_))),
+			linear(torch::nn::Linear(hiddenSize_, 2)),
 			hiddenState(torch::zeros({ numLayers_, 1, hiddenSize_ })),
 			cellState(torch::zeros({ numLayers_, 1, hiddenSize_ }))
 		{
@@ -570,14 +569,14 @@ namespace mrcv
 		std::pair<float, float> predictNextCoordinate();
 
 	private:
-		std::pair<float, float> Predictor::denormilizeOutput(std::pair<float, float> coords);
-		std::pair<float, float> Predictor::normilizePair(std::pair<float, float> coords);
+		std::pair<float, float> denormilizeOutput(std::pair<float, float> coords);
+		std::pair<float, float> normilizePair(std::pair<float, float> coords);
 		std::vector<std::pair<float, float>> normilizeInput(std::vector<std::pair<float, float>> coords);
 		torch::nn::LSTM lstm{ nullptr };
 		torch::nn::Linear linear{ nullptr };
 		torch::Tensor hiddenState;
 		torch::Tensor cellState;
-		int64_t inputSize;
+		int64_t inputSize = 2;
 		int64_t hiddenSize;
 		int64_t numLayers;
 		unsigned int imgWidth;

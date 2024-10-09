@@ -1,4 +1,4 @@
-#include <mrcv/mrcv.h>
+п»ї#include <mrcv/mrcv.h>
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <ctime>
@@ -20,28 +20,27 @@ static cv::Point toPoint(std::pair<float, float> point) {
 
 int main()
 {
-	//Инициализация входых перменных
-	std::pair<float, float> imgSize = { 1440,1080 };  //размер изображения
-	int predictorTrainPointsNum = 50;  //количество точек для обучения модели предсказания положения объекта интереса
-	int totalPointsNum = 500;  //общее количество точек перемещение объекта (кадров)    
-	float objectSize = 250.0f; //размер объекта интереса
-	int maxError = 200;  //максимальное допустимое отклонение предсказанной координаты от реального значения
+	//РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РІС…РѕРґС‹С… РїРµСЂРјРµРЅРЅС‹С…
+	std::pair<float, float> imgSize = { 1440,1080 };  //СЂР°Р·РјРµСЂ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+	int predictorTrainPointsNum = 50;  //РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕС‡РµРє РґР»СЏ РѕР±СѓС‡РµРЅРёСЏ РјРѕРґРµР»Рё РїСЂРµРґСЃРєР°Р·Р°РЅРёСЏ РїРѕР»РѕР¶РµРЅРёСЏ РѕР±СЉРµРєС‚Р° РёРЅС‚РµСЂРµСЃР°
+	int totalPointsNum = 1000;  //РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕС‡РµРє РїРµСЂРµРјРµС‰РµРЅРёРµ РѕР±СЉРµРєС‚Р° (РєР°РґСЂРѕРІ)    
+	float objectSize = 250.0f; //СЂР°Р·РјРµСЂ РѕР±СЉРµРєС‚Р° РёРЅС‚РµСЂРµСЃР°
+	int maxError = 30;  //РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ РґРѕРїСѓСЃС‚РёРјРѕРµ РѕС‚РєР»РѕРЅРµРЅРёРµ РїСЂРµРґСЃРєР°Р·Р°РЅРЅРѕР№ РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕС‚ СЂРµР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ
 	bool drawObj = 0;
 	int failSafeNum = 50;
-	//инициализация данных для генератора перемещения
-	int genType = 1;  //Вид генерации траектории 0 - синус, 1 - круг 
-	int R = 300;  //Радиус (размер) генерируемой траектории
-	float timeFracture = 50;  //Управление частотой генерируемых траекторий: чем больше значение, тем медленнее объект движется по траектории
-	//Инициализация предиктора положения объекта интереса
-	int dataPointsNum = 2;  //размер данных (координат)
-	int hiddenSize = 25;  //скрытый размер (25 - оптимальное значение)
-	int layersNum = 1;  //количество реккурентных слоев модели (1 - оптимальное значение)
-	mrcv::Predictor predictor(dataPointsNum, hiddenSize, layersNum, predictorTrainPointsNum, imgSize);
-	//Инициализация оптимизатора размера региона интереса
-	size_t epochs = 1000;  //Количество эпох для обучения оптимизатора
-	size_t sampleSize = 1000;  //Количество генерируемых синтетических данных для обучения оптимизатора
+	//РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґР°РЅРЅС‹С… РґР»СЏ РіРµРЅРµСЂР°С‚РѕСЂР° РїРµСЂРµРјРµС‰РµРЅРёСЏ
+	int genType = 1;  //Р’РёРґ РіРµРЅРµСЂР°С†РёРё С‚СЂР°РµРєС‚РѕСЂРёРё 0 - СЃРёРЅСѓСЃ, 1 - РєСЂСѓРі 
+	int R = 300;  //Р Р°РґРёСѓСЃ (СЂР°Р·РјРµСЂ) РіРµРЅРµСЂРёСЂСѓРµРјРѕР№ С‚СЂР°РµРєС‚РѕСЂРёРё
+	float timeFracture = 50;  //РЈРїСЂР°РІР»РµРЅРёРµ С‡Р°СЃС‚РѕС‚РѕР№ РіРµРЅРµСЂРёСЂСѓРµРјС‹С… С‚СЂР°РµРєС‚РѕСЂРёР№: С‡РµРј Р±РѕР»СЊС€Рµ Р·РЅР°С‡РµРЅРёРµ, С‚РµРј РјРµРґР»РµРЅРЅРµРµ РѕР±СЉРµРєС‚ РґРІРёР¶РµС‚СЃСЏ РїРѕ С‚СЂР°РµРєС‚РѕСЂРёРё
+	//РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїСЂРµРґРёРєС‚РѕСЂР° РїРѕР»РѕР¶РµРЅРёСЏ РѕР±СЉРµРєС‚Р° РёРЅС‚РµСЂРµСЃР°
+	int hiddenSize = 20;  //СЃРєСЂС‹С‚С‹Р№ СЂР°Р·РјРµСЂ (25 - РѕРїС‚РёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ)
+	int layersNum = 1;  //РєРѕР»РёС‡РµСЃС‚РІРѕ СЂРµРєРєСѓСЂРµРЅС‚РЅС‹С… СЃР»РѕРµРІ РјРѕРґРµР»Рё (1 - РѕРїС‚РёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ)
+	mrcv::Predictor predictor(hiddenSize, layersNum, predictorTrainPointsNum, imgSize);
+	//РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РѕРїС‚РёРјРёР·Р°С‚РѕСЂР° СЂР°Р·РјРµСЂР° СЂРµРіРёРѕРЅР° РёРЅС‚РµСЂРµСЃР°
+	size_t epochs = 500;  //РљРѕР»РёС‡РµСЃС‚РІРѕ СЌРїРѕС… РґР»СЏ РѕР±СѓС‡РµРЅРёСЏ РѕРїС‚РёРјРёР·Р°С‚РѕСЂР°
+	size_t sampleSize = 1000;  //РљРѕР»РёС‡РµСЃС‚РІРѕ РіРµРЅРµСЂРёСЂСѓРµРјС‹С… СЃРёРЅС‚РµС‚РёС‡РµСЃРєРёС… РґР°РЅРЅС‹С… РґР»СЏ РѕР±СѓС‡РµРЅРёСЏ РѕРїС‚РёРјРёР·Р°С‚РѕСЂР°
 	mrcv::Optimizer optimizer(sampleSize, epochs);
-	//Генерация данных для обучения предиктора(первые <predictorTrainPointsNum> кадров видеопотока)
+	//Р“РµРЅРµСЂР°С†РёСЏ РґР°РЅРЅС‹С… РґР»СЏ РѕР±СѓС‡РµРЅРёСЏ РїСЂРµРґРёРєС‚РѕСЂР°(РїРµСЂРІС‹Рµ <predictorTrainPointsNum> РєР°РґСЂРѕРІ РІРёРґРµРѕРїРѕС‚РѕРєР°)
 	std::pair<float, float> realCoordinate;
 	std::vector<std::pair<float, float>> coordinates;
 	for (int i = 1; i <= predictorTrainPointsNum; ++i)
@@ -49,9 +48,9 @@ int main()
 		realCoordinate = generateCoordinates(i, genType, R, timeFracture, imgSize);
 		coordinates.emplace_back(realCoordinate);
 	}
-	//Обучение модели предиктора положения    
+	//РћР±СѓС‡РµРЅРёРµ РјРѕРґРµР»Рё РїСЂРµРґРёРєС‚РѕСЂР° РїРѕР»РѕР¶РµРЅРёСЏ    
 	predictor.trainLSTMNet(coordinates);
-	//основной цикл
+	//РѕСЃРЅРѕРІРЅРѕР№ С†РёРєР»
 	std::time_t start = std::time(nullptr);
 	std::pair<float, float> tmpRealCoordinate = realCoordinate;
 	std::pair<float, float> predictedCoordinate;
@@ -115,7 +114,7 @@ int main()
 		realCoordinate = generateCoordinates(i, genType, R, timeFracture, imgSize);
 		predictor.continueTraining(realCoordinate);
 		cv::line(imgR, toPoint(tmpRealCoordinate), toPoint(realCoordinate), cv::Scalar(0, 0, 255), 1, 8, 0);
-		//вычисление ошибки
+		//РІС‹С‡РёСЃР»РµРЅРёРµ РѕС€РёР±РєРё
 		error = std::sqrt(std::pow(realCoordinate.first - predictedCoordinate.first, 2) + std::pow((realCoordinate.second - predictedCoordinate.second), 2));
 		errorSum += error;
 		avgError = errorSum / (i - predictorTrainPointsNum);
