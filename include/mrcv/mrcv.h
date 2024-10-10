@@ -585,9 +585,9 @@ namespace mrcv
 	*/
 	MRCV_EXPORT class Predictor {
 	public:
-		Predictor(const int64_t& hiddenSize_, 
+		Predictor(const int64_t& hiddenSize_,
 			const int64_t& numLayers_,
-			const unsigned int& pointsNumber_, 
+			const unsigned int& pointsNumber_,
 			const std::pair<int, int>& imgSize_,
 			const float& failsafeDeviation_ = 100,
 			const unsigned int& failsafeDeviationThreshold_ = 5,
@@ -693,15 +693,15 @@ namespace mrcv
 	* @brief Класс оптимизатора
 	*
 	* Класс реализует методы оптимизации размера ROI исходя из размеров объекта, его пермещения и ошибки предсказания положения.
-	* 
+	*
 	* @param sampleSize_ - Количество сэмплов, которые будут сгенерированы для обучения сети.
 	* @param epochs_ - Количество эпох обучения сети.
 	*/
 	MRCV_EXPORT class Optimizer {
 	public:
-		Optimizer(size_t sampleSize_ = 1000, 
+		Optimizer(size_t sampleSize_ = 1000,
 			size_t epochs_ = 50000)
-			: 
+			:
 			sampleSize(sampleSize_),
 			epochs(epochs_),
 			model(torch::nn::Sequential(
@@ -753,6 +753,274 @@ namespace mrcv
 	* @return - извлеченный ROI.
 	*/
 	cv::Mat extractROI(const cv::Mat& image, const cv::Point& center, const cv::Size& roiSize);
+
+	// Класс сегментатора
+	/**
+	 * @brief Класс для решения задачи обнаружения объектов с помощью свёрточные нейронные сети YOLO5
+	 * Класс используется для обнаружения объектов и сегментации изображения с получения бинарных масок обнаруженных объектов
+	 * @param neuralNetSegmentator() -  конструктор класса, входные параметры:
+	 * model - путь к файлй с обученной моделью нейронной сети
+	 * classes - путь к файлй со списоком обнаруживамых класов объектов
+	 * @param process() - запуск работы: обнаружение и распознание (классификация) объектов
+	 * @param getMasks() - получение маски объекта
+	 * @param getImage() - получение изображение с метками (результата)
+	 * @param getClassIDs() - получение номер класса обнаруженных объекта из списка
+	 * @param getConfidences() - получение вероятности с которой определён класса объекта
+	 * @param getBoxes() - получение координат рамки выделяющей обнаруженный объект
+	 * @param getClasses() - получение названий классов объекта
+	 * @param getInference() - получение времени обработки
+	 * @return
+	 */
+	MRCV_EXPORT class neuralNetSegmentator
+	{
+	private:
+		// Структура сегмента
+		struct outputSegment
+		{
+			int id;             // идентификатор класса
+			float confidence;   // вероятность
+			cv::Rect box;       // рамка сегмента
+			cv::Mat boxMask;    // маска сегмента
+		};
+		// Структура параметров маски
+		struct maskParams
+		{
+			int segChannels = 32;
+			int segWidth = 160;
+			int segHeight = 160;
+			int netWidth = 640;
+			int netHeight = 640;
+			float maskThreshold = 0.5;
+			cv::Size srcImgShape;
+			cv::Vec4d params;
+		};
+		// Параметры обработки
+		const float SCORE_THRESHOLD = 0.50;
+		const float NMS_THRESHOLD = 0.45;
+		const float CONFIDENCE_THRESHOLD = 0.45;
+		// Параметры шрифтов
+		const float FONT_SCALE = 0.7;
+		const int   THICKNESS = 1;
+		// Цветовые константы
+		const cv::Scalar BLACK = cv::Scalar(0, 0, 0);
+		const cv::Scalar YELLOW = cv::Scalar(0, 255, 255);
+		const cv::Scalar RED = cv::Scalar(0, 0, 255);
+		const cv::Scalar GREEN = cv::Scalar(0, 255, 0);
+		// Структура нейросети
+		cv::dnn::Net network;
+		// Ширина и высота входного изображения
+		const int input_width = 640;
+		const int input_height = 640;
+		// Переменные для хранения результатов обработки
+		std::vector<std::string> classes;       // вектор распознаваемых классов
+		std::vector<int> classesIDSet;          // номер класса обнаруженных объекта из списка
+		std::vector<cv::Rect> boxesSet;         // координаты рамки выделяющей обнаруженный объект
+		std::vector<float> confidencesSet;      // вероятность с которой определён класса объекта
+		std::vector<std::string> classesSet;    // название класса объекта
+		std::vector<cv::Scalar> masksColorsSet; // цветные маски объектов
+		std::vector<cv::Mat> masksSet;          // бинарные маски объектов
+		cv::Mat processedImage;                 // изображение с метками (результат)
+		float timeInference;                    // время обработки
+
+		// Получить строковые значения классов
+		int readСlasses(const std::string file_path);
+		// Инициализация нейросети
+		int initializationNetwork(const std::string model_path, const std::string classes_path);
+		// Прорисовка
+		void letterBox(const cv::Mat& image, cv::Mat& outImage, cv::Vec4d& params, cv::Size& newShape,
+			bool autoShape, bool scaleFill, bool scaleUp, int stride);
+		// Отрисовка метки
+		void drawLabel(cv::Mat& img, std::string label, int left, int top);
+		void drawResult(cv::Mat& image, std::vector<outputSegment> result,
+			std::vector<std::string> class_name);
+		// Предобработка результатов
+		std::vector<cv::Mat> preProcess(cv::Mat& img, cv::Vec4d& params);
+		void getMask(const cv::Mat& mask_proposals, const cv::Mat& mask_protos,
+			outputSegment& output, const maskParams& maskParams);
+		// Постобработка результатов
+		cv::Mat postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs,
+			const std::vector<std::string>& class_name,
+			cv::Vec4d& params);
+	public:
+		neuralNetSegmentator(const std::string model, const std::string classes);
+		cv::Mat process(cv::Mat& img);
+		cv::Mat getImage(void);
+		std::vector<cv::Mat> getMasks(void);
+		std::vector<int> getClassIDs(void);
+		std::vector<float> getConfidences(void);
+		std::vector<cv::Rect> getBoxes(void);
+		std::vector<std::string> getClasses(void);
+		float getInference(void);
+	}; // class  neuralNetSegmentator
+
+	/**
+	 * @brief Функция формирования стереопараы
+	 * Функция склеивает изображение камеры 01 с изображениеме камеры 02 в одно изображение
+	 * @param inputImageCamera01 - входное цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param inputImageCamera02 - входное цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param outputImage - исходящее склеенное в стереопару цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; -1 - Неизвестная ошибка.
+	 */
+	int makingStereoPair(cv::Mat& inputImageCamera01, cv::Mat& inputImageCamera02, cv::Mat& inputStereoImage);
+	/**
+	 * @brief Функция вывода изображения на экран
+	 * Функция масштабирует изображение по указанному коэфициенту и выводи его на экран
+	 * @param inputImage - входное цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param windowName - имя окна вывода
+	 * @param CoefShowWindow - коэффициент масштабирования
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; -1 - Неизвестная ошибка.
+	 */
+	int showImage(cv::Mat& inputImage, const cv::String windowName, double CoefShowWindow = 0.5);
+	/**
+	 * @brief Функция чтения параметров стереокамеры камеры из xml-файла.
+	 * Функция читает параметры камеры из xml-файла и записывает их в структуру данных cameraParameters
+	 * @param fileNameCameraParameters - ввод пути к файлу c параметрами камеры.
+	 * @param cameraParameters - исхдящие параметры камеры
+	 *  Внутренние параметры камер 01 и 02 стереокамеры
+	 *     M1 - матрица камеры 3x3  (камеры 01 стереокамеры)
+	 *     D1 - вектор коэффициентов искажения (камеры 01 стереокамеры), коэффициенты радиальной и тангенциальной дисторсии
+	 *     M2 - матрица камеры 3x3  (камеры 02 стереокамеры)
+	 *     D2 - вектор коэффициентов искажения (камеры 02 стереокамеры), коэффициенты радиальной и тангенциальной дисторсии
+	 *  Внешиние параметры камер стереокамеры
+	 *     E  - существенная матрица стереокамеры
+	 *     F  - фундаментальная матрица стереокамеры
+	 *     R - матрица поворота 3x3 камеры 02 относительно камеры 01
+	 *     T  - вектор смещения  камеры 02 относительно камеры 01
+	 *     R1 - Матрица поворота 3x3 для выполнения процедуры выравнивания (ректификации) для первой 01
+	 *     R2 - Матрица поворота 3x3 для выполнения процедуры выравнивания (ректификации) для первой 02
+	 *  Матрицы проекции - проецирует 3D точки, заданные в исправленной системе координат камеры, на исправленное 2D изображение камеры
+	 *     P1 - Матрицы проекции 3x4 в новых (выравненных) системах координат для камеры 01
+	 *     P2 - Матрицы проекции 3x4 в новых (выравненных) системах координат для камеры 02
+	 *     Q  - Матрица 4x4 преобразования перспективы, отображения несоответствия глубине
+	 *  Карта переназначения используются для быстрого преобразования изображения
+	 *     map11 - карта 01 для переназначения камеры 01
+	 *     map12 - карта 02 для переназначения камеры 01
+	 *     map21 - карта 01 для переназначения камеры 02
+	 *     map22 - карта 02 для переназначения камеры 02
+	 *  Дополнительные параметры
+	 *     imageSize - размер изображения
+	 *     rms - ошибка перепроецирорования
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 */
+	int readCameraStereoParametrsFromFile(const char* pathToFileCameraParametrs, mrcv::cameraStereoParameters& cameraParameters);
+	/**
+	 * @brief Функция для коррекция искажений (дисторсии) и выравнивания (ректификации) изображения .
+	 * Функция принимает два изображение и возвращает скоректированное изображение на основе данных в картах точек map11 и map12
+	 * @param imageInput - входное цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param imageOutput - выходное (преобразованное) цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param map11 - входная первая карта точек (x, y) или просто значений x для исправления геометрических искажений
+	 * @param map12 - входная вторая карта значений y, (пустая карта, если map1 равен точкам (x,y)) соответственно.
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 */
+	int convetingUndistortRectify(cv::Mat& imageInput, cv::Mat& imageOutput, cv::Mat& map11, cv::Mat& map12);
+	/**
+	 * @brief Функция для формирования облака 3D точек на основе проекций этих точек на изображения стереокамеры
+	 * Функция находит 3D точки по их проекциям на изображение на основе метода построения карты расхождений (диспаратности)
+	 * Данные об облаке 3D точек записываются в points3D
+	 * @param inputImageCamera01    - входное из камеры 01 цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param inputImageCamera02    - входное из камеры 02 цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param points3D              - входные и исходные данные для хранения информации об облаке 3D точек
+	 * @param settingsMetodDisparity - вводные настройки метода поиска расхождений (диспаратности) для поиска 3D точек
+	 * @param disparityMap          - входная карта диспаратости, если mrcv::metodDisparity::MODE_NONE,
+	 * исходящия карта диспаратности, если другой параметр в mrcv::metodDisparity , кроме mrcv::metodDisparity::MODE_NONE
+	 * формат CV_32F
+	 * @param cameraParameters      - входящие параметры стереокамеры
+	 * @param limit3dPoints         - лимит на количество точек на выходе
+	 * @param limitsOutlierArea     - параметры области для отсеивания выбросов {x_min, y_min, z_min, x_max, y_max, z_max}
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение;
+	 * 2 - Пустая исходная карта диспаратности, елсли выбран MODE_NONE; 3 - Ошибка в параметрах калибровки; -1 - Неизвестная ошибка.
+	 */
+	int find3dPointsADS(cv::Mat& inputImageCamera01, cv::Mat& inputImageCamera02, mrcv::pointsData& points3D,
+		mrcv::settingsMetodDisparity& settingsMetodDisparity, cv::Mat& disparityMap,
+		mrcv::cameraStereoParameters& cameraParameters, int limitOutPoints, std::vector<double> limitsOutlierArea);
+	/**
+	 * @brief Функция для обнаружения объектов и их сегментов на изображении с помощью нейронной сети
+	 * Функия использует готовую нейронную сеть через OpenCV, загружая её из файлов
+	 * @param imageInput - входное цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param imageOutput - исходящие цветное RGB изображение с обнаруженными объектами, формата cv::Mat CV_8UC3
+	 * @param replyMasks -  изходящий массив с масками обнаруженных объектов на кадый объект в оттельности, формата cv::Mat CV_8UC1
+	 * @param filePathToModelYoloNeuralNet - путь к файлй с обученной моделью нейронной сети.
+	 * @param filePathToClasses - путь к файлй со списоком обнаруживамых класов объектов
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение;  -1 - Неизвестная ошибка.
+	 */
+	int detectingSegmentsNeuralNet(cv::Mat& imageInput, cv::Mat& imageOutput, std::vector<cv::Mat>& replyMasks,
+		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses);
+	/**
+	 * @brief Функция для определения координат 3D точек в сегментах идентифицированных объектов
+	 * Функция сопосталяет сегмент объекта с 3D точками по их проекциям на изображение и записывает результат в points3D
+	 * @param points3D - входные и исходные даные для хранения информации о облаке 3D точек
+	 * @param replyMasks - изходящий массив с масками обнаруженных объектов на кадый объект в отдельности, формата cv::Mat CV_8UC1
+	 * @return - код результата работы функции. 0 - Success; 1 - Нет точек; 2 - Нет сегменации; -1 - Неизвестная ошибка.
+	 */
+	int matchSegmentsWith3dPoints(mrcv::pointsData& points3D, std::vector<cv::Mat>& replyMasks);
+	/**
+	 * @brief Функция нанесения координат 3D центра сегмента на изображение в виде текста
+	 * @param inputImageCamera01 - входное цветое RGB изображени камеры 01, формата cv::Mat CV_8UC3
+	 * @param outputImage - исходящие цветое RGB изображени с нанесённой, формата cv::Mat CV_8UC3
+	 * @param points3D - входные и исходные даные для хранения информации о облаке 3D точек
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 3 - Отсутсвуют сегменты  -1 - Неизвестная ошибка.
+	 */
+	int addToImageCenter3dSegments(cv::Mat& inputImage, cv::Mat& outputImage, mrcv::pointsData& points3D);
+	/**
+	 * @brief Функция для вывода карты диспаратноси в цвете и в нормированном виде
+	 * @param disparityMap - входная карта диспаратости, формата cv::Mat CV_32F
+	 * @param windowName - имя окна вывода
+	 * @param CoefShowWindow - коэффициент масштабирования
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; -1 - Неизвестная ошибка.
+	 */
+	int showDispsarityMap(cv::Mat& disparityMap, const cv::String windowName, double CoefShowWindow = 0.5);
+	/**
+	 * @brief Функция проекции 3D сцены на 2D изображение для вывода на экран
+	 * @param points3D           - входные даные для хранения информации о облаке 3D точек
+	 * @param parameters3dSceene - параметры 3D сцены
+	 *
+	 *
+	 *
+	 *
+	 * @param cameraParameters   - входящие параметры стереокамеры
+	 * @param outputImage3dSceene - исходящие цветное RGB изображение 3D сцены, формата cv::Mat CV_8UC3
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое данные о точках; 3 - Ошибка в параметрах калибровки;
+	 * -1 - Неизвестная ошибка.
+	 */
+	int getImage3dSceene(mrcv::pointsData& points3D, mrcv::parameters3dSceene& parameters3dSceene,
+		mrcv::cameraStereoParameters& cameraParameters, cv::Mat& outputImage3dSceene);
+	/**
+	 * @brief Функция записи в текстовый файл координат 3D точек в сегментах идентифицированных объектов
+	 * @param points3D - входные и исходные даные для хранения информации о облаке 3D точек
+	 * @param pathToFile - ввод пути к файлу.
+	 * @return - код результата работы функции. 0 - Success; 1 - Нет точек; -1 - Неизвестная ошибка.
+	 */
+	int saveInFile3dPointsInObjectsSegments(mrcv::pointsData& points3D, const cv::String pathToFile);
+	/**
+	 * @brief Функции для определения координат 3D точек в сегментах идентифицированных объектов и
+	 *  восстановления 3D сцены по двумерным изображениям
+	 * @param inputImageCamera01       - входное из камеры 01 цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param inputImageCamera02       - входное из камеры 02 цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param cameraParameters         - входящие параметры стереокамеры
+	 * @param inputImageCamera01Remap  - выходное (преобразованное) камеры 01 цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param inputImageCamera02Remap  - выходное (преобразованное) камеры 02 цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param settingsMetodDisparity   - вводные настройки метода поиска расхождений (диспаратности) для поиска 3D точек
+	 * @param disparityMap             - входная карта диспаратости, если mrcv::metodDisparity::MODE_NONE,
+	 * исходящия карта диспаратности, если другой параметр в mrcv::metodDisparity , кроме mrcv::metodDisparity::MODE_NONE
+	 * формат CV_32F
+	 * @param points3D                 - входные и исходные данные для хранения информации о облаке 3D точек
+	 * @param replyMasks               - входящий и изходящий массив с масками обнаруженных объектов на кадый объект в отдельности, формата cv::Mat CV_8UC1
+	 *  Если данные о сегменте введены то используется алгоритм сегментации не используется.
+	 * @param imageOutput              - исходящие цветное RGB изображение с обнаруженными объектами, формата cv::Mat CV_8UC3
+	 * @param outputImage3dSceene - исходящие цветное RGB изображение 3D сцены, формата cv::Mat CV_8UC3
+	 * @param parameters3dSceene - параметры 3D сцены
+	 * @param filePathToModelYoloNeuralNet - путь к файлй с готовой моделью нейронной сети.
+	 * @param filePathToClasses - путь к файлй со списоком обнаруживамых класов объектов
+	 * @param limit3dPoints         - лимит на количество точек на выходе
+	 * @param limitsOutlierArea     - параметры области для отсеивания выбросов {x_min, y_min, z_min, x_max, y_max, z_max}
+	 * @return - код результата работы функции. 0 - Success; -1 - Неизвестная ошибка.
+	 */
+	int find3dPointsInObjectsSegments(cv::Mat& inputImageCamera01, cv::Mat& inputImageCamera02,
+		mrcv::cameraStereoParameters& cameraParameters,
+		cv::Mat& inputImageCamera01Remap, cv::Mat& inputImageCamera02Remap,
+		mrcv::settingsMetodDisparity& settingsMetodDisparity, cv::Mat& disparityMap,
+		mrcv::pointsData& points3D, std::vector<cv::Mat>& replyMasks, cv::Mat& outputImage,
+		cv::Mat& outputImage3dSceene, mrcv::parameters3dSceene& parameters3dSceene,
+		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses,
+		int limitOutPoints = 3000, std::vector<double> limitsOutlierArea = { -4.0e3, -4.0e3, 450, 4.0e3, 4.0e3, 3.0e3 });
 }
-
-
