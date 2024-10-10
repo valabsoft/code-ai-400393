@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>google_0373_jpg.rf.ac90c606d62b4bdb509a644b55fe6e3f.jpg</filename>
+	<path>google_0373_jpg.rf.ac90c606d62b4bdb509a644b55fe6e3f.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>buoy</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>279</xmin>
+			<xmax>483</xmax>
+			<ymin>334</ymin>
+			<ymax>497</ymax>
+		</bndbox>
+	</object>
+</annotation>

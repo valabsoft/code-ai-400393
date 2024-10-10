@@ -61,9 +61,11 @@ namespace mrcv
    {
         std::vector<std::string> images;
         int numColor;
+        int height;
+        int width;
 
     public:
-        LoadImageDataset(const std::string& root, int numColor) : numColor(numColor) 
+        LoadImageDataset(const std::string& root, int height, int width, int numColor) : numColor(numColor)
         {
             for (const auto& entry : std::filesystem::directory_iterator(root)) 
             {
@@ -95,33 +97,40 @@ namespace mrcv
             {
                 cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
             }
+
+            //cv::resize(image, image, cv::Size(width, height));
+
             torch::Tensor tensor = torch::from_blob(image.data, { image.rows, image.cols, numColor }, torch::kUInt8).permute({ 2, 0, 1 }).to(torch::kFloat).div(255);
             int label = 0;
             return { tensor.clone(), torch::tensor(label) };
         }
+
         torch::optional<size_t> size() const override 
+        {
+            return images.size();
+        }
+
+        int get_num_images() const
         {
             return images.size();
         }
     };
 
-   //////////////////////////////////////////////////////////
-   /** Параметры обработки */
-   static const float SCORE_THRESHOLD = 0.50;
+   // Параметры обработки
+   static const float SCORE_THRESHOLD = 0.20;
    static const float NMS_THRESHOLD = 0.45;
-   static const float CONFIDENCE_THRESHOLD = 0.45;
+   static const float CONFIDENCE_THRESHOLD = 0.15;
 
-   /** Параметры шрифтов */
+   // Параметры шрифтов
    static const float FONT_SCALE = 0.7;
    static const int   THICKNESS = 1;
 
-   /** Цветовые константы */
+   // Цветовые константы
    static cv::Scalar BLACK = cv::Scalar(0, 0, 0);
    static cv::Scalar YELLOW = cv::Scalar(0, 255, 255);
    static cv::Scalar RED = cv::Scalar(0, 0, 255);
    static cv::Scalar GREEN = cv::Scalar(0, 255, 0);
 
-   /** Класс детектора */
    class NNPreLabeler {
    private:
        /** Ширина и высота исходного изображения */
@@ -161,9 +170,6 @@ namespace mrcv
        cv::Mat process(cv::Mat& img);
        void writeLabels(const std::string& filename);
    };
- 
-   //////////////////////////////////////////////////////////
-
    /**
     * @brief функция генерации изображения.
     * 
@@ -209,7 +215,7 @@ namespace mrcv
     * @param classesPath - полный путь к файлу с классами.
     * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
 	*/
-   MRCV_EXPORT int semiAutomaticLabeler(cv::Mat& inputImage, const int64_t height, const int64_t width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
+   MRCV_EXPORT int semiAutomaticLabeler(cv::Mat& inputImage, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
    /**
       * @brief функция полуавтоматической разметки.
       *
@@ -223,5 +229,5 @@ namespace mrcv
       * @param classesPath - полный путь к файлу с классами.
       * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
       */
-   MRCV_EXPORT int semiAutomaticLabeler(const std::string& root, const int64_t height, const int64_t width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
+   MRCV_EXPORT int semiAutomaticLabeler(const std::string& root, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
 }

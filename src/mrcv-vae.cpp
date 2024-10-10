@@ -13,7 +13,7 @@ namespace mrcv
         // Выбор устройства
         torch::Device device(torch::kCUDA);
         // Загрузка датасета
-        auto dataset = LoadImageDataset(root, numColor).map(torch::data::transforms::Stack<>());
+        auto dataset = LoadImageDataset(root, height, width, numColor).map(torch::data::transforms::Stack<>());
 
         // Проверка датасета
         if (dataset.size() == 0)
@@ -57,17 +57,18 @@ namespace mrcv
         }
         writeLog("Training is DONE!", mrcv::LOGTYPE::INFO);
 
+        auto numberLoadImages = LoadImageDataset(root, height, width, numColor);
+        int num = numberLoadImages.get_num_images();
+
         // Коллическтво генерируемых изображений
         int numExamples = 1;
+        srand((unsigned int)time(NULL));
 
         std::vector<torch::Tensor> images;
 
-        for (size_t i = 0; i < dataset.size(); ++i)
-        {
-            auto example = dataset.get_batch(i);
-            images.push_back(example.data.to(device));
-            if (images.size() == numExamples) break;
-        }
+        int randImage = rand() % num;
+        auto example = dataset.get_batch(randImage);
+        images.push_back(example.data.to(device));
 
         std::vector<std::pair<torch::Tensor, torch::Tensor>> encodingsDigit;
 
@@ -80,7 +81,6 @@ namespace mrcv
             auto [mu, sigma] = model.encode(flattenedIimage.to(device));
             encodingsDigit.push_back({ mu, sigma });
         }
-
         writeLog("Decoding...", mrcv::LOGTYPE::INFO);
         // Декодер
         for (int example = 0; example < numExamples; ++example)
@@ -99,13 +99,15 @@ namespace mrcv
     {
         // Количестыо цветов генерируемого изображения
         const int64_t numColor = 1;
-        // 
+        
         torch::Tensor tensor = neuralNetworkAugmentationAsTensor(root, height, width, hDim, zDim, numEpoch, batchSize, lrRate);
+
         // Проверка, что тензор не пустой
         if (!tensor.defined())
         {
             writeLog("Generated tensor empty!", mrcv::LOGTYPE::ERROR);
         }
+
         // Прелбразование тензора в OpenCV Мat
         tensor = tensor.mul(255).clamp(0, 255).to(torch::kU8);
         tensor = tensor.to(torch::kCPU);
@@ -116,13 +118,13 @@ namespace mrcv
 
         // Создаем OpenCV Mat
         cv::Mat image(tensor.size(0), tensor.size(1), CV_8UC1, tensor.data_ptr());
+
         // Проверка, что изображение не пустое
         if (image.empty())
         {
             writeLog("Generated image empty!", mrcv::LOGTYPE::ERROR);
         }
-
-        image.convertTo(image, -1, 1.5, 50);
+        image.convertTo(image, -1, 2.3, -300);
 
         // Сохранение логов
         writeLog("Generated image is DONE!", mrcv::LOGTYPE::INFO);
@@ -326,8 +328,8 @@ namespace mrcv
         outfile.close();
     }
 
-    int semiAutomaticLabeler(cv::Mat& inputImage, const int64_t height, const int64_t width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath) {
-        NNPreLabeler labeler(modelPath, classesPath, 640, 640);
+    int semiAutomaticLabeler(cv::Mat& inputImage, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath) {
+        NNPreLabeler labeler(modelPath, classesPath, width, height);
         cv::Mat img = labeler.process(inputImage);
         std::vector<int> classIds = labeler.getClassIds();
         std::vector<float> confidences = labeler.getConfidences();
@@ -350,8 +352,8 @@ namespace mrcv
         return 0;
     }
 
-    int semiAutomaticLabeler(const std::string& root, const int64_t height, const int64_t width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath) {
-        NNPreLabeler labeler(modelPath, classesPath, 640, 640);
+    int semiAutomaticLabeler(const std::string& root, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath) {
+        NNPreLabeler labeler(modelPath, classesPath, width, height);
         cv::Mat inputImage = cv::imread(root);
         cv::Mat img = labeler.process(inputImage);
         std::vector<int> classIds = labeler.getClassIds();

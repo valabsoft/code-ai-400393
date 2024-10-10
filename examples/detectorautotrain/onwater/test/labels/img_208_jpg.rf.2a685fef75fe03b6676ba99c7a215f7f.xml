@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>img_208_jpg.rf.2a685fef75fe03b6676ba99c7a215f7f.jpg</filename>
+	<path>img_208_jpg.rf.2a685fef75fe03b6676ba99c7a215f7f.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>civilianship</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>149</xmin>
+			<xmax>209</xmax>
+			<ymin>428</ymin>
+			<ymax>490</ymax>
+		</bndbox>
+	</object>
+</annotation>

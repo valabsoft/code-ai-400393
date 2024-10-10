@@ -21,6 +21,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/ximgproc.hpp>
 
 #include "mrcv-segmentation.h"
 
@@ -29,6 +30,8 @@
 #else
 #include <unistd.h>
 #endif
+
+#define Pi 3,1415926535
 
 namespace mrcv
 {
@@ -51,7 +54,7 @@ namespace mrcv
 	static cv::Scalar OBJCOURSE_YELLOW = cv::Scalar(0, 255, 255);
 	static cv::Scalar OBJCOURSE_RED = cv::Scalar(0, 0, 255);
 	static cv::Scalar OBJCOURSE_GREEN = cv::Scalar(0, 255, 0);
-	static const bool OBJCOURSE_DRAW_LABEL = false;
+	static const bool OBJCOURSE_DRAW_LABEL = true;
 	
 	// Виды кодеков
 	enum class CODEC
@@ -101,7 +104,7 @@ namespace mrcv
 		cv::Mat perViewErrors;    // Вектор среднеквадратической ошибки перепроецирования для каждого вида
 		double RMS;               // Значение среднеквадратической ошибки перепроецирования
 	};
-	
+
 	// Структура для хранения параметров калибровки стерео камеры
 	struct CalibrationParametersStereo {
 		cv::Mat cameraMatrixL;	// Матрица левой камеры
@@ -118,6 +121,18 @@ namespace mrcv
 		double RMS;				// Значение среднеквадратической ошибки перепроецирования
 	};
 
+	// Структура конфигурационного файла для калибровки
+	struct CalibrationConfig
+	{
+		std::string folder_name = "../calibration_images/";	// Путь к конфигурационному файлу
+		int keypoints_c = 9;								// Число ключевых точек вдоль одного столбца калибровочной доски
+		int keypoints_r = 6;								// Число ключевых точек вдоль одной строки калибровочной доски
+		float square_size = 20.1;							// Размер квадрата калибровочной доски в мм
+		int image_count = 50;								// Общее число пар изображений в фотосете
+	};
+
+
+	// Структура trianTricks предназначена для повышения производительности обучения
 	struct trainTricks {
 		unsigned int freeze_epochs = 0;					// Замораживает магистраль нейронной сети во время первых freeze_epochs, по умолчанию 0;
 		std::vector<unsigned int> decay_epochs = { 0 };	// При каждом decay_epochs скорость обучения будет снижаться на 90 процентов, по умолчанию 0;
@@ -129,5 +144,27 @@ namespace mrcv
 		float rotate_limit = (float)45.0;
 		int interpolation = cv::INTER_LINEAR;
 		int border_mode = cv::BORDER_CONSTANT;
-	};	
+	};
+
+	enum class AUGMENTATION_METHOD
+	{
+		NONE,
+		FLIP_HORIZONTAL,
+		FLIP_VERTICAL,
+		ROTATE_IMAGE_90,
+		ROTATE_IMAGE_45,
+		ROTATE_IMAGE_270,
+		ROTATE_IMAGE_315,
+		FLIP_HORIZONTAL_AND_VERTICAL,
+		TEST
+	};
+
+	enum class DISPARITY_TYPE
+	{
+		ALL,
+		BASIC_DISPARITY,
+		BASIC_HEATMAP,
+		FILTERED_DISPARITY,
+		FILTERED_HEATMAP,
+	};
 }
