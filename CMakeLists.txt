@@ -140,7 +140,7 @@ set(sources
     src/tinyxml.cpp
     src/tinyxlmerror.cpp
     src/tinyxmlparser.cpp
-    src/mrcv-vae.cpp
+    src/marcv-vae.cpp
     src/mrcv-roi.cpp 
     src/mrcv-predictor.cpp 
     src/mrcv-optimizer.cpp)
