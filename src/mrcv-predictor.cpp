@@ -53,7 +53,9 @@ namespace mrcv
 
     void Predictor::continueTraining(const std::pair<float, float> coordinate) 
     {
-        std::pair<float, float> coordinate_norm = normilizePair(coordinate);
+        coordsReal = coordinate;
+        updateDeviations();
+        std::pair<float, float> coordinate_norm = normilizePair(coordsReal);
         torch::Tensor input = torch::tensor({ coordinate_norm.first, coordinate_norm.second }).view({ 1, 1, inputSize });
         trainingData.push_back(input);
         // Сохраняем только 100 последних координат
@@ -64,16 +66,59 @@ namespace mrcv
         // Вызываем обучение без обновления trainingData
         trainLSTMNet({}, true);
     }
-    std::pair<float, float> Predictor::predictNextCoordinate() {
+    std::pair<float, float> Predictor::predictNextCoordinate() 
+    {
         lstm->eval();
         linear->eval();
         torch::Tensor inputs = torch::cat(trainingData, 0);
         auto lstm_out_tuple = lstm->forward(inputs, std::make_tuple(hiddenState, cellState));
         torch::Tensor lstm_out = std::get<0>(lstm_out_tuple);
         torch::Tensor outputs = linear->forward(lstm_out[-1]);
-        float x_pred = outputs[0][0].item<float>();
-        float y_pred = outputs[0][1].item<float>();
-        return denormilizeOutput({ x_pred, y_pred });
+        coordsPred = denormilizeOutput({ outputs[0][0].item<float>() , outputs[0][1].item<float>() });
+        numPredictions++;
+        return coordsPred;
+    }
+
+    void Predictor::updateDeviations()
+    {
+        static float movingAvgPredDevSum = 0;
+        static float predDevSum = 0;
+        static int successedPredictions = 0;
+
+        predictionDeviation = std::sqrt(std::pow((coordsPred.first - coordsReal.first), 2) + std::pow((coordsPred.second - coordsReal.second), 2));
+        lastPredictionDeviations.push_back(predictionDeviation);
+        if (numPredictions > movingAvgScale)
+        {
+            movingAvgPredDevSum -= lastPredictionDeviations.front();
+            lastPredictionDeviations.erase(lastPredictionDeviations.begin());
+        }
+        movingAvgPredDevSum += lastPredictionDeviations.back();
+        predDevSum += predictionDeviation;
+        averagePredictionDeviation = predDevSum / numPredictions;
+        movingAvgPredictionDeviation = numPredictions < movingAvgScale ? averagePredictionDeviation : movingAvgPredDevSum / movingAvgScale;
+
+        successedPredictions = movingAvgPredictionDeviation < failsafeDeviation ? successedPredictions + 1 : 0;
+        workState = successedPredictions > failsafeDeviationThreshold;
+    }
+
+    float Predictor::getMovingAverageDeviation()
+    {
+        return movingAvgPredictionDeviation;
+    }
+
+    float Predictor::getAverageDeviation()
+    {
+        return averagePredictionDeviation;
+    }
+
+    float Predictor::getLastDeviation()
+    {
+        return predictionDeviation;
+    }
+
+    bool Predictor::isWorkState()
+    {
+        return workState;
     }
 
     std::pair<float, float> Predictor::normilizePair(std::pair<float, float> coords)
