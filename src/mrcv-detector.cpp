@@ -815,17 +815,17 @@ namespace mrcv
 	}
 
 	// Функция отрисовки ограничевающего прямоугольника
-	void showBbox(cv::Mat image, torch::Tensor bboxes, std::vector<std::string> nameList) 
+	void showBbox(cv::Mat image, torch::Tensor bboxes, float confidence, std::vector<std::string> nameList)
 	{
 		int fontFace = cv::FONT_HERSHEY_COMPLEX;
 		double fontScale = 0.4;
 		int thickness = 1;
 		float* bbox = new float[bboxes.size(0)]();
-		
-		if (bboxes.equal(torch::zeros_like(bboxes))) 
+
+		if (bboxes.equal(torch::zeros_like(bboxes)))
 		{
 			std::cout << "Boxes not detected" << std::endl;
-		} 
+		}
 		memcpy(bbox, bboxes.cpu().data_ptr(), bboxes.size(0) * sizeof(float));
 		for (int i = 0; i < bboxes.size(0); i = i + 7)
 		{
@@ -834,7 +834,16 @@ namespace mrcv
 			cv::Point origin;
 			origin.x = bbox[i + 0];
 			origin.y = bbox[i + 1] + 8;
-			cv::putText(image, nameList[bbox[i + 6]], origin, fontFace, fontScale, cv::Scalar(0, 0, 255), thickness, 1, 0);
+
+			// Имя класса объекта
+			std::string label = nameList[bbox[i + 6]];
+
+			// Доверительная вероятность
+			float confidence = bbox[i + 4] * 100; // Перевод в проценты
+			std::string confText = label + " " + cv::format("%.2f", confidence) + "%";
+
+			// Выводим красный текст (название класса и вероятность)
+			cv::putText(image, confText, origin, fontFace, fontScale, cv::Scalar(0, 255, 255), thickness, 1, 0);
 		}
 		delete bbox;
 		cv::imwrite("prediction.jpg", image);
@@ -904,19 +913,21 @@ namespace mrcv
 
 	}
 
-	void Detector::Initialize(int gpuID, int width, int height,
-		std::string nameListPath) 
+	void Detector::Initialize(int gpuID, int width, int height, std::string nameListPath) 
 	{
 		if (gpuID >= 0) {
 			if (gpuID >= torch::getNumGPUs()) 
 			{
-				std::cout << "No GPU id " << gpuID << " available" << std::endl;
+				//std::cout << "No GPU id " << gpuID << " available" << std::endl;
+				writeLog("No GPU id" + std::to_string(gpuID) + "available.", mrcv::LOGTYPE::ERROR);
 			}
 			device = torch::Device(torch::kCUDA, gpuID);
+			writeLog("Device is GPU " + std::to_string(gpuID), mrcv::LOGTYPE::INFO);
 		}
 		else 
 		{
 			device = torch::Device(torch::kCPU);
+			writeLog("Device is CPU", mrcv::LOGTYPE::INFO);
 		}
 		nameList = {};
 		std::ifstream ifs;
@@ -924,6 +935,7 @@ namespace mrcv
 		if (!ifs.is_open())
 		{
 			std::cout << "Open " << nameListPath << " file failed.";
+			writeLog("Open" + nameListPath  + "file failed.", mrcv::LOGTYPE::ERROR);
 			return;
 		}
 		std::string buf = "";
@@ -931,7 +943,6 @@ namespace mrcv
 		{
 			nameList.push_back(buf);
 		}
-
 
 		int numClasses = nameList.size();
 		this->nameList = nameList;
@@ -941,11 +952,13 @@ namespace mrcv
 		if (width % 32 || height % 32) 
 		{
 			std::cout << "Width or height is not divisible by 32" << std::endl;
+			writeLog("Width or height is not divisible by 32", mrcv::LOGTYPE::ERROR);
 			return;
 		}
 
 		detector = YoloBody_tiny(3, numClasses);
 		detector->to(device);
+		writeLog("Model initializing is complete!", mrcv::LOGTYPE::INFO);
 		return;
 	}
 
@@ -1144,7 +1157,7 @@ namespace mrcv
 
 				std::cout << "Epoch: " << epochCount << "," << " Valid Loss: " << lossVal << "\r";
 			}
-			printf("\n");
+			std::cout << std::endl;
 			if (bestLoss >= lossVal) 
 			{
 				bestLoss = lossVal;
@@ -1217,7 +1230,7 @@ namespace mrcv
 	}
 
 	int Detector::AutoTrain(std::string trainValPath, std::string imageType, std::vector<int> epochsList, std::vector<int> batchSizes,
-		std::vector<float> learningRates, std::string savePath, std::string pretrainedPath)
+		std::vector<float> learningRates, std::string pretrainedPath, std::string savePath)
 	{
 		float bestLoss = 10;
 		int bestEpochs = 0;
@@ -1281,6 +1294,7 @@ namespace mrcv
 
 	int Detector::Predict(cv::Mat image, bool show, float confThresh, float nmsThresh) 
 	{
+		writeLog("Starting detector...", mrcv::LOGTYPE::INFO);
 		int originWidth = image.cols;
 		int originHeight = image.rows;
 		cv::resize(image, image, { width,height });
@@ -1308,6 +1322,8 @@ namespace mrcv
 		float wScale = float(originWidth) / width;
 		float hScale = float(originHeight) / height;
 
+		float confidence = 0;
+		int counter = 0;
 		for (int i = 0; i < detection.size(); i++) {
 			for (int j = 0; j < detection[i].size(0) / 7; j++)
 			{
@@ -1315,12 +1331,16 @@ namespace mrcv
 				detection[i].select(0, 7 * j + 1) *= hScale;
 				detection[i].select(0, 7 * j + 2) *= wScale;
 				detection[i].select(0, 7 * j + 3) *= hScale;
+			
+				confidence = detection[i].select(0, 7 * j + 4).item<float>();
+				writeLog("Boxes detected: " + std::to_string(counter++) + " with " + std::to_string(confidence) + " confidence", mrcv::LOGTYPE::INFO);
 			}
 		}
+		writeLog("Detector is complete!", mrcv::LOGTYPE::INFO);
 
 		cv::resize(image, image, { originWidth,originHeight });
 		if (show)
-			showBbox(image, detection[0], nameList);
+			showBbox(image, detection[0], confidence, nameList);
 		return EXIT_SUCCESS;
 	}
 }

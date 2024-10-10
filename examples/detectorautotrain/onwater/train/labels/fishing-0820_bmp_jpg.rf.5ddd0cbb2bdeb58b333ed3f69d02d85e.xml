@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>fishing-0820_bmp_jpg.rf.5ddd0cbb2bdeb58b333ed3f69d02d85e.jpg</filename>
+	<path>fishing-0820_bmp_jpg.rf.5ddd0cbb2bdeb58b333ed3f69d02d85e.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>fishing ship</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>299</xmin>
+			<xmax>351</xmax>
+			<ymin>221</ymin>
+			<ymax>409</ymax>
+		</bndbox>
+	</object>
+</annotation>

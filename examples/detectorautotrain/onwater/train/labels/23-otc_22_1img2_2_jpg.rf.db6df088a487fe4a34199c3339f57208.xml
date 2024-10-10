@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>23-otc_22_1img2_2_jpg.rf.db6df088a487fe4a34199c3339f57208.jpg</filename>
+	<path>23-otc_22_1img2_2_jpg.rf.db6df088a487fe4a34199c3339f57208.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>buoy</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>392</xmin>
+			<xmax>592</xmax>
+			<ymin>1</ymin>
+			<ymax>379</ymax>
+		</bndbox>
+	</object>
+</annotation>

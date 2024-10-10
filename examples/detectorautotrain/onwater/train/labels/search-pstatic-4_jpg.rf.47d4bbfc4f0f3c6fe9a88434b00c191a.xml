@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>search-pstatic-4_jpg.rf.47d4bbfc4f0f3c6fe9a88434b00c191a.jpg</filename>
+	<path>search-pstatic-4_jpg.rf.47d4bbfc4f0f3c6fe9a88434b00c191a.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>a</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>94</xmin>
+			<xmax>640</xmax>
+			<ymin>154</ymin>
+			<ymax>617</ymax>
+		</bndbox>
+	</object>
+</annotation>
