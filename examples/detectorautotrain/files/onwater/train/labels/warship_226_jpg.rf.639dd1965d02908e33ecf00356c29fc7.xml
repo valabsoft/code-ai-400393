@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>warship_226_jpg.rf.639dd1965d02908e33ecf00356c29fc7.jpg</filename>
+	<path>warship_226_jpg.rf.639dd1965d02908e33ecf00356c29fc7.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>warship2</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>1</xmin>
+			<xmax>621</xmax>
+			<ymin>71</ymin>
+			<ymax>566</ymax>
+		</bndbox>
+	</object>
+</annotation>

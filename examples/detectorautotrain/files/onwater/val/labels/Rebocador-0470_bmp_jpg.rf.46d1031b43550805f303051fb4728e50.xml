@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>Rebocador-0470_bmp_jpg.rf.46d1031b43550805f303051fb4728e50.jpg</filename>
+	<path>Rebocador-0470_bmp_jpg.rf.46d1031b43550805f303051fb4728e50.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>tug boat</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>300</xmin>
+			<xmax>344</xmax>
+			<ymin>251</ymin>
+			<ymax>352</ymax>
+		</bndbox>
+	</object>
+</annotation>

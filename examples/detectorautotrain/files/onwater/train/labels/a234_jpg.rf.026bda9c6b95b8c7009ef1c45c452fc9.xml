@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>a234_jpg.rf.026bda9c6b95b8c7009ef1c45c452fc9.jpg</filename>
+	<path>a234_jpg.rf.026bda9c6b95b8c7009ef1c45c452fc9.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>human</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>57</xmin>
+			<xmax>353</xmax>
+			<ymin>226</ymin>
+			<ymax>440</ymax>
+		</bndbox>
+	</object>
+</annotation>
