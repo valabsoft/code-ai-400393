@@ -524,19 +524,35 @@ namespace mrcv
 
 
 	/**
-	*	@brief Класс предиктора
+	* @brief Класс предиктора
 	*
-	*	Класс реализует методы предсказания положения объекта интереса при поиощи LSTM сети.
+	* Класс реализует методы предсказания положения объекта интереса при поиощи LSTM сети.
+	* @param hiddenSize_ - Размер скрытых слоев LSTM сети.
+	* @param numLayers_ - Количество слоев LSTM сети.
+	* @param pointsNumber_ - Количество точек (пар координат) для обучения сети.
+	* @param imgSize_ - Размер изображения, на котором происходит предсказание положения объекта.
+	* @param failsafeDeviation_ - Максимальная величина скользящего среднего отклонения, чтобы предсказание считалось успешным.
+	* @param failsafeDeviationThreshold_ - Количество успешных предсказаний, чтобы работа сети считалась успешной.
+	* @param movingAvgScale_ - Размер выборки для вычисления скользящего среднего отклонения.
 	*/
 	MRCV_EXPORT class Predictor {
 	public:
-		Predictor(const int64_t& hiddenSize_, const int64_t& numLayers_,
-			const unsigned int& pointsNumber_, const std::pair<int, int>& imgSize_)
-			:hiddenSize(hiddenSize_),
+		Predictor(const int64_t& hiddenSize_, 
+			const int64_t& numLayers_,
+			const unsigned int& pointsNumber_, 
+			const std::pair<int, int>& imgSize_,
+			const float& failsafeDeviation_ = 100,
+			const unsigned int& failsafeDeviationThreshold_ = 5,
+			const unsigned int& movingAvgScale_ = 25)
+			:
+			hiddenSize(hiddenSize_),
 			numLayers(numLayers_),
 			pointsNumber(pointsNumber_),
 			imgWidth(imgSize_.first),
 			imgHeight(imgSize_.second),
+			failsafeDeviation(failsafeDeviation_),
+			failsafeDeviationThreshold(failsafeDeviationThreshold_),
+			movingAvgScale(movingAvgScale_),
 			lstm(torch::nn::LSTM(torch::nn::LSTMOptions(2, hiddenSize_).num_layers(numLayers_))),
 			linear(torch::nn::Linear(hiddenSize_, 2)),
 			hiddenState(torch::zeros({ numLayers_, 1, hiddenSize_ })),
@@ -568,10 +584,39 @@ namespace mrcv
 		 */
 		std::pair<float, float> predictNextCoordinate();
 
+		/**
+		 * @brief Функция получения скользящего среднего отклонения предсказания
+		 *
+		 * @return - Скользящее среднее отклонение предсказания.
+		 */
+		float getMovingAverageDeviation();
+
+		/**
+		 * @brief Функция получения среднего отклонения предсказания
+		 *
+		 * @return - Среднее отклонение предсказания.
+		 */
+		float getAverageDeviation();
+
+		/**
+		 * @brief Функция получения последнего отклонения предсказания
+		 *
+		 * @return - Последнее отклонение предсказания.
+		 */
+		float getLastDeviation();
+
+		/**
+		 * @brief Функция получения статуса рабочего состояния
+		 *
+		 * @return - Состояние модели (true - сеть вышла на рабочий режим, false - сеть в состоянии обучения).
+		 */
+		bool isWorkState();
+
 	private:
 		std::pair<float, float> denormilizeOutput(std::pair<float, float> coords);
 		std::pair<float, float> normilizePair(std::pair<float, float> coords);
 		std::vector<std::pair<float, float>> normilizeInput(std::vector<std::pair<float, float>> coords);
+		void updateDeviations();
 		torch::nn::LSTM lstm{ nullptr };
 		torch::nn::Linear linear{ nullptr };
 		torch::Tensor hiddenState;
@@ -579,6 +624,17 @@ namespace mrcv
 		int64_t inputSize = 2;
 		int64_t hiddenSize;
 		int64_t numLayers;
+		float failsafeDeviation;
+		unsigned int failsafeDeviationThreshold;
+		unsigned int movingAvgScale;
+		int numPredictions = 0;
+		float predictionDeviation = 0;
+		float averagePredictionDeviation = 0;
+		float movingAvgPredictionDeviation = 0;
+		bool workState = false;
+		std::vector<float> lastPredictionDeviations;
+		std::pair<float, float> coordsPred = std::make_pair(0.0f, 0.0f);
+		std::pair<float, float> coordsReal = std::make_pair(0.0f, 0.0f);
 		unsigned int imgWidth;
 		unsigned int imgHeight;
 		unsigned int pointsNumber;
@@ -586,21 +642,26 @@ namespace mrcv
 	};
 
 	/**
-	*	@brief Класс оптимизатора
+	* @brief Класс оптимизатора
 	*
-	*	Класс реализует методы оптимизации размера ROI исходя из размеров объекта, его пермещения и ошибки предсказания положения.
+	* Класс реализует методы оптимизации размера ROI исходя из размеров объекта, его пермещения и ошибки предсказания положения.
+	* 
+	* @param sampleSize_ - Количество сэмплов, которые будут сгенерированы для обучения сети.
+	* @param epochs_ - Количество эпох обучения сети.
 	*/
 	MRCV_EXPORT class Optimizer {
 	public:
-		Optimizer(size_t sampleSize_, size_t epochs_)
-			: sampleSize(sampleSize_),
+		Optimizer(size_t sampleSize_ = 1000, 
+			size_t epochs_ = 50000)
+			: 
+			sampleSize(sampleSize_),
 			epochs(epochs_),
 			model(torch::nn::Sequential(
-				torch::nn::Linear(3, 16),
+				torch::nn::Linear(3, 3000),
 				torch::nn::ReLU(),
-				torch::nn::Linear(16, 8),
+				torch::nn::Linear(3000, 1000),
 				torch::nn::ReLU(),
-				torch::nn::Linear(8, 1)))
+				torch::nn::Linear(1000, 1)))
 		{
 		};
 
@@ -610,9 +671,9 @@ namespace mrcv
 		 * @param prevCoord - Предыдущие координаты объекта.
 		 * @param nextCoord - Следующие (предсказанные) координаты объекта.
 		 * @param objectSize - Реальный размер объекта.
-		 * @param averagePredictionError - Средняя ошибка предсказания положения объекта.
+		 * @param averagePredictionDeviation - Средняя ошибка предсказания положения объекта.
 		 *
-		 * @return - Предсказанный сетью размер ROI
+		 * @return - Предсказанный сетью размер ROI.
 		 */
 		float optimizeRoiSize(const std::pair<float, float>& prevCoord,
 			const std::pair<float, float>& nextCoord,
@@ -626,7 +687,8 @@ namespace mrcv
 		size_t sampleSize;
 		size_t epochs;
 		float objectSize;
-		float averagePredictionError;
+		float averagePredictionDeviation;
+		float roiSizeNormFactor;
 		std::pair<float, float> prevCoord;
 		std::pair<float, float> nextCoord;
 		torch::Tensor inputs;
@@ -640,7 +702,7 @@ namespace mrcv
 	* @param center - Координаты центра ROI.
 	* @param roiSize - Размер ROI.
 	*
-	* @return - извлеченный ROI
+	* @return - извлеченный ROI.
 	*/
 	cv::Mat extractROI(const cv::Mat& image, const cv::Point& center, const cv::Size& roiSize);
 }
