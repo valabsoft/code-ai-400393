@@ -17,11 +17,11 @@ int main()
    auto resultPath = currentPath / resultFile;
    
    // Размер изображений в датасете
-   int height = 400;
-   int width = 400;
+   int height = 640;
+   int width = 640;
    
    // Генерация изображения с помощью vae 
-   cv::Mat genImage = mrcv::neuralNetworkAugmentationAsMat(imagesPath.u8string(), height, width, 200, 2, 1100, 32, 3E-4);
+   cv::Mat genImage = mrcv::neuralNetworkAugmentationAsMat(imagesPath.u8string(), height, width, 200, 2, 1200, 16, 3E-4);
 
    // Перевод изображения в цветной формат
    cv::Mat colorGenImage;

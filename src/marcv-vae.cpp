@@ -330,6 +330,7 @@ namespace mrcv
 
     int semiAutomaticLabeler(cv::Mat& inputImage, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath) {
         NNPreLabeler labeler(modelPath, classesPath, 640, 640);
+        cv::resize(inputImage, inputImage, cv::Size(640, 640));
         cv::Mat img = labeler.process(inputImage);
         std::vector<int> classIds = labeler.getClassIds();
         std::vector<float> confidences = labeler.getConfidences();
@@ -355,6 +356,7 @@ namespace mrcv
     int semiAutomaticLabeler(const std::string& root, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath) {
         NNPreLabeler labeler(modelPath, classesPath, 640, 640);
         cv::Mat inputImage = cv::imread(root);
+        cv::resize(inputImage, inputImage, cv::Size(640, 640));
         cv::Mat img = labeler.process(inputImage);
         std::vector<int> classIds = labeler.getClassIds();
         std::vector<float> confidences = labeler.getConfidences();
