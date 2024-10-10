@@ -295,17 +295,20 @@ namespace mrcv
         std::vector<std::string> classes = getClasses();
 
         std::stringstream strIDs;
-        for each (auto id in ids)
+        for (auto &id : ids)
         {
             strIDs << std::to_string(id) << ";";
         }
         std::stringstream strConfs;
-        for each (auto conf in confidences)
+        for (auto &conf : confidences)
         {
             strConfs << std::to_string(conf) << ";";
         }
-        writeLog("IDs: " + strIDs.str());
-        writeLog("Confidence: " + strConfs.str());
+
+        std::string strids(strIDs.str());
+        std::string strconfs(strConfs.str());
+        writeLog("IDs: " + strids);
+        writeLog("Confidence: " + strconfs);
         writeLog("Boxes: " + std::to_string(boxes.size()));
         
         return (int)boxes.size();

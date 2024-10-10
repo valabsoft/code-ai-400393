@@ -1,0 +1,11 @@
+a
+buoy
+civilianship
+container
+cruise
+fish-b
+fishing ship
+human
+tug boat
+warship1
+warship2
