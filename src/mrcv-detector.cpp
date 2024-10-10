@@ -350,7 +350,7 @@ namespace mrcv
 		auto encloseDiagonal = torch::sum(torch::pow(encloseWH, 2), -1);
 		auto ciou = iou - 1.0 * (centerDistance) / (encloseDiagonal + 1e-7);
 
-		auto v = (4 / (Pi * Pi)) * torch::pow((torch::atan(b1WH.select(-1, 0) / b1WH.select(-1, 1)) - torch::atan(b2WH.select(-1, 0) / b2WH.select(-1, 1))), 2);
+		auto v = (4 / (M_PI * M_PI)) * torch::pow((torch::atan(b1WH.select(-1, 0) / b1WH.select(-1, 1)) - torch::atan(b2WH.select(-1, 0) / b2WH.select(-1, 1))), 2);
 		auto alpha = v / (1.0 - iou + v);
 		ciou = ciou - alpha * v;
 
