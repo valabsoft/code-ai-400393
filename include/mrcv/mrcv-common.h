@@ -14,6 +14,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <vector>
+#include <math.h>
 
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
@@ -31,7 +32,6 @@
 #include <unistd.h>
 #endif
 
-#define Pi 3,1415926535
 
 namespace mrcv
 {
