@@ -74,22 +74,83 @@ namespace mrcv
 		INFO,		// Информация		INFO
 		WARNING		// Предупреждение	WARN
 	};
-
-	// Методы предобработки изображений
-	enum class IMG_PREPROCESSING_METHOD
+	
+	// Методы коррекции конраста изобрадения (цветовые пространства) для функции increaseImageContrast
+	enum class METOD_INCREASE_IMAGE_CONTRAST
 	{
-		NONE,
-		BRIGHTNESSLEVELUP,
-		BRIGHTNESSLEVELDOWN,
-		EQUALIZEHIST,
-		CLAHE,
-		COLORLABCLAHE,
-		BGRTOGRAY,
-		SHARPENING01,
-		SHARPENING02,
-		NOISEFILTERINGMEDIANFILTER,
-		NOISEFILTERINGAVARAGEFILTER,
-		CORRECTIONGEOMETRICDEFORMATION
+		EQUALIZE_HIST,       // метод Гистограммная  эквализация  (Histogram Equalization)
+		CLAHE,               // метод Адаптивная Гистограммная  эквализация (Contrast Limited Adaptive Histogram Equalization)
+		CONTRAST_BALANCING,  // метод Баланса контрастности, основанный на фильтрации крайних значений
+		CONTRAST_EXTENSION,  // метод Расширения контрастности, основанный на логарифмическом преобразовании
+	};
+
+	// Цветовые модели (цветовые пространства) для функции increaseImageContrast
+	enum class COLOR_MODEL
+	{
+		CM_RGB,    //
+		CM_HSV,    //
+		CM_LAB,    //
+		CM_YCBCR,  //
+	};
+
+	//  Методы предобработки изображения для функции preprocessingImage
+	enum class METOD_IMAGE_PERPROCESSIN
+	{
+		NONE,                               // без изменений
+		CONVERTING_BGR_TO_GRAY,             // преобразование типа изображения к из цветноко BGR к монохромному (серому)
+		// Коррекция яркости
+		BRIGHTNESS_LEVEL_UP,                // увеличение уровня яркости на один уровень
+		BRIGHTNESS_LEVEL_DOWN,              // уменьшение уровня яркости на один уровен
+		// Методы коррекции контрастности
+		// YCBCR
+		BALANCE_CONTRAST_01_YCBCR_EQUALIZEHIST,        // повышение контрастности, метод 01
+		BALANCE_CONTRAST_02_YCBCR_CLAHE,               // повышение контрастности, метод 02
+		BALANCE_CONTRAST_03_YCBCR_CONTRAST_BALANCING,  // повышение контрастности, метод 03
+		BALANCE_CONTRAST_04_YCBCR_CONTRAST_EXTENSION,  // повышение контрастности, метод 04
+		// HSV
+		BALANCE_CONTRAST_05_HSV_EQUALIZEHIST,          // повышение контрастности, метод 05
+		BALANCE_CONTRAST_06_HSV_CLAHE,                 // повышение контрастности, метод 06
+		BALANCE_CONTRAST_07_HSV_CONTRAST_BALANCING,    // повышение контрастности, метод 07
+		BALANCE_CONTRAST_08_HSV_CONTRAST_EXTENSION,    // повышение контрастности, метод 08
+		// LAB
+		BALANCE_CONTRAST_09_LAB_EQUALIZEHIST,          // повышение контрастности, метод 09
+		BALANCE_CONTRAST_10_LAB_CLAHE,                 // повышение контрастности, метод 10
+		BALANCE_CONTRAST_11_LAB_CONTRAST_BALANCING,    // повышение контрастности, метод 11
+		BALANCE_CONTRAST_12_LAB_CONTRAST_EXTENSION,    // повышение контрастности, метод 12
+		// RGB
+		BALANCE_CONTRAST_13_RGB_EQUALIZEHIST,          // повышение контрастности, метод 13
+		BALANCE_CONTRAST_14_RGB_CLAHE,                 // повышение контрастности, метод 14
+		BALANCE_CONTRAST_15_RGB_CONTRAST_BALANCING,    // повышение контрастности, метод 15
+		BALANCE_CONTRAST_16_RGB_CONTRAST_EXTENSION,    // повышение контрастности, метод 16
+		// Резкость
+		SHARPENING_01,                      // повышение резкости, метод 01
+		SHARPENING_02,                      // повышение резкости, метод 02
+		// Фильтрация шума
+		NOISE_FILTERING_01_MEDIAN_FILTER,   // фильтрация изображения от импульсных шумов
+		NOISE_FILTERING_02_AVARAGE_FILTER,  // фильтрация изображения от шумов
+		CORRECTION_GEOMETRIC_DEFORMATION    // коррекция геометрических искажений
+	};
+
+	//  Параметры камеры
+	struct cameraParameters
+	{
+		// Внутренние параметры камеры
+		cv::Mat M1;         // матрица камеры 3x3
+		cv::Mat D1;         // вектор коэффициентов искажения , коэффициенты радиальной и тангенциальной дисторсии
+		// Внешиние параметры камеры
+		cv::Mat R;          // матрица поворота 3x3 камеры относительно абсолютной системы координат
+		cv::Mat T;          // вектор смещения  камеры  относительно абсолютной системы координат
+		//  Матрицы проекции - проецирует 3D точки, заданные в исправленной системе координат камеры, на исправленное 2D изображение камеры
+		cv::Mat R1;         // Матрица поворота 3x3 для выполнения процедуры выравнивания (ректификации) для первой
+		cv::Mat P1;         // Матрицы проекции 3x4 в новых (выравненных) системах координат для камеры
+		// Карта переназначения используются для быстрого преобразования изображения
+		cv::Mat map11;      // карта 01 для переназначения камеры
+		cv::Mat map12;      // карта 02 для переназначения камеры
+		// дополнительные параметры
+		cv::Size imageSize; // размер изображения
+		double rms;         // ошибка перепроецирорования
+		double avgErr;      // средняя ошибка
+		char pathToFileCameraParametrs; // путь к файлу c параметрами камеры (c которого загружены данные).
 	};
 	
 	// Структура для хранения параметров калибровки одиночной камеры

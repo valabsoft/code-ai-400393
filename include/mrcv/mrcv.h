@@ -263,81 +263,129 @@ namespace mrcv
 
 	/**
 	 * @brief Функция формирования изображения в случаи ошибки.
-	 *
-	 *
+	 * Функция формирует изображение с чёрным фоном и наносит текс (текс должен содержать ссылку на место и тип ошибки)
+	 * (для информирование оператора в режиме реального времени)
 	 * @param textError - текс сообщения, которое будет записано в изображение.
-	 * @return - изображение с кодом ошибки (для информирование оператора в режиме рельного времени).
+	 * @return - выходное цветное RGB изображение: формата cv::Mat CV_8UC3, с кодом ошибки
 	 */
 	cv::Mat getErrorImage(std::string textError);
 	/**
-	 * @brief Функция автоматической предобработки изображения, кооррекции контраста.
-	 * Функция автоматической коррекции контраста изображения с помощью метода Эквализации Гистограмм
-	 * @param imageInput - входное (исходное) изображение cv::Mat.
-	 * @param imageOutput - выходное (преобразованное) изображение cv::Mat.
-	 * @param clipLimit - пороговое значение для ограничения контрастности
-	 * @param gridSize - Размер сетки. Изображение будет разделено на одинакового размера части в виде матрицы,
-	 * параметр определяет количество строк и столбцов
-	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
-	 */
-	int increaseImageContrastEqualizeHist(cv::Mat& imageInput, cv::Mat& imageOutput);
-	/**
-	 * @brief Функция автоматической предобработки изображения, кооррекции контраста.
-	 * Функция автоматической коррекции контраста изображения с помощью метода Адаптивной Эквализации Гистограмм
-	 * Contrast Limited Adaptive Histogram Equalization
-	 * @param imageInput - входное (исходное) изображение cv::Mat.
-	 * @param imageOutput - выходное (преобразованное) изображение cv::Mat.
-	 * @param clipLimit - пороговое значение для ограничения контрастности
-	 * @param gridSize - Размер сетки. Изображение будет разделено на одинакового размера части в виде матрицы,
-	 * параметр определяет количество строк и столбцов
-	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
-	 */
-	int increaseImageContrastCLAHE(cv::Mat& imageInput, cv::Mat& imageOutput, double clipLimit, cv::Size gridSize);
-	/**
-	 * @brief Функция автоматической предобработки изображения, кооррекции контраста.
-	 * Функция автоматической коррекции контраста изображения с помощью метода Адаптивной Эквализации Гистограмм через цетовое пространство Lab
-	 * @param imageInput - входное (исходное) изображение cv::Mat.
-	 * @param imageOutput - выходное (преобразованное) изображение cv::Mat.
-	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
-	 */
-	int increaseImageContrastСolorLabCLAHE(cv::Mat& imageInput, cv::Mat& imageOutput, double clipLimit, cv::Size gridSize);
-	/**
 	 * @brief Функция автоматической предобработки изображения, кооррекции яркости.
-	 * Функция автоматической коррекции яркости изображения с помощью степенного преобразовамния (метод Гамма-Коррекции)
-	 * @param imageInput - входное (исходное) изображение cv::Mat.
-	 * @param imageOutput - выходное (преобразованное) изображение cv::Mat.
-	 * @param gamma - степень преобразования (1 - без изменений от 1 до 0 - осветление, от 1 до 10 - затемнение изображения)
-	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 * Функция автоматической коррекции яркости изображения с помощью степенного преобразования (метод Гамма-Коррекции)
+	 * @param imageInput -  входное цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param imageOutput - выходное (преобразованное) цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param gamma -       степень преобразования (1 - без изменений от 1 до 0 - осветление, от 1 до 10 - затемнение изображения)
+	 * @return - код результата работы функции: 0 - Success; 1 - Пустое изображение;  -1 - Неизвестная ошибка.
 	 */
 	int changeImageBrightness(cv::Mat& imageInput, cv::Mat& imageOutput, double gamma);
 	/**
-	 * @brief Функция предварительной обработки изображений (автоматическая коррекция контраста и яркости, резкости)
-	 * Функция автоматической предобработки изображения, кооррекции яркости и контраста, резкости.
-	 * @param image - изображение cv::Mat, над которым происходит преобразование.
-	 * @param metodImagePerProcessingBrightnessContrast - вектор параметров, которые опрределяют, какие преобразования и в какой последовательноси  проводить.
-	 *  none  - без изменений
-	 *  brightnessLevelUp - увеличение уровня яркости
-	 *  brightnessLevelDown - уменьшение уровня яркости
-	 *  equalizeHist -  повышение контрастности, метод 01
-	 *  CLAHE -  повышение контрастности, метод 02
-	 *  colorLabCLAHE -  повышение контрастности, метод 03
-	 *  BGRtoGray - преобразование типа изображения к из цветноко BGR к монохромному (серому)
-	 *  sharpening01 -  повышение резкости, метод 01
-	 *  sharpening02-  повышение резкости, метод 02
-	 *  noiseFilteringMedianFilter - фильтрация изображения от импульсных шумов
-	 *  noiseFilteringAvarageFilter- фильтрация изображения от шумов
-	 *  correctionGeometricDeformation - коррекция геометрических искажений
-	 * @param fileNameCameraParameters - путь к файлу c параметрами камеры для исправления геометрических искажений.
-	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 * @brief Функция автоматической кооррекции контраста.
+	 * Функция реализует несколько методов коррекции контраста изображения
+	 * @param imageInput        -  входное цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param imageOutput       - выходное (преобразованное) цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param metodIncreaseContrast - выбор метода коррекции конраста изобрадения
+	 * EQUALIZE_HIST,       // метод Гистограммная  эквализация  (Histogram Equalization)
+	 * CLAHE,               // метод Адаптивная Гистограммная  эквализация (Contrast Limited Adaptive Histogram Equalization)
+	 * CONTRAST_BALANCING,  // метод Баланса контрастности, основанный на фильтрации крайних значений
+	 * CONTRAST_EXTENSION,  // метод Расширения контрастности, основанный на логарифмическом преобразовании
+	 * @param colorSpace        -  выбор цветовой модели (цветовые пространства)
+	 * CM_RGB,
+	 * CM_HSV,
+	 * CM_LAB,
+	 * CM_YCBCR,
+	 * @param clipLimitCLAHE    - пороговое значение для ограничения контрастности
+	 * @param gridSizeCLAHE     - размер сетки. Изображение будет разделено на одинакового размера части в виде матрицы,
+	 * @param percentContrastBalance -  параметр медода Баланса контрастности процент отсеивания крайних значений яркости из массива planeArray,
+	 * диапазон зачений больше 0 меньше 100
+	 * @param mContrastExtantion - параметр медода Расширение контрастности, смещение функции преобразования по оси яркости входного изображения
+	 * @param eContrastExtantion - параметр медода Расширение контрастности, отвечает за наклон кривой функции преобразования относительно оси яркости входного изображения
+	 * @return - код результата работы функции. 0 - Success;
+	 * 1 - Пустое изображение; 2 - Неизвестный формат изображения;  -1 - Неизвестная ошибка.
 	 */
-	int preprocessingImage(cv::Mat& imageInput, std::vector<mrcv::IMG_PREPROCESSING_METHOD> metodImagePerProcessingm, const std::string& fileNameCameraParameters);
+	int increaseImageContrast(cv::Mat& imageInput, cv::Mat& imageOutput,
+		mrcv::METOD_INCREASE_IMAGE_CONTRAST metodIncreaseContrast, mrcv::COLOR_MODEL colorSpace,
+		double clipLimitCLAHE = 2, cv::Size gridSizeCLAHE = cv::Size(9, 9),
+		float percentContrastBalance = 5, double mContrastExtantion = -1, double eContrastExtantion = 4);
+	/**
+	 * @brief Повышение резкости изображения. Алгоритм №01 (фильтра Лапласа)
+	 * Функция повышения резкости изображения с помощью фильтра Лапласа
+	 * @param imageInput -      входное цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param imageOutput -     выходное (преобразованное) цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param gainFactorHighFrequencyComponent - коэффициент усиления высокочастоной составляющей (чем выше тем выше резкость), рекомендуемое = 2.
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; -1 - Неизвестная ошибка.
+	 */
+	int sharpeningImage01(cv::Mat& imageInput, cv::Mat& imageOutput, double gainFactorHighFrequencyComponent);
+	/**
+	 * @brief Повышение резкости изображения. Алгоритм №02 (фильтра Гаусса)
+	 * Функция повышения резкости изображения с помощью фильтра Гаусса
+	 * @param imageInput -      входное цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param imageOutput -     выходное (преобразованное) цветное RGB изображение, формата cv::Mat CV_8UC3
+	 * @param filterSize  -     размер маски фильтра Гауссу, рекомендуемое = cv::Size(9, 9).
+	 * @param sigmaFilter  -    тандартное отклонение филтра Гаусса, елсли 0 - значение по умолчанию
+	 * @param gainFactorHighFrequencyComponent - коэффициент усиления высокочастоной составляющей (чем выше тем выше резкость), рекомендуемое = 4.
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; -1 - Неизвестная ошибка.
+	 */
+	int sharpeningImage02(cv::Mat& imageInput, cv::Mat& imageOutput, cv::Size filterSize, double sigmaFilter, double gainFactorHighFrequencyComponent);
 	/**
 	 * @brief Функция чтения параметров камеры из файла.
-	 * @param fileNameCameraParameters - путь к файлу c параметрами камеры.
+	 * @param fileNameCameraParameters -    путь к файлу c параметрами камеры.
 	 * @param map11 - первая карта точек (x, y) или просто значений x для исправления геометрических искажений
 	 * @param map12 - вторая карта значений y, (пустая карта, если map1 равен точкам (x,y)) соответственно.
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
 	 */
-	int readCameraParametrsFromFile(const char* pathToFileCameraParametrs, cv::Mat& map11, cv::Mat& map12);
+	int readCameraParametrsFromFile(const char* pathToFileCameraParametrs, mrcv::cameraParameters& cameraParameters);
+	/**
+	 * @brief Функция предварительной обработки изображений (автоматическая коррекция контраста и яркости, резкости)
+	 * Функция интегрирует в себе остальные функции предобработки изображений
+	 * @param image - входное и выходное цветное RGB изображение, формата cv::Mat CV_8UC3, над которым происходит преобразование.
+	 * @param metodImagePerProcessingBrightnessContrast - вектор параметров, который определяет, какие преобразования и в какой последовательности проводить.
+	 *  NONE                    - без изменений
+	 *  CONVERTING_BGR_TO_GRAY,             // преобразование типа изображения к из цветноко BGR к монохромному (серому)
+	 *  BRIGHTNESS_LEVEL_UP,                // увеличение уровня яркости на один уровень
+	 *  BRIGHTNESS_LEVEL_DOWN,              // уменьшение уровня яркости на один уровень
+	 *  BALANCE_CONTRAST_01_YCBCR_EQUALIZEHIST,        // повышение контрастности, метод 01
+	 *  BALANCE_CONTRAST_02_YCBCR_CLAHE,               // повышение контрастности, метод 02
+	 *  BALANCE_CONTRAST_03_YCBCR_CONTRAST_BALANCING,  // повышение контрастности, метод 03
+	 *  BALANCE_CONTRAST_04_YCBCR_CONTRAST_EXTENSION,  // повышение контрастности, метод 04
+	 *  BALANCE_CONTRAST_05_HSV_EQUALIZEHIST,          // повышение контрастности, метод 05
+	 *  BALANCE_CONTRAST_06_HSV_CLAHE,                 // повышение контрастности, метод 06
+	 *  BALANCE_CONTRAST_07_HSV_CONTRAST_BALANCING,    // повышение контрастности, метод 07
+	 *  BALANCE_CONTRAST_08_HSV_CONTRAST_EXTENSION,    // повышение контрастности, метод 08
+	 *  BALANCE_CONTRAST_09_LAB_EQUALIZEHIST,          // повышение контрастности, метод 09
+	 *  BALANCE_CONTRAST_10_LAB_CLAHE,                 // повышение контрастности, метод 10
+	 *  BALANCE_CONTRAST_11_LAB_CONTRAST_BALANCING,    // повышение контрастности, метод 11
+	 *  BALANCE_CONTRAST_12_LAB_CONTRAST_EXTENSION,    // повышение контрастности, метод 12
+	 *  BALANCE_CONTRAST_13_RGB_EQUALIZEHIST,          // повышение контрастности, метод 13
+	 *  BALANCE_CONTRAST_14_RGB_CLAHE,                 // повышение контрастности, метод 14
+	 *  BALANCE_CONTRAST_15_RGB_CONTRAST_BALANCING,    // повышение контрастности, метод 15
+	 *  BALANCE_CONTRAST_16_RGB_CONTRAST_EXTENSION,    // повышение контрастности, метод 16
+	 *  SHARPENING_01        - повышение резкости, метод 01
+	 *  SHARPENING_02        - повышение резкости, метод 02
+	 *  NOISE_FILTERING_01_MEDIAN_FILTER  - фильтрация изображения от импульсных шумов
+	 *  NOISE_FILTERING_02_AVARAGE_FILTER - фильтрация изображения от шумов
+	 *  CORRECTION_GEOMETRIC_DEFORMATION  - коррекция геометрических искажений
+	 * @param fileNameCameraParameters    - путь к файлу c параметрами камеры для исправления геометрических искажений.
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 */
+	int preprocessingImage(cv::Mat& imageIn, std::vector<mrcv::METOD_IMAGE_PERPROCESSIN> metodImagePerProcessingm, const std::string& fileNameCameraParameters);
+	/**
+	 * @brief Функция реализует метод Баланса контрастности
+	 * Функция принимает матрицу либо серого изображения, либо одну из координат цветового пространства
+	 * @param planeArray -  входное двухмерный массив, формата cv::Mat CV_8UC1
+	 * @param percent -     процент отсеивания крайних значений яркости из массива planeArray, диапазон зачений больше 0 меньше 100
+	 * @return - код результата работы функции. 0 - Success;
+	 * 1 - Пустое массив;  3 - выход за диапазон percent; -1 - Неизвестная ошибка.
+	 */
+	int contrastBalancing(cv::Mat& planeArray, float percent);
+	/**
+	 * @brief Функция реализует метод Расширение контрастности
+	 * Функция принимает матрицу либо серого изображения, либо одну из координат цветового пространства
+	 * @param planeArray -  входное двухмерный массив, формата cv::Mat CV_8UC1
+	 * @param m - параметр медода, смещение функции преобразования по оси яркости входного изображения
+	 * @param e - параметр медода, отвечает за наклон кривой функции преобразования относительно оси яркости входного изображения
+	 * @return - код результата работы функции: 0 - Success; 1 - Пустое массив;  -1 - Неизвестная ошибка.
+	 */
+	int contrastExtantion(cv::Mat& planeArray, double m = -1, double e = 2);
 	/**
 	 * @brief Класс для работы с плотным стерео и кластеризацией.
 	 *
