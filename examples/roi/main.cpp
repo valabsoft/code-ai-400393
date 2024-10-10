@@ -24,7 +24,7 @@ int main()
 	std::pair<float, float> imgSize = { 1440,1080 };  //размер изображения
 	int predictorTrainPointsNum = 50;  //количество точек для обучения модели предсказания положения объекта интереса
 	int totalPointsNum = 1000;  //общее количество точек перемещение объекта (кадров)    
-	float objectSize = 10; //размер объекта интереса
+	float objectSize = 100; //размер объекта интереса
 	int maxError = 200;  //максимальное допустимое отклонение предсказанной координаты от реального значения
 	bool drawObj = 1;
 	//инициализация данных для генератора перемещения
@@ -49,21 +49,7 @@ int main()
 	}
 	//Обучение модели предиктора положения    
 	predictor.trainLSTMNet(coordinates);
-	float oroiSize;
-	float succededRoiEstiamtion = 0;
-	float perfectRoi = (objectSize + objectSize * 0.1 + 2 * 6);
-	int genNum = 100;
 
-	//std::cout << objectSize << " : " << perfectRoi << " - " << perfectRoi * 1.2 << std::endl;
-	//for (int i = 1; i <= genNum; i++)
-	//{
-	//	oroiSize = optimizer.optimizeRoiSize({ 995.231, 420.636 },{ 992.789, 415.156 }, objectSize, 17.1662);
-	//	succededRoiEstiamtion += (oroiSize >= perfectRoi) && (oroiSize <= perfectRoi * 1.2) ? 1 : 0;
-	//}
-	//std::cout << (float)succededRoiEstiamtion / (float)genNum << std::endl;
-
-
-	
 	//основной цикл
 	std::time_t start = std::time(nullptr);
 	std::pair<float, float> tmpRealCoordinate = realCoordinate;
@@ -103,8 +89,9 @@ int main()
 
 				ROISizeAquired = true;
 				std::cout << "It took " << roiTries << " tries to correctly acquire ROI" << std::endl;
-				std::cin.get();
-			}			
+				//std::cout << "Press any key to continue" << std::endl;
+				//std::cin.get();
+			}
 		}
 
 		if (predictor.isWorkState() && ROISizeAquired)

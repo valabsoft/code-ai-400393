@@ -651,8 +651,8 @@ namespace mrcv
 	*/
 	MRCV_EXPORT class Optimizer {
 	public:
-		Optimizer(size_t sampleSize_, 
-			size_t epochs_)
+		Optimizer(size_t sampleSize_ = 1000, 
+			size_t epochs_ = 50000)
 			: 
 			sampleSize(sampleSize_),
 			epochs(epochs_),
