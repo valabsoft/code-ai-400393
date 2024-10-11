@@ -721,7 +721,7 @@ namespace mrcv
 		 * @param objectSize - Реальный размер объекта.
 		 * @param averagePredictionDeviation - Средняя ошибка предсказания положения объекта.
 		 *
-		 * @return - Предсказанный сетью размер ROI.
+		 * @return - Предсказанный сетью размер ROI, возвращает 0, если размер ROI меньше допустимого.
 		 */
 		float optimizeRoiSize(const std::pair<float, float>& prevCoord,
 			const std::pair<float, float>& nextCoord,
