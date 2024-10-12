@@ -20,8 +20,10 @@ int main()
     int numDisparities = 16 * 10;
     int blockSize = 15;
 
-    double lambda = 8000.0;
-    double sigma = 1.5;
+    // Настройки для примеров с сайта OpenCV: lambda = 8000.0; sigma = 1.5;
+    // Настройки для примеров с амфорами: lambda = 5000.0; sigma = 3;
+    double lambda = 5000.0;
+    double sigma = 3;
 
     // COLORMAP_JET
     // COLORMAP_VIRIDIS
