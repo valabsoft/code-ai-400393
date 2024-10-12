@@ -23,6 +23,8 @@ namespace mrcv
 			std::cout << "No such value in std::vector" << std::endl;
 			return a;
 		}
+
+		return 0;
 	}
 
 	template<typename T>
@@ -455,6 +457,7 @@ namespace mrcv
 
 	std::vector<torch::Tensor> YOLOLossImpl::getTarget(std::vector<torch::Tensor> targets, torch::Tensor scaledAnchors, int inW, int inH, float ignoreThreshold)
 	{
+		std::vector<torch::Tensor> output;
 
 		int bs = targets.size();
 		auto scaledAnchorsType = scaledAnchors.options();
@@ -552,6 +555,8 @@ namespace mrcv
 			std::vector<torch::Tensor> output = { mask, noobjMask, tbox, tconf, tcls, boxLossScalex, boxLossScaley };
 			return output;
 		}
+
+		return output;
 	}
 
 	std::vector<torch::Tensor> YOLOLossImpl::getIgnore(torch::Tensor prediction, std::vector<torch::Tensor> targets, torch::Tensor scaledAnchors, int inW, int inH, torch::Tensor noobjMask)

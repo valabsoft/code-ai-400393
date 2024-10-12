@@ -5,6 +5,7 @@
 
 static std::pair<float, float> generateCoordinates(int time, int genType = 0, int R = 500, float timeFracture = 1, std::pair<float, float> imgSize = { 1400,1080 })
 {
+	std::pair<float, float> res;
 	float dt = (float)time / timeFracture;
 	switch (genType)
 	{
@@ -13,6 +14,7 @@ static std::pair<float, float> generateCoordinates(int time, int genType = 0, in
 	case 1:
 		return { std::sin(dt) * R + imgSize.first / 2, std::cos(dt) * R + imgSize.second / 2 };
 	}
+	return res;
 }
 static cv::Point toPoint(std::pair<float, float> point) {
 	return { (int)point.first, (int)point.second };

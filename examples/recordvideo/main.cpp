@@ -12,9 +12,9 @@ void consoleCounter()
     {
         // Очистка экрана
 #ifdef _WIN32 
-        std::system("cls");
+        int res = std::system("cls");
 #else
-        std::system("clear");
+        int res = std::system("clear");
 #endif
         // Вывод диагностической информации
         std::cout << "The video record started. Please wait ... " << std::to_string(counter++) << std::endl;

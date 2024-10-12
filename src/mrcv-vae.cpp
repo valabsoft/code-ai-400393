@@ -6,6 +6,8 @@ namespace mrcv
 {
     torch::Tensor neuralNetworkAugmentationAsTensor(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate)
     {
+        torch::Tensor tensor;
+
         // Количестыо цветов генерируемого изображения
         const int64_t numColor = 1;
         // Расчет размерности входно слоя
@@ -87,12 +89,14 @@ namespace mrcv
         {
             auto [mu, sigma] = encodingsDigit[0];
             auto sample = model.reparameterize(mu, sigma);
-            torch::Tensor tensor = model.decode(sample.to(device));
+            tensor = model.decode(sample.to(device));
             tensor = torch::sigmoid(tensor).view({ numColor, width, height });
             return tensor.clone();
         }
         // Сохранение логов
         writeLog("Generated tensor is DONE!", mrcv::LOGTYPE::INFO);
+
+        return tensor.clone();
     }
 
     cv::Mat neuralNetworkAugmentationAsMat(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate)
