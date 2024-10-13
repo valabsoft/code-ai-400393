@@ -14,7 +14,7 @@
 │   └── utils.cmake
 │
 ├── examples # Примеры использования
-│   ├── add
+│   ├── mrcv-example
 │   │	├── main.cpp
 │   │	└── CMakeLists.txt
 │   └── CMakeLists.txt
@@ -22,6 +22,7 @@
 ├── include # Публичные заголовки
 │   └── mrcv
 │   	├── export.h
+│   	├── mrcv-common.h
 │   	└── mrcv.h
 │
 ├── python # Версия библиотеки на Python
@@ -29,6 +30,9 @@
 │		└── src
 │
 ├── src # Исходники функций библиотеки
+│	├── mrcv-augmentation.cpp
+│	├── mrcv-calibration.cpp
+│	├── ...
 │	└── mrcv.cpp
 │
 ├── tests # Тесты
@@ -40,7 +44,7 @@
 └── README.md
 ```
 
-При разработке структуры библиотеки и настройки автоматизированной сборки использованы материалы: https://habr.com/ru/articles/683204/
+Датасет изображений для работы с библиотекой доступен по ссылке [Датасет](https://disk.yandex.ru/d/TxReQ9J6PAo9Nw).
 ____
 [:arrow_up:Оглавление](#Оглавление)
 ____
