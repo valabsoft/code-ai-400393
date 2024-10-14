@@ -1,10 +1,10 @@
-#include <mrcv/mrcv.h>
+п»ї#include <mrcv/mrcv.h>
 #include <mrcv/mrcv-common.h>
 
 namespace mrcv
 {
     /**
-     * @brief Функция общей калибровки.
+     * @brief Р¤СѓРЅРєС†РёСЏ РѕР±С‰РµР№ РєР°Р»РёР±СЂРѕРІРєРё.
      * @param imagesL 
      * @param imagesR 
      * @param pathToImagesL 
@@ -18,14 +18,14 @@ namespace mrcv
      */
     void cameraCalibration(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR, std::string pathToImagesL, std::string pathToImagesR, CalibrationParametersMono& calibrationParametersL, CalibrationParametersMono& calibrationParametersR, CalibrationParametersStereo& calibrationParameters, int chessboardColCount, int chessboardRowCount, float chessboardSquareSize)
 	{
-		// Объявление вектора ключевых точек
+		// РћР±СЉСЏРІР»РµРЅРёРµ РІРµРєС‚РѕСЂР° РєР»СЋС‡РµРІС‹С… С‚РѕС‡РµРє
 		std::vector<std::vector<cv::Point3f>> keyPoints;
 
-		// Объявление вектора для хранения координат 2D точек для каждого изображения шахматной доски
+		// РћР±СЉСЏРІР»РµРЅРёРµ РІРµРєС‚РѕСЂР° РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РєРѕРѕСЂРґРёРЅР°С‚ 2D С‚РѕС‡РµРє РґР»СЏ РєР°Р¶РґРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ С€Р°С…РјР°С‚РЅРѕР№ РґРѕСЃРєРё
 		std::vector<std::vector<cv::Point2f>> imgPointsL;
         std::vector<std::vector<cv::Point2f>> imgPointsR;
 
-		// Определение координат мировых 3D точек
+		// РћРїСЂРµРґРµР»РµРЅРёРµ РєРѕРѕСЂРґРёРЅР°С‚ РјРёСЂРѕРІС‹С… 3D С‚РѕС‡РµРє
 		std::vector<cv::Point3f> points3D;
 		for (int i{ 0 }; i < chessboardRowCount; i++)
 		{
@@ -35,7 +35,7 @@ namespace mrcv
             }	
 		}
 
-		// Загрузка путей изображений
+		// Р—Р°РіСЂСѓР·РєР° РїСѓС‚РµР№ РёР·РѕР±СЂР°Р¶РµРЅРёР№
 		cv::glob(pathToImagesL, imagesL);
 		cv::glob(pathToImagesR, imagesR);
 
@@ -58,8 +58,8 @@ namespace mrcv
 			frameR = cv::imread(imagesR[i]);
 			cv::cvtColor(frameR, grayR, cv::COLOR_BGR2GRAY);
 
-			// Нахождение углов шахматной доски
-			// Если на изображении найдено нужное число углов success = true
+			// РќР°С…РѕР¶РґРµРЅРёРµ СѓРіР»РѕРІ С€Р°С…РјР°С‚РЅРѕР№ РґРѕСЃРєРё
+			// Р•СЃР»Рё РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё РЅР°Р№РґРµРЅРѕ РЅСѓР¶РЅРѕРµ С‡РёСЃР»Рѕ СѓРіР»РѕРІ success = true
 			successL = cv::findChessboardCorners(grayL, cv::Size(chessboardColCount, chessboardRowCount), cornerPointsL, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FILTER_QUADS);
 			successR = cv::findChessboardCorners(grayR, cv::Size(chessboardColCount, chessboardRowCount), cornerPointsR, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FILTER_QUADS);
 
@@ -67,11 +67,11 @@ namespace mrcv
 			{
 				cv::TermCriteria terminateCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 10, 1e-6);
 
-				// Уточнение координат пикселей для заданных двумерных точек
+				// РЈС‚РѕС‡РЅРµРЅРёРµ РєРѕРѕСЂРґРёРЅР°С‚ РїРёРєСЃРµР»РµР№ РґР»СЏ Р·Р°РґР°РЅРЅС‹С… РґРІСѓРјРµСЂРЅС‹С… С‚РѕС‡РµРє
 				cv::cornerSubPix(grayL, cornerPointsL, cv::Size(11, 11), cv::Size(-1, -1), terminateCriteria);
 				cv::cornerSubPix(grayR, cornerPointsR, cv::Size(11, 11), cv::Size(-1, -1), terminateCriteria);
 
-				// Отображение обнаруженных угловых точек на шахматной доске
+				// РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РѕР±РЅР°СЂСѓР¶РµРЅРЅС‹С… СѓРіР»РѕРІС‹С… С‚РѕС‡РµРє РЅР° С€Р°С…РјР°С‚РЅРѕР№ РґРѕСЃРєРµ
 				cv::drawChessboardCorners(frameL, cv::Size(chessboardColCount, chessboardRowCount), cornerPointsL, successL);
 				cv::drawChessboardCorners(frameR, cv::Size(chessboardColCount, chessboardRowCount), cornerPointsR, successL);
 
@@ -85,18 +85,18 @@ namespace mrcv
 		cv::TermCriteria criteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 10, DBL_EPSILON);
 		int flags = 0;
 
-		// Калибровка левой камеры
+		// РљР°Р»РёР±СЂРѕРІРєР° Р»РµРІРѕР№ РєР°РјРµСЂС‹
 		calibrationParametersL.RMS = cv::calibrateCamera(keyPoints, imgPointsL, cv::Size(grayL.cols, grayL.rows), calibrationParametersL.cameraMatrix, calibrationParametersL.distCoeffs, calibrationParametersL.rvecs, calibrationParametersL.tvecs, calibrationParametersL.stdDevIntrinsics, calibrationParametersL.stdDevExtrinsics, calibrationParametersL.perViewErrors, flags, criteria);
 
-		// Калибровка правой камеры
+		// РљР°Р»РёР±СЂРѕРІРєР° РїСЂР°РІРѕР№ РєР°РјРµСЂС‹
 		calibrationParametersR.RMS = cv::calibrateCamera(keyPoints, imgPointsR, cv::Size(grayL.cols, grayL.rows), calibrationParametersR.cameraMatrix, calibrationParametersR.distCoeffs, calibrationParametersR.rvecs, calibrationParametersR.tvecs, calibrationParametersR.stdDevIntrinsics, calibrationParametersR.stdDevExtrinsics, calibrationParametersR.perViewErrors, flags, criteria);
 
-		// Калибровка двух камер
+		// РљР°Р»РёР±СЂРѕРІРєР° РґРІСѓС… РєР°РјРµСЂ
 		calibrationParameters.RMS = cv::stereoCalibrate(keyPoints, imgPointsL, imgPointsR, calibrationParameters.cameraMatrixL, calibrationParameters.distCoeffsL, calibrationParameters.cameraMatrixR, calibrationParameters.distCoeffsR, cv::Size(grayL.cols, grayL.rows), calibrationParameters.R, calibrationParameters.T, calibrationParameters.E, calibrationParameters.F, calibrationParameters.perViewErrors, 0, criteria);
 	}
 
     /**
-     * @brief Функция калибровки одиночной камеры.
+     * @brief Р¤СѓРЅРєС†РёСЏ РєР°Р»РёР±СЂРѕРІРєРё РѕРґРёРЅРѕС‡РЅРѕР№ РєР°РјРµСЂС‹.
      * @param images 
      * @param pathToImages 
      * @param calibrationParameters 
@@ -127,14 +127,14 @@ namespace mrcv
 
         bool success;
 
-        // Цикл по изображениям в папке изображений
+        // Р¦РёРєР» РїРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРј РІ РїР°РїРєРµ РёР·РѕР±СЂР°Р¶РµРЅРёР№
         for (int i{ 0 }; i < (int)images.size(); i++)
         {
             frame = cv::imread(images[i]);
             cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
-            // Нахождение углов шахматной доски
-            // Если на изображении найдено нужное число углов success = true
+            // РќР°С…РѕР¶РґРµРЅРёРµ СѓРіР»РѕРІ С€Р°С…РјР°С‚РЅРѕР№ РґРѕСЃРєРё
+            // Р•СЃР»Рё РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРё РЅР°Р№РґРµРЅРѕ РЅСѓР¶РЅРѕРµ С‡РёСЃР»Рѕ СѓРіР»РѕРІ success = true
             success = cv::findChessboardCorners(
                 gray,
                 cv::Size(chessboardColCount, chessboardRowCount),
@@ -174,7 +174,7 @@ namespace mrcv
     }
 
     /**
-     * @brief Функция калибровки стерео пары.
+     * @brief Р¤СѓРЅРєС†РёСЏ РєР°Р»РёР±СЂРѕРІРєРё СЃС‚РµСЂРµРѕ РїР°СЂС‹.
      * @param imagesL 
      * @param imagesR 
      * @param pathToImagesL 
@@ -263,7 +263,7 @@ namespace mrcv
     }
 
     /**
-     * @brief Функция чтения параметров калибровки одиночной камеры.
+     * @brief Р¤СѓРЅРєС†РёСЏ С‡С‚РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РєР°Р»РёР±СЂРѕРІРєРё РѕРґРёРЅРѕС‡РЅРѕР№ РєР°РјРµСЂС‹.
      * @param fileName 
      * @return 
      */
@@ -284,14 +284,14 @@ namespace mrcv
         }
         else
         {
-            std::cerr << "Ошибка при открытии файла " << fileName << std::endl;
+            std::cerr << "РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё С„Р°Р№Р»Р° " << fileName << std::endl;
         }
 
         return parameters;
     }
 
     /**
-     * @brief Функция записи параметров калибровки одиночной камеры.
+     * @brief Р¤СѓРЅРєС†РёСЏ Р·Р°РїРёСЃРё РїР°СЂР°РјРµС‚СЂРѕРІ РєР°Р»РёР±СЂРѕРІРєРё РѕРґРёРЅРѕС‡РЅРѕР№ РєР°РјРµСЂС‹.
      * @param fileName 
      * @param parameters 
      */
@@ -311,12 +311,12 @@ namespace mrcv
         }
         else
         {
-            std::cerr << "Ошибка при открытии файла " << fileName << " для записи." << std::endl;
+            std::cerr << "РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё С„Р°Р№Р»Р° " << fileName << " РґР»СЏ Р·Р°РїРёСЃРё." << std::endl;
         }
     }
 
     /**
-     * @brief Функция записи параметров калибровки стерео пары
+     * @brief Р¤СѓРЅРєС†РёСЏ Р·Р°РїРёСЃРё РїР°СЂР°РјРµС‚СЂРѕРІ РєР°Р»РёР±СЂРѕРІРєРё СЃС‚РµСЂРµРѕ РїР°СЂС‹
      * @param fileName 
      * @param parameters 
      */
@@ -328,7 +328,7 @@ namespace mrcv
         {
             if (fileName.find(".xml") != std::string::npos)
             {
-                // TODO: Имена полей должны быть одинкаовыми (.xml и .yml)
+                // TODO: РРјРµРЅР° РїРѕР»РµР№ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕРґРёРЅРєР°РѕРІС‹РјРё (.xml Рё .yml)
                 fileStrorage << "M1" << parameters.cameraMatrixL;
                 fileStrorage << "M2" << parameters.cameraMatrixR;
                 fileStrorage << "D1" << parameters.distCoeffsL;
@@ -355,12 +355,12 @@ namespace mrcv
         }
         else
         {
-            std::cerr << "Ошибка при открытии файла " << fileName << "." << std::endl;
+            std::cerr << "РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё С„Р°Р№Р»Р° " << fileName << "." << std::endl;
         }
     }
 
     /**
-     * @brief Функция чтения параметров калибровки стерео пары
+     * @brief Р¤СѓРЅРєС†РёСЏ С‡С‚РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РєР°Р»РёР±СЂРѕРІРєРё СЃС‚РµСЂРµРѕ РїР°СЂС‹
      * @param fileName 
      * @return 
      */
@@ -374,7 +374,7 @@ namespace mrcv
             {
                 if (fileName.find(".xml") != std::string::npos)
                 {
-                    // TODO: Имена полей должны быть одинкаовыми (.xml и .yml)
+                    // TODO: РРјРµРЅР° РїРѕР»РµР№ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕРґРёРЅРєР°РѕРІС‹РјРё (.xml Рё .yml)
                     fileStrorage["M1"] >> parameters.cameraMatrixL;
                     fileStrorage["M2"] >> parameters.cameraMatrixR;
                     fileStrorage["D1"] >> parameters.distCoeffsL;
@@ -400,9 +400,58 @@ namespace mrcv
             }
             else
             {
-                std::cerr << "Ошибка при открытии файла " << fileName << std::endl;
+                std::cerr << "РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё С„Р°Р№Р»Р° " << fileName << std::endl;
             }
         }
         return parameters;
+    }
+
+    int readCalibrartionConfigFile(std::string pathToConfigFile, CalibrationConfig& config)
+    {
+        std::ifstream file(pathToConfigFile);
+        
+        if (!file.is_open())
+        {
+            writeLog("Failed to open file " + pathToConfigFile, mrcv::LOGTYPE::ERROR);
+            return 1;
+        }
+
+        // РџР°СЂСЃРёРЅРі С„Р°Р№Р»Р° СЃ РЅР°СЃС‚СЂРѕР№РєР°РјРё РїСЂРѕС†РµРґСѓСЂС‹ РєР°Р»РёР±СЂРѕРІРєРё
+        std::string line;
+        
+        while (std::getline(file, line))
+        {
+            std::istringstream iss(line);
+            std::string key;
+            char eq;
+            if (iss >> key >> eq)
+            {
+                if (eq != '=') {
+                    writeLog("Invalid string format: " + line, mrcv::LOGTYPE::ERROR);
+                    continue;
+                }
+                if (key == "image_count") {
+                    iss >> config.image_count;
+                }
+                else if (key == "folder_name") {
+                    iss >> config.folder_name;
+                    // РЈРґР°Р»РµРЅРёРµ РєР°РІС‹С‡РµРє, РµСЃР»Рё РѕРЅРё РµСЃС‚СЊ
+                    config.folder_name.erase(std::remove(config.folder_name.begin(), config.folder_name.end(), '\"'), config.folder_name.end());
+                }
+                else if (key == "keypoints_c") {
+                    iss >> config.keypoints_c;
+                }
+                else if (key == "keypoints_r") {
+                    iss >> config.keypoints_r;
+                }
+                else if (key == "square_size") {
+                    iss >> config.square_size;
+                }
+            }
+        }
+
+        file.close();
+
+        return EXIT_SUCCESS;
     }
 }

@@ -1,4 +1,4 @@
-# set_if_undefined(<variable> [<value>]...)
+﻿# set_if_undefined(<variable> [<value>]...)
 #
 # Set variable if it is not defined.
 macro(set_if_undefined variable)
