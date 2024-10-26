@@ -347,12 +347,17 @@ namespace mrcv
 
             clock_t timerStart = clock();
             cv::Mat videoFrame;
+            clock_t timerFrame = timerStart;
 
             // Цикл записи видеопотока в файл
             while ((clock() - timerStart) < (recorderInterval * CLOCKS_PER_SEC))
             {
                 videoCapture >> videoFrame;
-                videoWriter.write(videoFrame);
+                if ((clock() - timerFrame) >= ((double)cameraFPS / (double)CLOCKS_PER_SEC))
+                {
+                    timerFrame = clock();
+                    videoWriter.write(videoFrame);
+                }
             }
 
             // Освобождение объекта записи видеопотока
