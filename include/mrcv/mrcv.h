@@ -6,6 +6,20 @@
 
 namespace mrcv
 {
+	/**
+	* @brief функция сравнения изображения.
+	* @param img1 - исходное фото 1, img1 - исходное фото 2, methodCompare - метод сравнения.
+	* @return - различия фотографий в процентном соотношении.
+	*/
+	MRCV_EXPORT double compareImages(cv::Mat img1,cv::Mat img2,bool methodCompare);
+	
+	/**
+        * @brief функция морфологического преобразования.
+        * @param image - исходное фото, out - путь для нового файла, metod - метод преобразования , morph_size - размер преобразования.
+        *  @return - результат работы функции.
+        */
+        MRCV_EXPORT int morphologyImage(cv::Mat image,std::string out, METOD_MORF metod,int morph_size);
+        
 	/////////////////////////////////////////////////////////////////////////////
 	// Утилиты
 	/////////////////////////////////////////////////////////////////////////////
@@ -1023,4 +1037,11 @@ namespace mrcv
 		cv::Mat& outputImage3dSceene, mrcv::parameters3dSceene& parameters3dSceene,
 		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses,
 		int limitOutPoints = 3000, std::vector<double> limitsOutlierArea = { -4.0e3, -4.0e3, 450, 4.0e3, 4.0e3, 3.0e3 });
+		
+		
+
+	
+		
 }
+
+        
