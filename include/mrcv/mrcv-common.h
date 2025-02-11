@@ -55,7 +55,16 @@ namespace mrcv
 	static cv::Scalar OBJCOURSE_RED = cv::Scalar(0, 0, 255);
 	static cv::Scalar OBJCOURSE_GREEN = cv::Scalar(0, 255, 0);
 	static const bool OBJCOURSE_DRAW_LABEL = true;
-	
+	// Виды методов
+        enum class METOD_MORF
+        {
+		OPEN,
+		CLOSE,
+		GRADIENT,
+		ERODE,
+		DILAT
+        };
+        
 	// Виды кодеков
 	enum class CODEC
 	{
@@ -319,4 +328,6 @@ namespace mrcv
 		FILTERED_DISPARITY,
 		FILTERED_HEATMAP,
 	};
+	
+
 }
