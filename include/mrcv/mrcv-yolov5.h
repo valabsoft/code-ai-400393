@@ -4,6 +4,18 @@
 
 namespace mrcv
 {
+    /**
+     * @brief Функция вызова интерактивного окна для создания разметки,
+     * файлов конфигурации формата YOLO, формирующих датасет.
+     * @param inputDir - путь к директории с изображениями.
+     * @param outputDir - путь к директории для сохранения датасета.
+     */
+    void YOLOv5LabelerProcessing(const std::string &inputDir,
+                                 const std::string &outputDir);
+}
+
+namespace mrcv
+{
     /** @brief Перечисление поддерживаемых типов моделей YOLOv5. */
     enum class YOLOv5Model
     {
