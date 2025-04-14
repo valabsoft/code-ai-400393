@@ -131,7 +131,7 @@ namespace mrcv
    static cv::Scalar RED = cv::Scalar(0, 0, 255);
    static cv::Scalar GREEN = cv::Scalar(0, 255, 0);
 
-   class NNPreLabeler {
+   MRCV_EXPORT class NNPreLabeler {
    private:
        /** Ширина и высота исходного изображения */
        cv::Size sourceSize;
@@ -169,6 +169,7 @@ namespace mrcv
        cv::Mat process(cv::Mat& img);
        void writeLabels(const std::string& filename);
    };
+   
    /**
     * @brief функция генерации изображения.
     * 
@@ -185,6 +186,7 @@ namespace mrcv
     * @return - тензор формата torch::Tensor.
     */
    MRCV_EXPORT torch::Tensor neuralNetworkAugmentationAsTensor(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate);
+   
    /**
     * @brief функция генерации изображения.
     *
@@ -201,6 +203,7 @@ namespace mrcv
     * @return - изображение формата cv::Mat.
     */
    MRCV_EXPORT cv::Mat neuralNetworkAugmentationAsMat(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate);
+   
    /**
     * @brief функция полуавтоматической разметки.
     *
@@ -215,18 +218,180 @@ namespace mrcv
     * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
 	*/
    MRCV_EXPORT int semiAutomaticLabeler(cv::Mat& inputImage, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
+   
    /**
-      * @brief функция полуавтоматической разметки.
-      *
-      * Функция может использоваться для полуавтоматической разметки в формате YOLO.
-      *
-      * @param root - полный путь к изображению.
-      * @param height - высота изображения.
-      * @param width - ширина изображения.
-      * @param outputPath - полный путь к папке к сохранению результата.
-      * @param modelPath -  полный путь к обученной модели.
-      * @param classesPath - полный путь к файлу с классами.
-      * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
-      */
+    * @brief функция полуавтоматической разметки.
+    *
+    * Функция может использоваться для полуавтоматической разметки в формате YOLO.
+    *
+    * @param root - полный путь к изображению.
+    * @param height - высота изображения.
+    * @param width - ширина изображения.
+    * @param outputPath - полный путь к папке к сохранению результата.
+    * @param modelPath -  полный путь к обученной модели.
+    * @param classesPath - полный путь к файлу с классами.
+    * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
+    */
    MRCV_EXPORT int semiAutomaticLabeler(const std::string& root, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
+
+   //Cuda 
+   MRCV_EXPORT class NNPreLabelerCuda {
+   private:
+       cv::Size sourceSize;
+       cv::dnn::Net network;
+       int inputWidth;
+       int inputHeight;
+       std::vector<std::string> classes;
+       std::vector<int> classesIdSet;
+       std::vector<cv::Rect> boxesSet;
+       std::vector<float> confidencesSet;
+       std::vector<std::string> classesSet;
+       float inferenceTime;
+
+       int readClassesCuda(const std::string& filePath);
+       int initNetworkCuda(const std::string& modelPath, const std::string& classesPath);
+       std::vector<cv::Mat> preProcessCuda(cv::cuda::GpuMat& img);
+       cv::cuda::GpuMat postProcessCuda(cv::cuda::GpuMat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& className);
+
+   public:
+       NNPreLabelerCuda(const std::string& model, const std::string& classes, int width, int height);
+       std::vector<float> getConfidencesCuda() { return confidencesSet; }
+       std::vector<cv::Rect> getBoxesCuda() { return boxesSet; }
+       std::vector<int> getClassIdsCuda() { return classesIdSet; }
+       std::vector<std::string> getClassesCuda() { return classesSet; }
+       float getInferenceCuda() { return inferenceTime; }
+       cv::cuda::GpuMat processCuda(cv::cuda::GpuMat& img);
+       void writeLabelsCuda(const std::string& filename);
+   };
+   
+   /**
+    * @brief функция генерации изображения.
+    *
+    * Функция может использоваться для аугментации данных с помощью нейронной сети.
+    *
+    * @param root - путь к датасету для обучения.
+    * @param height - высота сгенерированного изображения.
+    * @param width - ширина сгенерированного изображения.
+    * @param hDim - размерность скрытого слоя.
+    * @param zDim - размерность латентного слоя.
+    * @param numEpoch - количество эпох обучения.
+    * @param batchSize - размер пакета.
+    * @param lrRate - скорость обучения.
+    * @return - тензор формата torch::Tensor.
+    */
+   MRCV_EXPORT torch::Tensor neuralNetworkAugmentationAsTensor(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate);
+   
+   /**
+    * @brief функция генерации изображения.
+    *
+    * Функция может использоваться для аугментации данных с помощью нейронной сети.
+    *
+    * @param root - путь к датасету для обучения.
+    * @param height - высота сгенерированного изображения.
+    * @param width - ширина сгенерированного изображения.
+    * @param hDim - размерность скрытого слоя.
+    * @param zDim - размерность латентного слоя.
+    * @param numEpoch - количество эпох обучения.
+    * @param batchSize - размер пакета.
+    * @param lrRate - скорость обучения.
+    * @return - изображение формата cv::Mat.
+    */
+   MRCV_EXPORT cv::Mat neuralNetworkAugmentationAsMat(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate);
+   
+   /**
+    * @brief функция полуавтоматической разметки.
+    *
+    * Функция может использоваться для полуавтоматической разметки в формате YOLO.
+    *
+    * @param inputImage - изображение формата cv::Mat.
+    * @param height - высота изображения.
+    * @param width - ширина изображения.
+    * @param outputPath - полный путь к папке к сохранению результата.
+    * @param modelPath -  полный путь к обученной модели.
+    * @param classesPath - полный путь к файлу с классами.
+    * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
+    */
+   MRCV_EXPORT int semiAutomaticLabeler(cv::Mat& inputImage, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
+   
+   /**
+    * @brief функция полуавтоматической разметки.
+    *
+    * Функция может использоваться для полуавтоматической разметки в формате YOLO.
+    *
+    * @param root - полный путь к изображению.
+    * @param height - высота изображения.
+    * @param width - ширина изображения.
+    * @param outputPath - полный путь к папке к сохранению результата.
+    * @param modelPath -  полный путь к обученной модели.
+    * @param classesPath - полный путь к файлу с классами.
+    * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
+    */
+   MRCV_EXPORT int semiAutomaticLabeler(const std::string& root, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
+   
+   /**
+    * @brief функция генерации изображения с помощью Cuda.
+    *
+    * Функция может использоваться для аугментации данных с помощью нейронной сети.
+    *
+    * @param root - путь к датасету для обучения.
+    * @param height - высота сгенерированного изображения.
+    * @param width - ширина сгенерированного изображения.
+    * @param hDim - размерность скрытого слоя.
+    * @param zDim - размерность латентного слоя.
+    * @param numEpoch - количество эпох обучения.
+    * @param batchSize - размер пакета.
+    * @param lrRate - скорость обучения.
+    * @return - тензор формата torch::Tensor.
+    */
+   MRCV_EXPORT torch::Tensor neuralNetworkAugmentationAsTensorCuda(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate);
+   
+   /**
+    * @brief функция генерации изображения с помощью Cuda.
+    *
+    * Функция может использоваться для аугментации данных с помощью нейронной сети.
+    *
+    * @param root - путь к датасету для обучения.
+    * @param height - высота сгенерированного изображения.
+    * @param width - ширина сгенерированного изображения.
+    * @param hDim - размерность скрытого слоя.
+    * @param zDim - размерность латентного слоя.
+    * @param numEpoch - количество эпох обучения.
+    * @param batchSize - размер пакета.
+    * @param lrRate - скорость обучения.
+    * @return - изображение формата cv::Mat.
+    * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+    */
+   MRCV_EXPORT cv::Mat neuralNetworkAugmentationAsMatCuda(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate);
+   
+   /**
+    * @brief функция полуавтоматической разметки с помощью Cuda.
+    *
+    * Функция может использоваться для полуавтоматической разметки в формате YOLO.
+    *
+    * @param inputImage - изображение формата cv::Mat.
+    * @param height - высота изображения.
+    * @param width - ширина изображения.
+    * @param outputPath - полный путь к папке к сохранению результата.
+    * @param modelPath -  полный путь к обученной модели.
+    * @param classesPath - полный путь к файлу с классами.
+    * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
+    * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+    */
+   MRCV_EXPORT int semiAutomaticLabelerCuda(cv::Mat& inputImage, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
+   
+   /**
+    * @brief функция полуавтоматической разметки с помощью Cuda.
+    *
+    * Функция может использоваться для полуавтоматической разметки в формате YOLO.
+    *
+    * @param root - полный путь к изображению.
+    * @param height - высота изображения.
+    * @param width - ширина изображения.
+    * @param outputPath - полный путь к папке к сохранению результата.
+    * @param modelPath -  полный путь к обученной модели.
+    * @param classesPath - полный путь к файлу с классами.
+    * @return - код результата работы функции. 0 - Success; -1 - Unhandled Exception.
+    * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+    */
+   MRCV_EXPORT int semiAutomaticLabelerCuda(const std::string& root, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath);
 }

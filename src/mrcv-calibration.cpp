@@ -454,4 +454,253 @@ namespace mrcv
 
         return EXIT_SUCCESS;
     }
+
+    //Cuda
+    void cameraCalibrationCuda(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR,
+        std::string pathToImagesL, std::string pathToImagesR,
+        CalibrationParametersMono& calibrationParametersL,
+        CalibrationParametersMono& calibrationParametersR,
+        CalibrationParametersStereo& calibrationParameters,
+        int chessboardColCount, int chessboardRowCount, float chessboardSquareSize)
+    {
+        std::vector<std::vector<cv::Point3f>> keyPoints;
+        std::vector<std::vector<cv::Point2f>> imgPointsL;
+        std::vector<std::vector<cv::Point2f>> imgPointsR;
+
+        std::vector<cv::Point3f> points3D;
+        for (int i = 0; i < chessboardRowCount; i++) {
+            for (int j = 0; j < chessboardColCount; j++) {
+                points3D.push_back(cv::Point3f(j * chessboardSquareSize, i * chessboardSquareSize, 0.f));
+            }
+        }
+
+        cv::glob(pathToImagesL, imagesL);
+        cv::glob(pathToImagesR, imagesR);
+
+        cv::cuda::GpuMat frameL, frameR, grayL, grayR;
+        cv::Mat grayL_host, grayR_host;
+        std::vector<cv::Point2f> cornerPointsL, cornerPointsR;
+        bool successL, successR;
+
+        for (size_t i = 0; i < imagesL.size(); i++) {
+            cv::Mat hostFrameL = cv::imread(imagesL[i]);
+            cv::Mat hostFrameR = cv::imread(imagesR[i]);
+            if (hostFrameL.empty() || hostFrameR.empty()) {
+                continue;
+            }
+
+            frameL.upload(hostFrameL);
+            frameR.upload(hostFrameR);
+
+            cv::cuda::cvtColor(frameL, grayL, cv::COLOR_BGR2GRAY);
+            cv::cuda::cvtColor(frameR, grayR, cv::COLOR_BGR2GRAY);
+
+            grayL.download(grayL_host);
+            grayR.download(grayR_host);
+
+            successL = cv::findChessboardCorners(
+                grayL_host, cv::Size(chessboardColCount, chessboardRowCount),
+                cornerPointsL, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FILTER_QUADS
+            );
+            successR = cv::findChessboardCorners(
+                grayR_host, cv::Size(chessboardColCount, chessboardRowCount),
+                cornerPointsR, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FILTER_QUADS
+            );
+
+            if (successL && successR) {
+                cv::TermCriteria terminateCriteria(cv::TermCriteria::EPS | cv::TermCriteria::MAX_ITER, 10, 1e-6);
+                cv::cornerSubPix(grayL_host, cornerPointsL, cv::Size(11, 11), cv::Size(-1, -1), terminateCriteria);
+                cv::cornerSubPix(grayR_host, cornerPointsR, cv::Size(11, 11), cv::Size(-1, -1), terminateCriteria);
+
+                cv::drawChessboardCorners(hostFrameL, cv::Size(chessboardColCount, chessboardRowCount), cornerPointsL, successL);
+                cv::drawChessboardCorners(hostFrameR, cv::Size(chessboardColCount, chessboardRowCount), cornerPointsR, successR);
+
+                keyPoints.push_back(points3D);
+                imgPointsL.push_back(cornerPointsL);
+                imgPointsR.push_back(cornerPointsR);
+            }
+        }
+
+        cv::TermCriteria criteria(cv::TermCriteria::COUNT | cv::TermCriteria::EPS, 10, DBL_EPSILON);
+        int flags = 0;
+
+        calibrationParametersL.RMS = cv::calibrateCamera(
+            keyPoints, imgPointsL, cv::Size(grayL_host.cols, grayL_host.rows),
+            calibrationParametersL.cameraMatrix, calibrationParametersL.distCoeffs,
+            calibrationParametersL.rvecs, calibrationParametersL.tvecs,
+            calibrationParametersL.stdDevIntrinsics, calibrationParametersL.stdDevExtrinsics,
+            calibrationParametersL.perViewErrors, flags, criteria);
+
+        calibrationParametersR.RMS = cv::calibrateCamera(
+            keyPoints, imgPointsR, cv::Size(grayL_host.cols, grayL_host.rows),
+            calibrationParametersR.cameraMatrix, calibrationParametersR.distCoeffs,
+            calibrationParametersR.rvecs, calibrationParametersR.tvecs,
+            calibrationParametersR.stdDevIntrinsics, calibrationParametersR.stdDevExtrinsics,
+            calibrationParametersR.perViewErrors, flags, criteria);
+
+        calibrationParameters.RMS = cv::stereoCalibrate(
+            keyPoints, imgPointsL, imgPointsR,
+            calibrationParameters.cameraMatrixL, calibrationParameters.distCoeffsL,
+            calibrationParameters.cameraMatrixR, calibrationParameters.distCoeffsR,
+            cv::Size(grayL_host.cols, grayL_host.rows),
+            calibrationParameters.R, calibrationParameters.T,
+            calibrationParameters.E, calibrationParameters.F,
+            calibrationParameters.perViewErrors, 0, criteria);
+    }
+
+    void cameraCalibrationMonoCuda(std::vector<cv::String> images, std::string pathToImages,
+        CalibrationParametersMono& calibrationParameters,
+        int chessboardColCount, int chessboardRowCount, float chessboardSquareSize)
+    {
+        std::vector<std::vector<cv::Point3f>> keyPoints;
+        std::vector<std::vector<cv::Point2f>> imgPoints;
+        std::vector<cv::Point3f> points3D;
+
+        for (int i = 0; i < chessboardRowCount; i++) {
+            for (int j = 0; j < chessboardColCount; j++) {
+                points3D.push_back(cv::Point3f(j * chessboardSquareSize, i * chessboardSquareSize, 0.f));
+            }
+        }
+
+        cv::glob(pathToImages, images);
+
+        cv::cuda::GpuMat frame, gray;
+        cv::Mat gray_host;
+        std::vector<cv::Point2f> cornerPoints;
+        bool success;
+
+        for (size_t i = 0; i < images.size(); i++) {
+            cv::Mat hostFrame = cv::imread(images[i]);
+            if (hostFrame.empty()) {
+                continue;
+            }
+
+            frame.upload(hostFrame);
+
+            cv::cuda::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+
+            gray.download(gray_host);
+
+            success = cv::findChessboardCorners(
+                gray_host,
+                cv::Size(chessboardColCount, chessboardRowCount),
+                cornerPoints,
+                cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FILTER_QUADS
+            );
+
+            if (success) {
+                cv::TermCriteria terminateCriteria(cv::TermCriteria::EPS | cv::TermCriteria::MAX_ITER, 30, 0.001);
+                cv::cornerSubPix(gray_host, cornerPoints, cv::Size(11, 11), cv::Size(-1, -1), terminateCriteria);
+                cv::drawChessboardCorners(hostFrame, cv::Size(chessboardColCount, chessboardRowCount), cornerPoints, success);
+                keyPoints.push_back(points3D);
+                imgPoints.push_back(cornerPoints);
+            }
+        }
+
+        cv::TermCriteria criteria(cv::TermCriteria::COUNT | cv::TermCriteria::EPS, 30, DBL_EPSILON);
+
+        calibrationParameters.RMS = cv::calibrateCamera(
+            keyPoints,
+            imgPoints,
+            cv::Size(gray_host.cols, gray_host.rows),
+            calibrationParameters.cameraMatrix,
+            calibrationParameters.distCoeffs,
+            calibrationParameters.rvecs,
+            calibrationParameters.tvecs,
+            calibrationParameters.stdDevIntrinsics,
+            calibrationParameters.stdDevExtrinsics,
+            calibrationParameters.perViewErrors,
+            0,
+            criteria
+        );
+    }
+
+    void cameraCalibrationStereoCuda(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR,
+        std::string pathToImagesL, std::string pathToImagesR,
+        CalibrationParametersStereo& calibrationParameters,
+        int chessboardColCount, int chessboardRowCount, float chessboardSquareSize)
+    {
+        std::vector<std::vector<cv::Point3f>> keyPoints;
+        std::vector<std::vector<cv::Point2f>> imgPointsL;
+        std::vector<std::vector<cv::Point2f>> imgPointsR;
+
+        std::vector<cv::Point3f> points3D;
+        for (int i = 0; i < chessboardRowCount; i++) {
+            for (int j = 0; j < chessboardColCount; j++) {
+                points3D.push_back(cv::Point3f(j * chessboardSquareSize, i * chessboardSquareSize, 0.f));
+            }
+        }
+
+        cv::glob(pathToImagesL, imagesL);
+        cv::glob(pathToImagesR, imagesR);
+
+        cv::TermCriteria criteria(cv::TermCriteria::EPS | cv::TermCriteria::MAX_ITER, 30, 0.001);
+
+        cv::cuda::GpuMat frameL, frameR, grayL, grayR;
+        cv::Mat grayL_host, grayR_host;
+
+        std::vector<cv::Mat> cornerImagesL, cornerImagesR;
+
+        for (size_t i = 0; i < imagesL.size(); i++) {
+            cv::Mat cornerImageL = cv::imread(imagesL[i], 1);
+            cv::Mat cornerImageR = cv::imread(imagesR[i], 1);
+            if (cornerImageL.empty() || cornerImageR.empty()) {
+                continue;
+            }
+            cornerImagesL.push_back(cornerImageL);
+            cornerImagesR.push_back(cornerImageR);
+        }
+
+        for (size_t i = 0; i < cornerImagesL.size(); i++) {
+            frameL.upload(cornerImagesL[i]);
+            frameR.upload(cornerImagesR[i]);
+
+            cv::cuda::cvtColor(frameL, grayL, cv::COLOR_BGR2GRAY);
+            cv::cuda::cvtColor(frameR, grayR, cv::COLOR_BGR2GRAY);
+
+            grayL.download(grayL_host);
+            grayR.download(grayR_host);
+
+            std::vector<cv::Point2f> cornersL, cornersR;
+
+            bool cornerPositionFoundL = cv::findChessboardCorners(
+                grayL_host, cv::Size(chessboardColCount, chessboardRowCount),
+                cornersL, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FILTER_QUADS
+            );
+            bool cornerPositionFoundR = cv::findChessboardCorners(
+                grayR_host, cv::Size(chessboardColCount, chessboardRowCount),
+                cornersR, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FILTER_QUADS
+            );
+
+            if (cornerPositionFoundL && cornerPositionFoundR) {
+                cv::cornerSubPix(grayL_host, cornersL, cv::Size(11, 11), cv::Size(-1, -1), criteria);
+                cv::cornerSubPix(grayR_host, cornersR, cv::Size(11, 11), cv::Size(-1, -1), criteria);
+
+                cv::drawChessboardCorners(cornerImagesL[i], cv::Size(chessboardColCount, chessboardRowCount), cornersL, cornerPositionFoundL);
+                cv::drawChessboardCorners(cornerImagesR[i], cv::Size(chessboardColCount, chessboardRowCount), cornersR, cornerPositionFoundR);
+
+                keyPoints.push_back(points3D);
+                imgPointsL.push_back(cornersL);
+                imgPointsR.push_back(cornersR);
+            }
+        }
+
+        calibrationParameters.RMS = cv::stereoCalibrate(
+            keyPoints,
+            imgPointsL,
+            imgPointsR,
+            calibrationParameters.cameraMatrixL,
+            calibrationParameters.distCoeffsL,
+            calibrationParameters.cameraMatrixR,
+            calibrationParameters.distCoeffsR,
+            cv::Size(grayL_host.cols, grayL_host.rows),
+            calibrationParameters.R,
+            calibrationParameters.T,
+            calibrationParameters.E,
+            calibrationParameters.F,
+            calibrationParameters.perViewErrors,
+            0,
+            criteria
+        );
+    }
 }

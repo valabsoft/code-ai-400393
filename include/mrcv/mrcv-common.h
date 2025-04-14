@@ -24,6 +24,14 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/ximgproc.hpp>
 
+//For Cuda function
+#include <opencv2/dnn.hpp>
+#include <opencv2/core/cuda.hpp>
+#include <opencv2/cudaimgproc.hpp>
+#include <opencv2/cudawarping.hpp>
+#include <opencv2/cudaarithm.hpp>
+//--------
+
 #include "mrcv-segmentation.h"
 
 #if _WIN32

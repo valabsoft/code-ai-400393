@@ -382,4 +382,332 @@ namespace mrcv
         writeLog("Labeling image is DONE!", mrcv::LOGTYPE::INFO);
         return 0;
     }
+
+    //Cuda
+    NNPreLabelerCuda::NNPreLabelerCuda(const std::string& model, const std::string& classes, int width, int height) {
+        inputWidth = width;
+        inputHeight = height;
+        if (initNetworkCuda(model, classes)) {
+            writeLog("Failed to init neural network!", mrcv::LOGTYPE::ERROR);
+        }
+    }
+
+    int NNPreLabelerCuda::readClassesCuda(const std::string& filePath) {
+        std::ifstream classesFile(filePath);
+        if (!classesFile) {
+            writeLog("Failed to open classes names: " + filePath, mrcv::LOGTYPE::ERROR);
+            return ENOENT;
+        }
+        std::string line;
+        while (std::getline(classesFile, line)) {
+            classes.push_back(line);
+        }
+        classesFile.close();
+        return 0;
+    }
+
+    int NNPreLabelerCuda::initNetworkCuda(const std::string& modelPath, const std::string& classesPath) {
+        int err = readClassesCuda(classesPath);
+        if (err == 0) {
+            network = cv::dnn::readNetFromONNX(modelPath);
+            if (network.empty()) {
+                writeLog("Failed to load ONNX model from " + modelPath, mrcv::LOGTYPE::ERROR);
+                return ENETDOWN;
+            }
+            network.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
+            network.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
+        }
+        return err;
+    }
+
+    std::vector<cv::Mat> NNPreLabelerCuda::preProcessCuda(cv::cuda::GpuMat& img) {
+        try {
+            writeLog("Pre-processing GpuMat size: " + std::to_string(img.cols) + "x" + std::to_string(img.rows), mrcv::LOGTYPE::INFO);
+
+            // Переносим изображение на CPU
+            cv::Mat cpuImg;
+            img.download(cpuImg);
+            if (cpuImg.empty()) {
+                writeLog("Failed to download GpuMat to CPU!", mrcv::LOGTYPE::ERROR);
+                throw std::runtime_error("Empty CPU image after download");
+            }
+
+            // Преобразуем цветовое пространство на CPU
+            cv::cvtColor(cpuImg, cpuImg, cv::COLOR_BGR2RGB);
+
+            // Создаём блоб на CPU
+            cv::Mat blob;
+            cv::dnn::blobFromImage(cpuImg, blob, 1.0 / 255, cv::Size(inputWidth, inputHeight), cv::Scalar(), true, false);
+
+            // Устанавливаем вход для сети
+            network.setInput(blob);
+
+            // Выполняем прямой проход
+            std::vector<cv::Mat> outputs;
+            network.forward(outputs, network.getUnconnectedOutLayersNames());
+
+            writeLog("Pre-process outputs size: " + std::to_string(outputs.size()), mrcv::LOGTYPE::INFO);
+            return outputs;
+        }
+        catch (const cv::Exception& e) {
+            writeLog("OpenCV exception in preProcessCuda: " + std::string(e.what()), mrcv::LOGTYPE::ERROR);
+            throw;
+        }
+        catch (const std::exception& e) {
+            writeLog("Standard exception in preProcessCuda: " + std::string(e.what()), mrcv::LOGTYPE::ERROR);
+            throw;
+        }
+    }
+
+    cv::cuda::GpuMat NNPreLabelerCuda::postProcessCuda(cv::cuda::GpuMat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& className) {
+        cv::cuda::GpuMat ret = img.clone();
+        classesIdSet.clear();
+        confidencesSet.clear();
+        boxesSet.clear();
+        classesSet.clear();
+
+        float xFactor = img.cols / (float)inputWidth;
+        float yFactor = img.rows / (float)inputHeight;
+
+        int dimensions = outputs[0].size[2];
+        int rows = outputs[0].size[1];
+        float* data = (float*)outputs[0].data;
+
+        std::vector<int> classIds;
+        std::vector<float> confidences;
+        std::vector<cv::Rect> boxes;
+
+        for (int i = 0; i < rows; ++i) {
+            float confidence = data[4];
+            if (confidence >= CONFIDENCE_THRESHOLD) {
+                float* classesScores = data + 5;
+                cv::Mat scores(1, className.size(), CV_32FC1, classesScores);
+                cv::Point classId;
+                double maxClassScore;
+                cv::minMaxLoc(scores, 0, &maxClassScore, 0, &classId);
+                if (maxClassScore > SCORE_THRESHOLD) {
+                    confidences.push_back(confidence);
+                    classIds.push_back(classId.x);
+                    float cx = data[0];
+                    float cy = data[1];
+                    float w = data[2];
+                    float h = data[3];
+                    int left = int((cx - 0.5 * w) * xFactor);
+                    int top = int((cy - 0.5 * h) * yFactor);
+                    int width = int(w * xFactor);
+                    int height = int(h * yFactor);
+                    boxes.push_back(cv::Rect(left, top, width, height));
+                }
+            }
+            data += dimensions;
+        }
+
+        std::vector<int> indices;
+        cv::dnn::NMSBoxes(boxes, confidences, SCORE_THRESHOLD, NMS_THRESHOLD, indices);
+
+        for (int i = 0; i < indices.size(); i++) {
+            int idx = indices[i];
+            boxesSet.push_back(boxes[idx]);
+            confidencesSet.push_back(confidences[idx]);
+            classesIdSet.push_back(classIds[idx]);
+            classesSet.push_back(className[classIds[idx]]);
+        }
+
+        return ret;  // Возвращаем изображение без отрисовки
+    }
+
+    cv::cuda::GpuMat NNPreLabelerCuda::processCuda(cv::cuda::GpuMat& img) {
+        sourceSize = cv::Size(img.cols, img.rows);
+        std::vector<cv::Mat> detections = preProcessCuda(img);
+        cv::cuda::GpuMat res = postProcessCuda(img, detections, classes);
+        std::vector<double> layersTimes;
+        double freq = cv::getTickFrequency();
+        inferenceTime = network.getPerfProfile(layersTimes) / freq;
+        return res;
+    }
+
+    void NNPreLabelerCuda::writeLabelsCuda(const std::string& filename) {
+        std::ofstream outfile(filename);
+        if (!outfile.is_open()) {
+            writeLog("Failed to open file: " + filename, mrcv::LOGTYPE::ERROR);
+            return;
+        }
+        for (size_t i = 0; i < classesIdSet.size(); ++i) {
+            int classId = classesIdSet[i];
+            const cv::Rect& box = boxesSet[i];
+            float xCenter = (box.x + box.width / 2.0) / sourceSize.width;
+            float yCenter = (box.y + box.height / 2.0) / sourceSize.height;
+            float width = box.width / static_cast<float>(sourceSize.width);
+            float height = box.height / static_cast<float>(sourceSize.height);
+            outfile << classId << " " << xCenter << " " << yCenter << " " << width << " " << height << std::endl;
+        }
+        outfile.close();
+    }
+
+    int semiAutomaticLabelerCuda(cv::Mat& inputImage, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath) {
+        try {
+            if (inputImage.empty()) {
+                writeLog("Input image is empty!", mrcv::LOGTYPE::ERROR);
+                return -1;
+            }
+
+            NNPreLabelerCuda labeler(modelPath, classesPath, 640, 640);
+            cv::resize(inputImage, inputImage, cv::Size(640, 640));
+
+            cv::cuda::GpuMat gpuImg;
+            gpuImg.upload(inputImage);
+            cv::cuda::GpuMat img = labeler.processCuda(gpuImg);
+
+            // Переносим результат на CPU
+            cv::Mat cpuImg;
+            img.download(cpuImg);
+            if (cpuImg.empty()) {
+                writeLog("Processed image is empty after download!", mrcv::LOGTYPE::ERROR);
+                return -1;
+            }
+
+            // Получаем данные после обработки
+            std::vector<int> classIds = labeler.getClassIdsCuda();
+            std::vector<float> confidences = labeler.getConfidencesCuda();
+            std::vector<cv::Rect> boxes = labeler.getBoxesCuda();
+            std::vector<std::string> classes = labeler.getClassesCuda();
+
+            // Отрисовка на CPU
+            for (size_t i = 0; i < boxes.size(); ++i) {
+                int left = boxes[i].x;
+                int top = boxes[i].y;
+                int width = boxes[i].width;
+                int height = boxes[i].height;
+
+                cv::rectangle(cpuImg, cv::Point(left, top), cv::Point(left + width, top + height), GREEN, 3 * THICKNESS);
+                std::string label = cv::format("%.2f", confidences[i]);
+                label = classes[i] + ": " + label;
+
+                int baseline;
+                cv::Size labelSize = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, FONT_SCALE, THICKNESS, &baseline);
+                top = std::max(top, labelSize.height);
+                cv::Point tlc = cv::Point(left, top);
+                cv::Point brc = cv::Point(left + labelSize.width, top + labelSize.height + baseline);
+                cv::rectangle(cpuImg, tlc, brc, BLACK, cv::FILLED);
+                cv::putText(cpuImg, label, cv::Point(left, top + labelSize.height),
+                    cv::FONT_HERSHEY_SIMPLEX, FONT_SCALE, YELLOW, THICKNESS);
+            }
+
+            // Логирование
+            for (auto element : confidences) {
+                writeLog("confidences: " + std::to_string(element), mrcv::LOGTYPE::INFO);
+            }
+            writeLog("inference time: " + std::to_string(labeler.getInferenceCuda()), mrcv::LOGTYPE::INFO);
+
+            // Сохранение результата
+            const std::string filename = outputPath + "/result.jpg";
+            const std::string labels = outputPath + "/result.txt";
+            if (!cv::imwrite(filename, cpuImg)) {
+                writeLog("Failed to save image to " + filename, mrcv::LOGTYPE::ERROR);
+                return -1;
+            }
+            labeler.writeLabelsCuda(labels);
+
+            writeLog("Labeling image is DONE!", mrcv::LOGTYPE::INFO);
+            return 0;
+        }
+        catch (const cv::Exception& e) {
+            writeLog("OpenCV exception: " + std::string(e.what()), mrcv::LOGTYPE::ERROR);
+            return -1;
+        }
+        catch (const std::exception& e) {
+            writeLog("Standard exception: " + std::string(e.what()), mrcv::LOGTYPE::ERROR);
+            return -1;
+        }
+    }
+
+    int semiAutomaticLabelerCuda(const std::string& root, const int height, const int width, const std::string& outputPath, const std::string& modelPath, const std::string& classesPath) {
+        try {
+            // Проверка существования входного файла
+            std::ifstream fileCheck(root);
+            if (!fileCheck.good()) {
+                writeLog("Input file does not exist or is inaccessible: " + root, mrcv::LOGTYPE::ERROR);
+                return -1;
+            }
+            fileCheck.close();
+
+            // Загрузка изображения
+            cv::Mat inputImage = cv::imread(root);
+            if (inputImage.empty()) {
+                writeLog("Failed to load image from " + root, mrcv::LOGTYPE::ERROR);
+                return -1;
+            }
+
+            // Логирование размеров входного изображения
+            writeLog("Input image size: " + std::to_string(inputImage.cols) + "x" + std::to_string(inputImage.rows), mrcv::LOGTYPE::INFO);
+
+            NNPreLabelerCuda labeler(modelPath, classesPath, 640, 640);
+            cv::resize(inputImage, inputImage, cv::Size(640, 640));
+
+            // Загрузка на GPU
+            cv::cuda::GpuMat gpuImg;
+            gpuImg.upload(inputImage);
+
+            // Проверка GPU-изображения
+            if (gpuImg.empty()) {
+                writeLog("Failed to upload image to GPU!", mrcv::LOGTYPE::ERROR);
+                return -1;
+            }
+
+            // Обработка изображения
+            cv::cuda::GpuMat img = labeler.processCuda(gpuImg);
+
+            // Проверка результата обработки
+            if (img.empty()) {
+                writeLog("Processed GpuMat is empty!", mrcv::LOGTYPE::ERROR);
+                return -1;
+            }
+            writeLog("Processed GpuMat size: " + std::to_string(img.cols) + "x" + std::to_string(img.rows), mrcv::LOGTYPE::INFO);
+
+            // Переносим результат на CPU
+            cv::Mat cpuImg;
+            img.download(cpuImg);
+            if (cpuImg.empty()) {
+                writeLog("Processed image is empty after download!", mrcv::LOGTYPE::ERROR);
+                return -1;
+            }
+            writeLog("CPU image size after download: " + std::to_string(cpuImg.cols) + "x" + std::to_string(cpuImg.rows), mrcv::LOGTYPE::INFO);
+
+            // Получаем данные после обработки
+            std::vector<int> classIds = labeler.getClassIdsCuda();
+            std::vector<float> confidences = labeler.getConfidencesCuda();
+            std::vector<cv::Rect> boxes = labeler.getBoxesCuda();
+            std::vector<std::string> classes = labeler.getClassesCuda();
+
+            // Логирование
+            for (auto element : confidences) {
+                writeLog("confidences: " + std::to_string(element), mrcv::LOGTYPE::INFO);
+            }
+            writeLog("inference time: " + std::to_string(labeler.getInferenceCuda()), mrcv::LOGTYPE::INFO);
+
+            // Сохранение результата
+            const std::string filename = outputPath + "/result.jpg";
+            const std::string labels = outputPath + "/result.txt";
+            if (!cv::imwrite(filename, cpuImg)) {
+                writeLog("Failed to save image to " + filename, mrcv::LOGTYPE::ERROR);
+                return -1;
+            }
+            labeler.writeLabelsCuda(labels);
+
+            writeLog("Labeling image is DONE!", mrcv::LOGTYPE::INFO);
+            return 0;
+        }
+        catch (const cv::Exception& e) {
+            writeLog("OpenCV exception: " + std::string(e.what()), mrcv::LOGTYPE::ERROR);
+            return -1;
+        }
+        catch (const std::exception& e) {
+            writeLog("Standard exception: " + std::string(e.what()), mrcv::LOGTYPE::ERROR);
+            return -1;
+        }
+        catch (...) {
+            writeLog("Unknown exception occurred!", mrcv::LOGTYPE::ERROR);
+            return -1;
+        }
+    }
 }
