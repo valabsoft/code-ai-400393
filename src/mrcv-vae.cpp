@@ -383,7 +383,139 @@ namespace mrcv
         return 0;
     }
 
-    //Cuda
+#ifdef MRCV_CUDA_ENABLED 
+    torch::Tensor neuralNetworkAugmentationAsTensorCuda(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate)
+    {
+        torch::Tensor tensor;
+
+        // Количестыо цветов генерируемого изображения
+        const int64_t numColor = 1;
+        // Расчет размерности входно слоя
+        const int64_t inputDim = numColor * height * width;
+        // Выбор устройства
+        torch::Device device(torch::kCUDA);
+        // Загрузка датасета
+        auto dataset = LoadImageDataset(root, height, width, numColor).map(torch::data::transforms::Stack<>());
+
+        // Проверка датасета
+        if (dataset.size() == 0)
+        {
+            writeLog("No Image loaded!", mrcv::LOGTYPE::ERROR);
+        }
+
+        auto dataLoader = torch::data::make_data_loader(dataset, torch::data::DataLoaderOptions().batch_size(batchSize).workers(2));
+
+        // Создание объекта модели
+        VariationalAutoEncoder model(inputDim, hDim, zDim);
+        // Перенос модели на устройство
+        model.to(device);
+        // Оптимизация модели
+        torch::optim::Adam optimizer(model.parameters(), torch::optim::AdamOptions(lrRate));
+
+        writeLog("Training...", mrcv::LOGTYPE::INFO);
+        // Обучение модели
+        for (int epoch = 0; epoch < numEpoch; ++epoch)
+        {
+            model.train();
+            for (auto& batch : *dataLoader)
+            {
+                auto data = batch.data.to(device).view({ -1, inputDim });
+
+                if (torch::isnan(data).any().item<bool>() || torch::isinf(data).any().item<bool>())
+                {
+                    writeLog("Data tensor contains NaN or Inf values!", mrcv::LOGTYPE::ERROR);
+                    continue;
+                }
+
+                optimizer.zero_grad();
+                auto [output, mu, sigma] = model.forward(data);
+                output = torch::sigmoid(output);
+
+                auto reconstructionLoss = torch::binary_cross_entropy(output, data, {}, torch::Reduction::Sum);
+
+                reconstructionLoss.backward();
+                optimizer.step();
+            }
+        }
+        writeLog("Training is DONE!", mrcv::LOGTYPE::INFO);
+
+        auto numberLoadImages = LoadImageDataset(root, height, width, numColor);
+        int num = numberLoadImages.get_num_images();
+
+        // Коллическтво генерируемых изображений
+        int numExamples = 1;
+        srand((unsigned int)time(NULL));
+
+        std::vector<torch::Tensor> images;
+
+        int randImage = rand() % num;
+        auto example = dataset.get_batch(randImage);
+        images.push_back(example.data.to(device));
+
+        std::vector<std::pair<torch::Tensor, torch::Tensor>> encodingsDigit;
+
+        writeLog("Encoding...", mrcv::LOGTYPE::INFO);
+        // Энкодер
+        for (int d = 0; d < numExamples; ++d)
+        {
+            torch::NoGradGuard no_grad;
+            auto flattenedIimage = images[d].view({ 1, inputDim });
+            auto [mu, sigma] = model.encode(flattenedIimage.to(device));
+            encodingsDigit.push_back({ mu, sigma });
+        }
+        writeLog("Decoding...", mrcv::LOGTYPE::INFO);
+        // Декодер
+        for (int example = 0; example < numExamples; ++example)
+        {
+            auto [mu, sigma] = encodingsDigit[0];
+            auto sample = model.reparameterize(mu, sigma);
+            tensor = model.decode(sample.to(device));
+            tensor = torch::sigmoid(tensor).view({ numColor, width, height });
+            return tensor.clone();
+        }
+        // Сохранение логов
+        writeLog("Generated tensor is DONE!", mrcv::LOGTYPE::INFO);
+
+        return tensor.clone();
+    }
+
+    cv::Mat neuralNetworkAugmentationAsMatCuda(const std::string& root, const int64_t height, const int64_t width, const int64_t hDim, const int64_t zDim, const int64_t numEpoch, const int64_t batchSize, const double lrRate)
+    {
+        // Количестыо цветов генерируемого изображения
+        const int64_t numColor = 1;
+
+        torch::Tensor tensor = neuralNetworkAugmentationAsTensorCuda(root, height, width, hDim, zDim, numEpoch, batchSize, lrRate);
+
+        // Проверка, что тензор не пустой
+        if (!tensor.defined())
+        {
+            writeLog("Generated tensor empty!", mrcv::LOGTYPE::ERROR);
+        }
+
+        // Прелбразование тензора в OpenCV Мat
+        tensor = tensor.mul(255).clamp(0, 255).to(torch::kU8);
+        tensor = tensor.to(torch::kCPU);
+        tensor = tensor.view({ numColor, height, width });
+
+        // Переставляем каналы с {numColor, height, width} на {height, width, numColor} для OpenCV
+        tensor = tensor.permute({ 1, 2, 0 });
+
+        // Создаем OpenCV Mat
+        cv::Mat image(tensor.size(0), tensor.size(1), CV_8UC1, tensor.data_ptr());
+
+        // Проверка, что изображение не пустое
+        if (image.empty())
+        {
+            writeLog("Generated image empty!", mrcv::LOGTYPE::ERROR);
+        }
+        image.convertTo(image, -1, 2.3, -300);
+
+        // Сохранение логов
+        writeLog("Generated image is DONE!", mrcv::LOGTYPE::INFO);
+
+        return image.clone();
+    }
+
     NNPreLabelerCuda::NNPreLabelerCuda(const std::string& model, const std::string& classes, int width, int height) {
         inputWidth = width;
         inputHeight = height;
@@ -710,4 +842,5 @@ namespace mrcv
             return -1;
         }
     }
+#endif
 }

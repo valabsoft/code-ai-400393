@@ -24,13 +24,18 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/ximgproc.hpp>
 
-//For Cuda function
+#ifdef MRCV_CUDA_ENABLED
 #include <opencv2/dnn.hpp>
 #include <opencv2/core/cuda.hpp>
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/cudawarping.hpp>
 #include <opencv2/cudaarithm.hpp>
-//--------
+#include <cuda_runtime.h>
+#include <thrust/device_vector.h>
+#include <thrust/reduce.h>
+#include <thrust/execution_policy.h>
+#include <cmath>
+#endif
 
 #include "mrcv-segmentation.h"
 

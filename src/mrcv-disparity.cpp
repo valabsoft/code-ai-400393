@@ -142,6 +142,7 @@ namespace mrcv
 		return EXIT_SUCCESS;
 	}
 
+#ifdef MRCV_CUDA_ENABLED
     int disparityMapCuda(cv::cuda::GpuMat& map, const cv::Mat& imageLeft, const cv::Mat& imageRight, int minDisparity, int numDisparities, int blockSize, double lambda, double sigma, DISPARITY_TYPE disparityType, int colorMap, bool saveToFile, bool showImages)
     {
         // Проверка доступности CUDA
@@ -288,5 +289,6 @@ namespace mrcv
         }
 
         return EXIT_SUCCESS;
-    }
+    } 
+#endif
 }

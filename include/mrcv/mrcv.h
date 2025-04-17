@@ -1055,8 +1055,7 @@ namespace mrcv
 		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses,
 		int limitOutPoints = 3000, std::vector<double> limitsOutlierArea = { -4.0e3, -4.0e3, 450, 4.0e3, 4.0e3, 3.0e3 });
 		
-	//Cuda
-
+#ifdef MRCV_CUDA_ENABLED 
 	/**
 	 * @brief Функция отражения изображения с помощью CUDA.
 	 * Отражает изображение по горизонтали, вертикали или обеим осям.
@@ -1166,9 +1165,8 @@ namespace mrcv
 	 * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
 	 */
 	MRCV_EXPORT int disparityMapCuda(cv::cuda::GpuMat& map, const cv::Mat& imageLeft, const cv::Mat& imageRight, int minDisparity, int numDisparities, int blockSize, double lambda, double sigma, DISPARITY_TYPE disparityType, int colorMap, bool saveToFile, bool showImages);
+#endif
 
-	
-		
 }
 
         

@@ -2,16 +2,20 @@
 
 int main()
 {
+    std::filesystem::path imagesFile("files//");
+    auto currentPath = std::filesystem::current_path();
+    auto imagesPath = currentPath / imagesFile;
+
     int morph_size = 1;
 
-    cv::Mat image = cv::imread("/home/oleg/install/code-ai-400393-developer/examples/morphologyImage/files/opening.png", cv::IMREAD_GRAYSCALE);
-    std::string out = "/home/oleg/install/code-ai-400393-developer/examples/morphologyImage/files/out.png";
+    cv::Mat image = cv::imread(imagesPath.u8string() + "/opening.png", cv::IMREAD_GRAYSCALE);
+    std::string out = imagesPath.u8string() + "out.png";
     // Check if the image is created successfully or not
     if (!image.data) {
         std::cout << "Could not open or"
-             << " find the image\n";
+            << " find the image\n";
         return 0;
     }
-    int result = mrcv::morphologyImage(image,out,mrcv::METOD_MORF::OPEN,morph_size);
+    int result = mrcv::morphologyImage(image, out, mrcv::METOD_MORF::OPEN, morph_size);
 
 }

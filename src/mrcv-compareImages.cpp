@@ -35,7 +35,7 @@ namespace mrcv
 	    }
 	    return 0,0;
 	}
-
+#ifdef MRCV_CUDA_ENABLED 
     double compareImagesCuda(cv::Mat img1, cv::Mat img2, bool methodCompare) {
         try {
             // Проверка корректности изображений
@@ -145,6 +145,7 @@ namespace mrcv
 
         return 0.0;
     }
+#endif
 }
 	
 	

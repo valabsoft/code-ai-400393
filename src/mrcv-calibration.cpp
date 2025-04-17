@@ -455,7 +455,7 @@ namespace mrcv
         return EXIT_SUCCESS;
     }
 
-    //Cuda
+#ifdef MRCV_CUDA_ENABLED
     void cameraCalibrationCuda(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR,
         std::string pathToImagesL, std::string pathToImagesR,
         CalibrationParametersMono& calibrationParametersL,
@@ -703,4 +703,5 @@ namespace mrcv
             criteria
         );
     }
+#endif
 }

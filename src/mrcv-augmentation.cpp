@@ -186,7 +186,7 @@ namespace mrcv
         return 0;
     }
 
-    //Cuda
+#ifdef MRCV_CUDA_ENABLED 
     int mrcv::rotateImageCuda(cv::Mat& imageInput, cv::Mat& imageOutput, double angle)
     {
         try
@@ -335,5 +335,6 @@ namespace mrcv
 
         return 0;
     }
+#endif
 }
 
