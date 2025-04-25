@@ -15,6 +15,9 @@
 #include <sys/stat.h>
 #include <vector>
 #include <math.h>
+#include <random>
+#include <algorithm> 
+#include <utility>
 
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
