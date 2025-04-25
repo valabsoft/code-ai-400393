@@ -890,7 +890,7 @@ namespace mrcv
 		std::vector<cv::Rect> getBoxes(void);
 		std::vector<std::string> getClasses(void);
 		float getInference(void);
-	}; // class  neuralNetSegmentator
+	};
 
 	/**
 	 * @brief Функция формирования стереопараы
@@ -982,8 +982,7 @@ namespace mrcv
 	 * @param filePathToClasses - путь к файлй со списоком обнаруживамых класов объектов
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение;  -1 - Неизвестная ошибка.
 	 */
-	int detectingSegmentsNeuralNet(cv::Mat& imageInput, cv::Mat& imageOutput, std::vector<cv::Mat>& replyMasks,
-		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses);
+	int detectingSegmentsNeuralNet(cv::Mat& imageInput, cv::Mat& imageOutput, std::vector<cv::Mat>& replyMasks, const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses);
 	/**
 	 * @brief Функция для определения координат 3D точек в сегментах идентифицированных объектов
 	 * Функция сопосталяет сегмент объекта с 3D точками по их проекциям на изображение и записывает результат в points3D
