@@ -1038,8 +1038,19 @@ namespace mrcv
 		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses,
 		int limitOutPoints = 3000, std::vector<double> limitsOutlierArea = { -4.0e3, -4.0e3, 450, 4.0e3, 4.0e3, 3.0e3 });
 		
-		
-
+	/**
+	* @brief Функция оффлайн комлексирования данных с USBL-модема, IMU и СТЗ
+	* @param usblPath	- путь к файлу с данными USBL-модема
+	* @param imuPath	- путь к файлу с данными IMU
+	* @param camFolder	- путь к папке с сохранёнными изображениями
+	* @param outYAML	- путь к файлу для сохранения получившихся кортежей
+	* @param visFlag	- флаг для отображения изображения с нанесённой меткой удалённого объекта
+	* 
+	* @return - код результата работы функции. 0 - успех; 1 - не удалось загрузить данные с UBSL-системы; 2 - не удалось загрузить данные с IMU, 
+												3 - не удалось загрузить изображения; 4 - ошибка сохранения файла с результатом
+	*/
+	MRCV_EXPORT int fuseSensorData(const std::string& usblPath, const std::string& imuPath,
+		const std::string& camFolder, const std::string& outYAML, bool visFlag);
 	
 		
 }
