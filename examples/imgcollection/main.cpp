@@ -2,15 +2,18 @@
 
 int main()
 {
-    std::filesystem::path imagesFile("files//");
+    std::filesystem::path imageFile("file\\images");
+
     auto currentPath = std::filesystem::current_path();
-    auto imagesPath = currentPath / imagesFile;
+
+    auto imagePath = currentPath / imageFile;
+
 
     std::string queryString = "sunken+ships"; // строка запроса, для двойного запроса использовать "+" без пробелов  Ex: sunken+ships
     int minWidth = 300;
     int minHeight = 300;
     std::string templateName = "ships"; // шаблон файла     
-    std::string outputFolder = imagesPath.u8string() + "images/"; // путь к изображениям
+    std::string outputFolder = imagePath.u8string(); // путь к изображениям
     bool separateDataset = true;
     unsigned int trainsetPercentage = 70;
     unsigned int countFoto = 30;

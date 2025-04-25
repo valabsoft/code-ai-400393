@@ -172,9 +172,18 @@ namespace mrcv
 	MRCV_EXPORT class Segmentor
 	{
 	public:
-		Segmentor() { };
-		~Segmentor() { };
-		
+		Segmentor() = default;
+		~Segmentor() = default;
+
+		/**
+		 * @brief Функция инициализации
+		 * @param width - Ширина пердаваемых изображений.
+		 * @param height - Высота пердаваемых изображений.
+		 * @param listName - Список классов.
+		 * @param encoderName - Имя кодировщика.
+		 * @param pretrainedPath - Путь к кодировщику.
+		 */
+		void Initialize(int width, int height, std::vector<std::string>&& listName, std::string encoderName, std::string pretrainedPath);
 		/**
 		 * @brief Функция инициализации
 		 * @param gpu_id - Подключение GPU.
@@ -184,8 +193,7 @@ namespace mrcv
 		 * @param encoderName - Имя кодировщика.
 		 * @param pretrainedPath - Путь к кодировщику.
 		 */
-		void Initialize(int gpu_id, int width, int height, std::vector<std::string>&& listName, std::string encoderName, std::string pretrainedPath);
-
+		void InitializeCuda(int gpu_id, int width, int height, std::vector<std::string>&& listName, std::string encoderName, std::string pretrainedPath);
 		/**
 		 * @brief функция для повышения производительности обучения
 		 * @param tricks - Структура дополнений для обучения таких как скорость оюучения, вращение изображения и вес при проигрыше .

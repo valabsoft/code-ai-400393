@@ -2,14 +2,16 @@
 
 int main()
 {
-    std::filesystem::path imagesFile("files//");
+    std::filesystem::path imageFile("files\\");
+
     auto currentPath = std::filesystem::current_path();
-    auto imagesPath = currentPath / imagesFile;
+
+    auto imagePath = currentPath / imageFile;
 
     int morph_size = 1;
 
-    cv::Mat image = cv::imread(imagesPath.u8string() + "/opening.png", cv::IMREAD_GRAYSCALE);
-    std::string out = imagesPath.u8string() + "out.png";
+    cv::Mat image = cv::imread(imagePath.u8string() + "opening.png", cv::IMREAD_GRAYSCALE);
+    std::string out = imagePath.u8string() + "out.png";
     // Check if the image is created successfully or not
     if (!image.data) {
         std::cout << "Could not open or"
