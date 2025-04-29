@@ -1039,7 +1039,7 @@ namespace mrcv
 		int limitOutPoints = 3000, std::vector<double> limitsOutlierArea = { -4.0e3, -4.0e3, 450, 4.0e3, 4.0e3, 3.0e3 });
 		
 	/**
-	* @brief Функция оффлайн комлексирования данных с USBL-модема, IMU и СТЗ
+	* @brief Функция комлексирования данных с USBL-модема, IMU и СТЗ
 	* @param usblPath	- путь к файлу с данными USBL-модема
 	* @param imuPath	- путь к файлу с данными IMU
 	* @param camFolder	- путь к папке с сохранёнными изображениями

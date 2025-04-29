@@ -8,49 +8,38 @@
 
 namespace mrcv {
     struct IMUData {
-        double accel[3];   // x, y, z
-        double gyro[3];    // угловая скорость
+        double accel[3];   // Линейные скорости локального устройтсва
+        double gyro[3];    // Угловые скорости локального устройтсва
         std::chrono::system_clock::time_point timestamp;
     };
 
     struct USBLData {
-        std::string datetime;
-        double x, y, z;
-        double azimuth;
-        double localDepth;
-        double remoteDepth;
-        double propagationTime;
-        double rs, rh;
+        std::string datetime;   // Временная метка
+        double x, y, z;         // Относительные координаты удалённого устройства
+        double azimuth;         // Азимут угла прихода сигнала от удалённого устройства (в градусах)
+        double localDepth;      // Глубина локального устройства
+        double remoteDepth;     // Глубина удалённого устройства
+        double propagationTime; // Время распространения сигнала
+        double rs, rh;          // Наклонная дальность до удалённого устройства и её проекция
     };
 
     struct CameraFrame {
-        std::string filename;
-        cv::Mat image;
+        std::string filename;   // Имя файла изображения
+        cv::Mat image;          // Контейнер для сохранения изображения
         std::chrono::system_clock::time_point timestamp;
     };
 
     struct FusedData {
         std::chrono::system_clock::time_point timestamp;
-        std::string imageFilename;
-        double accel[3];
-        double gyro[3];
-        double position[3];
-        double relativeCoords[3];
-        std::vector<std::vector<float>> featurePoints;
+        double accel[3];                        // Линейные скорости локального устройства
+        double gyro[3];                         // Угловые скорости локального устройства
+        double position[3];                     // Координаты локального устройства
+        double relativeCoords[3];               // Относительные координаты удалённого устройства
+        std::vector<cv::Point2f> featurePoints; // Ключевые точки на изображении
+        std::string imageFilename;              // Имя файла изображения
+        float azimuth;                          // Азимут в градусах
+        float localDepth;                       // Глубина локального устройства
+        float remoteDepth;                      // Глубина удалённого устройства
     };
-
-    // Загрузка данных с IMU
-    std::vector<IMUData> loadIMUData(const std::string& csvFile);
-    // Загрузка USBL-лога 
-    std::vector<USBLData> loadAcousticCSV(const std::string& filename);
-    // Загрузка изображений
-    std::vector<CameraFrame> loadCameraFrames(const std::string& folder);
-
-    // Функция комплексирования
-    int fuseSensorData(const std::string& usblPath, const std::string& imuPath,
-        const std::string& camFolder, const std::string& outYAML, bool visFlag);
-
-    // Визуализация результата
-    void visualizeResult(const std::string& fileName, const std::string& frameFolder);
 }
 #endif // !SENSORSFUSION_H
