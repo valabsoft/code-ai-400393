@@ -1203,104 +1203,12 @@ namespace mrcv
 		float optimizeRoiSize(const std::pair<float, float>& prevCoord,
 			const std::pair<float, float>& nextCoord,
 			const float& objectSize,
-			const float& averagePredictionError) {
-			this->prevCoord = prevCoord;
-			this->nextCoord = nextCoord;
-			this->objectSize = objectSize;
-			this->averagePredictionDeviation = averagePredictionError;
-
-			// Создание синтетического набора данных и обучение
-			generateSyntheticData();
-			trainModel();
-
-			// Подготовка входных данных
-			float displacement = std::sqrt(pow(prevCoord.first - nextCoord.first, 2) +
-				pow(prevCoord.second - nextCoord.second, 2));
-			torch::Tensor input = torch::tensor({ displacement * roiSizeNormFactor * 2 - 1,
-												objectSize * roiSizeNormFactor * 2 - 1,
-												averagePredictionDeviation * roiSizeNormFactor * 2 - 1 },
-				torch::TensorOptions().device(torch::kCPU).dtype(torch::kFloat32));
-			input = input.unsqueeze(0).to(device); // Добавляем размерность батча и переносим на устройство
-
-			// Предсказание размера ROI
-			model->eval();
-			torch::NoGradGuard no_grad;
-			auto predictedSize = model->forward(input).item<float>();
-			predictedSize = (predictedSize + 1) / roiSizeNormFactor / 2;
-
-			if (predictedSize >= objectSize * 1.1) {
-				return predictedSize;
-			}
-			else {
-				return 0;
-			}
-		}
+			const float& averagePredictionError);
 
 	private:
-		void generateSyntheticData() {
-			float baseDisplacement = std::sqrt(pow(prevCoord.first - nextCoord.first, 2) +
-				pow(prevCoord.second - nextCoord.second, 2));
-			std::vector<std::vector<float>> inputData;
-			std::vector<float> targetData;
+		void generateSyntheticData();
 
-			// Создаем рандомайзер для синтетических данных
-			std::random_device rd;
-			std::mt19937 gen(rd());
-
-			// Получаем диапазоны для каждого параметра
-			std::pair<float, float> displacementRange = computeRange(baseDisplacement);
-			std::pair<float, float> objectSizeRange = computeRange(objectSize);
-			std::pair<float, float> deviationRange = computeRange(averagePredictionDeviation);
-
-			std::uniform_real_distribution<> displacementDist(displacementRange.first, displacementRange.second);
-			std::uniform_real_distribution<> sizeDist(objectSizeRange.first, objectSizeRange.second);
-			std::uniform_real_distribution<> deviationDist(deviationRange.first, deviationRange.second);
-
-			for (size_t i = 0; i < sampleSize; ++i) {
-				float displacement = displacementDist(gen);
-				float objectSize = sizeDist(gen);
-				float averagePredictionDeviation = deviationDist(gen);
-				float roiSize = (objectSize + averagePredictionDeviation * 2 + displacement) * 1;
-				inputData.push_back({ displacement, objectSize, averagePredictionDeviation });
-				targetData.push_back(roiSize);
-			}
-
-			float maxRoiSize = 0;
-			for (size_t i = 0; i < sampleSize; ++i) {
-				maxRoiSize = targetData[i] > maxRoiSize ? targetData[i] : maxRoiSize;
-			}
-
-			roiSizeNormFactor = 1 / maxRoiSize;
-
-			for (size_t i = 0; i < sampleSize; ++i) {
-				targetData[i] = targetData[i] * roiSizeNormFactor;
-			}
-
-			// Преобразуем данные в тензоры
-			std::vector<torch::Tensor> tensorList;
-			for (const auto& vec : inputData) {
-				tensorList.push_back(torch::tensor({ vec[0] * roiSizeNormFactor * 2 - 1,
-												   vec[1] * roiSizeNormFactor * 2 - 1,
-												   vec[2] * roiSizeNormFactor * 2 - 1 },
-					torch::TensorOptions().device(torch::kCPU).dtype(torch::kFloat32)));
-			}
-			inputs = torch::stack(tensorList, 0).to(device);
-			targets = torch::tensor(targetData, torch::TensorOptions().device(torch::kCPU).dtype(torch::kFloat32))
-				.unsqueeze(1)
-				.to(device);
-		}
-
-		void trainModel() {
-			model->train();
-			auto optimizer = torch::optim::Adam(model->parameters(), torch::optim::AdamOptions(0.001));
-			for (size_t epoch = 0; epoch < epochs; ++epoch) {
-				optimizer.zero_grad();
-				torch::Tensor output = model->forward(inputs);
-				torch::Tensor loss = torch::mse_loss(output, targets);
-				loss.backward();
-				optimizer.step();
-			}
-		}
+		void trainModel();
 
 		torch::nn::Sequential model;
 		size_t sampleSize;
@@ -1344,128 +1252,61 @@ namespace mrcv
 			cellState = cellState.to(device);
 		}
 
-		void trainLSTMNet(const std::vector<std::pair<float, float>> coordinates, bool isTraining) {
-			std::vector<std::pair<float, float>> coordinatesNormalized = normilizeInput(coordinates);
-			if (!coordinatesNormalized.empty()) {
-				trainingData.clear();
-				for (const auto& coord : coordinatesNormalized) {
-					torch::Tensor input = torch::tensor({ coord.first, coord.second },
-						torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU))
-						.view({ 1, 1, inputSize });
-					trainingData.push_back(input.to(device));
-				}
-			}
+		/**
+		 * @brief Функция обучения LSTM сети
+		 *
+		 * @param coordinates - Вектор входных координат.
+		 * @param imageLeft - Флаг обучения. Используется для дообучения модели. (true - первое обучение, false - дообучение).
+		 */
+		void trainLSTMNet(const std::vector<std::pair<float, float>> coordinates, bool isTraining = false);
 
-			auto criterion = torch::nn::MSELoss();
-			torch::optim::Adam optimizer(lstm->parameters(), torch::optim::AdamOptions(0.001));
-			lstm->train();
-			for (size_t epoch = 0; epoch < 50; ++epoch) {
-				optimizer.zero_grad();
-				torch::Tensor inputs = torch::cat(trainingData, 0).to(device);
-				torch::Tensor targets = inputs.clone();
+		/**
+		 * @brief Функция дообучения LSTM сети
+		 *
+		 * @param coordinate - Входные координаты.
+		 */
+		void continueTraining(const std::pair<float, float> coordinate);
 
-				if (!isTraining) {
-					hiddenState = torch::zeros({ numLayers, 1, hiddenSize }, torch::TensorOptions().dtype(torch::kFloat32).device(device));
-					cellState = torch::zeros({ numLayers, 1, hiddenSize }, torch::TensorOptions().dtype(torch::kFloat32).device(device));
-				}
+		/**
+		 * @brief Функция предсказания следующей координаты
+		 *
+		 * @return - Предсказанные сетью координаты.
+		 */
+		std::pair<float, float> predictNextCoordinate();
 
-				auto outputs_tuple = lstm->forward(inputs, std::make_tuple(hiddenState, cellState));
-				torch::Tensor outputs = std::get<0>(outputs_tuple);
-				auto state_tuple = std::get<1>(outputs_tuple);
-				hiddenState = std::get<0>(state_tuple).detach();
-				cellState = std::get<1>(state_tuple).detach();
+		/**
+		 * @brief Функция получения скользящего среднего отклонения предсказания
+		 *
+		 * @return - Скользящее среднее отклонение предсказания.
+		 */
+		float getMovingAverageDeviation();
 
-				torch::Tensor outputs_linear = linear->forward(outputs.view({ -1, hiddenSize }));
-				outputs_linear = outputs_linear.view({ -1, 1, inputSize });
+		/**
+		 * @brief Функция получения среднего отклонения предсказания
+		 *
+		 * @return - Среднее отклонение предсказания.
+		 */
+		float getAverageDeviation();
 
-				auto loss = criterion(outputs_linear, targets);
-				loss.backward();
-				torch::nn::utils::clip_grad_norm_(lstm->parameters(), 0.1);
-				optimizer.step();
-			}
-		}
+		/**
+		 * @brief Функция получения последнего отклонения предсказания
+		 *
+		 * @return - Последнее отклонение предсказания.
+		 */
+		float getLastDeviation();
 
-		void continueTraining(const std::pair<float, float> coordinate) {
-			coordsReal = coordinate;
-			updateDeviations();
-			std::pair<float, float> coordinate_norm = normilizePair(coordsReal);
-			torch::Tensor input = torch::tensor({ coordinate_norm.first, coordinate_norm.second },
-				torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCPU))
-				.view({ 1, 1, inputSize });
-			trainingData.push_back(input.to(device));
-			if (trainingData.size() > 100) {
-				trainingData.erase(trainingData.begin());
-			}
-			trainLSTMNet({}, true);
-		}
-
-		std::pair<float, float> predictNextCoordinate() {
-			lstm->eval();
-			linear->eval();
-			torch::NoGradGuard no_grad;
-			torch::Tensor inputs = torch::cat(trainingData, 0).to(device);
-			auto lstm_out_tuple = lstm->forward(inputs, std::make_tuple(hiddenState, cellState));
-			torch::Tensor lstm_out = std::get<0>(lstm_out_tuple);
-			torch::Tensor outputs = linear->forward(lstm_out[-1]);
-			coordsPred = denormilizeOutput({ outputs[0][0].item<float>(), outputs[0][1].item<float>() });
-			numPredictions++;
-			return coordsPred;
-		}
-
-		void updateDeviations() {
-			static float movingAvgPredDevSum = 0;
-			static float predDevSum = 0;
-			static int successedPredictions = 0;
-
-			predictionDeviation = std::sqrt(std::pow((coordsPred.first - coordsReal.first), 2) +
-				std::pow((coordsPred.second - coordsReal.second), 2));
-			lastPredictionDeviations.push_back(predictionDeviation);
-			if (numPredictions > movingAvgScale) {
-				movingAvgPredDevSum -= lastPredictionDeviations.front();
-				lastPredictionDeviations.erase(lastPredictionDeviations.begin());
-			}
-			movingAvgPredDevSum += lastPredictionDeviations.back();
-			predDevSum += predictionDeviation;
-			averagePredictionDeviation = predDevSum / numPredictions;
-			movingAvgPredictionDeviation = numPredictions < movingAvgScale ? averagePredictionDeviation : movingAvgPredDevSum / movingAvgScale;
-
-			successedPredictions = movingAvgPredictionDeviation < failsafeDeviation ? successedPredictions + 1 : 0;
-			workState = successedPredictions > failsafeDeviationThreshold;
-		}
-
-		float getMovingAverageDeviation() {
-			return movingAvgPredictionDeviation;
-		}
-
-		float getAverageDeviation() {
-			return averagePredictionDeviation;
-		}
-
-		float getLastDeviation() {
-			return predictionDeviation;
-		}
-
-		bool isWorkState() {
-			return workState;
-		}
-
-		std::pair<float, float> normilizePair(std::pair<float, float> coords) {
-			return std::make_pair(coords.first / imgWidth * 2 - 1, coords.second / imgHeight * 2 - 1);
-		}
-
-		std::vector<std::pair<float, float>> normilizeInput(std::vector<std::pair<float, float>> coords) {
-			std::vector<std::pair<float, float>> coords_norm;
-			for (const auto& coord : coords) {
-				coords_norm.push_back(normilizePair(coord));
-			}
-			return coords_norm;
-		}
-
-		std::pair<float, float> denormilizeOutput(std::pair<float, float> coords) {
-			return { (coords.first + 1) * imgWidth / 2, (coords.second + 1) * imgHeight / 2 };
-		}
+		/**
+		 * @brief Функция получения статуса рабочего состояния
+		 *
+		 * @return - Состояние модели (true - сеть вышла на рабочий режим, false - сеть в состоянии обучения).
+		 */
+		bool isWorkState();
 
 	private:
+		std::pair<float, float> normilizePair(std::pair<float, float> coords);
+		std::vector<std::pair<float, float>> normilizeInput(std::vector<std::pair<float, float>> coords);
+		std::pair<float, float> denormilizeOutput(std::pair<float, float> coords);
+		void updateDeviations();
 		int64_t hiddenSize;
 		int64_t numLayers;
 		unsigned int pointsNumber;
@@ -1491,7 +1332,52 @@ namespace mrcv
 		torch::Device device;
 	};
 
-	
+	class DenseStereoCuda {
+	public:
+	public:
+		/**
+		 * @brief Выполняет кластеризацию загруженных данных.
+		 *
+		 * Функция для выполнения кластеризации данных, хранящихся
+		 * в `vuxyzrgb`. Результаты кластеризации сохраняются в `IDX`.
+		 */
+		void makeClustering();
+
+		/**
+		 * @brief Загружает данные из файла.
+		 *
+		 * Функция считывает данные из указанного файла и сохраняет их
+		 * во внутренней структуре `vuxyzrgb`.
+		 *
+		 * @param filename Имя файла, из которого будут загружены данные.
+		 */
+		void loadDataFromFile(const std::string& filename);
+
+		/**
+		 * @brief Печатает информацию о кластерах.
+		 *
+		 * Функция выводит на экран информацию о кластерах,
+		 * сформированных в результате выполнения кластеризации.
+		 */
+		void printClusters();
+
+	private:
+		/**
+		 * @brief Класс для хранения координат точек.
+		 *
+		 * В этом классе сохраняются трехмерные координаты точек,
+		 * используемых в процессе кластеризации.
+		 */
+		class Vuxyzrgb {
+		public:
+			std::vector<std::vector<double>> xyz; ///< Трехмерные координаты точек.
+		};
+
+		Vuxyzrgb vuxyzrgb; ///< Экземпляр класса для хранения данных.
+		std::mutex vuxyzrgb_mutex; ///< Мьютекс для защиты данных `vuxyzrgb`.
+
+		std::vector<int> IDX; ///< Вектор индексов кластеров для каждой точки.
+	};
 
 #endif
 

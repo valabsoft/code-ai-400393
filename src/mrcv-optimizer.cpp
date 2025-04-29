@@ -1,4 +1,4 @@
-#include "mrcv/mrcv.h"
+п»ї#include "mrcv/mrcv.h"
 
 static std::pair<float, float> computeRange(const float& baseValue)
 {
@@ -16,14 +16,14 @@ namespace mrcv
 {
     void Optimizer::generateSyntheticData() 
     {
-        float baseDisplacement = std::sqrt(pow(prevCoord.first - nextCoord.first, 2) + pow(prevCoord.second - nextCoord.second, 2));    // Смещение объекта 
+        float baseDisplacement = std::sqrt(pow(prevCoord.first - nextCoord.first, 2) + pow(prevCoord.second - nextCoord.second, 2));    // РЎРјРµС‰РµРЅРёРµ РѕР±СЉРµРєС‚Р° 
         std::vector<std::vector<float>> inputData;
         std::vector<float> targetData;
-        // Создаем рандомайзер для создание синтетических даных
+        // РЎРѕР·РґР°РµРј СЂР°РЅРґРѕРјР°Р№Р·РµСЂ РґР»СЏ СЃРѕР·РґР°РЅРёРµ СЃРёРЅС‚РµС‚РёС‡РµСЃРєРёС… РґР°РЅС‹С…
         std::random_device rd;
         std::mt19937 gen(rd());
 
-        // Получаем диапазоны для каждого параметра
+        // РџРѕР»СѓС‡Р°РµРј РґРёР°РїР°Р·РѕРЅС‹ РґР»СЏ РєР°Р¶РґРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
         std::pair<float, float> displacementRange = computeRange(baseDisplacement);
         std::pair<float, float> objectSizeRange = computeRange(objectSize);
         std::pair<float, float> deviationRange = computeRange(averagePredictionDeviation);
@@ -34,15 +34,15 @@ namespace mrcv
 
         for (size_t i = 0; i < sampleSize; ++i) 
         {
-            // Генерируем параметры в диапазоне ±50% от базовых значений
+            // Р“РµРЅРµСЂРёСЂСѓРµРј РїР°СЂР°РјРµС‚СЂС‹ РІ РґРёР°РїР°Р·РѕРЅРµ В±50% РѕС‚ Р±Р°Р·РѕРІС‹С… Р·РЅР°С‡РµРЅРёР№
             float displacement = displacementDist(gen);
             float objectSize = sizeDist(gen);
             float averagePredictionDeviation = deviationDist(gen);
-            // Вычисляем необходимый размер ROI
+            // Р’С‹С‡РёСЃР»СЏРµРј РЅРµРѕР±С…РѕРґРёРјС‹Р№ СЂР°Р·РјРµСЂ ROI
             float roiSize = (objectSize + averagePredictionDeviation * 2 + displacement)*1;
-            // Собираем входные данные
+            // РЎРѕР±РёСЂР°РµРј РІС…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ
             inputData.push_back({ displacement, objectSize, averagePredictionDeviation });
-            // Целевое значение - рассчитанный размер ROI
+            // Р¦РµР»РµРІРѕРµ Р·РЅР°С‡РµРЅРёРµ - СЂР°СЃСЃС‡РёС‚Р°РЅРЅС‹Р№ СЂР°Р·РјРµСЂ ROI
             targetData.push_back(roiSize);
         }
 
@@ -59,7 +59,7 @@ namespace mrcv
         {
             targetData[i] = targetData[i] * roiSizeNormFactor;
         }
-        // Преобразуем данные в тензоры
+        // РџСЂРµРѕР±СЂР°Р·СѓРµРј РґР°РЅРЅС‹Рµ РІ С‚РµРЅР·РѕСЂС‹
         std::vector<torch::Tensor> tensorList;
         for (const auto& vec : inputData) 
         {
@@ -94,13 +94,13 @@ namespace mrcv
         nextCoord = _nextCoord;
         objectSize = _objectSize;
         averagePredictionDeviation = _averagePredictionError;
-        // Создание синтетического набора данных для обучения
+        // РЎРѕР·РґР°РЅРёРµ СЃРёРЅС‚РµС‚РёС‡РµСЃРєРѕРіРѕ РЅР°Р±РѕСЂР° РґР°РЅРЅС‹С… РґР»СЏ РѕР±СѓС‡РµРЅРёСЏ
         generateSyntheticData();
-        // Подготовка входных данных
+        // РџРѕРґРіРѕС‚РѕРІРєР° РІС…РѕРґРЅС‹С… РґР°РЅРЅС‹С…
         float displacement = std::sqrt(pow(prevCoord.first - nextCoord.first, 2) + pow(prevCoord.second - nextCoord.second, 2));
         torch::Tensor input = torch::tensor({ displacement * roiSizeNormFactor * 2 - 1, objectSize * roiSizeNormFactor * 2 - 1, averagePredictionDeviation * roiSizeNormFactor * 2 - 1 });
-        input = input.unsqueeze(0); // Добавляем размерность батча
-        // Предсказание размера ROI
+        input = input.unsqueeze(0); // Р”РѕР±Р°РІР»СЏРµРј СЂР°Р·РјРµСЂРЅРѕСЃС‚СЊ Р±Р°С‚С‡Р°
+        // РџСЂРµРґСЃРєР°Р·Р°РЅРёРµ СЂР°Р·РјРµСЂР° ROI
         model->eval();
         auto predictedSize = model->forward(input).item<float>();
         predictedSize = (predictedSize + 1) / roiSizeNormFactor / 2 ;        
@@ -114,4 +114,107 @@ namespace mrcv
         }
         
     }
+
+#ifdef MRCV_CUDA_ENABLED 
+    float OptimizerCuda::optimizeRoiSize(const std::pair<float, float>& prevCoord,
+        const std::pair<float, float>& nextCoord,
+        const float& objectSize,
+        const float& averagePredictionError) {
+        this->prevCoord = prevCoord;
+        this->nextCoord = nextCoord;
+        this->objectSize = objectSize;
+        this->averagePredictionDeviation = averagePredictionError;
+
+        // РЎРѕР·РґР°РЅРёРµ СЃРёРЅС‚РµС‚РёС‡РµСЃРєРѕРіРѕ РЅР°Р±РѕСЂР° РґР°РЅРЅС‹С… Рё РѕР±СѓС‡РµРЅРёРµ
+        generateSyntheticData();
+        trainModel();
+
+        // РџРѕРґРіРѕС‚РѕРІРєР° РІС…РѕРґРЅС‹С… РґР°РЅРЅС‹С…
+        float displacement = std::sqrt(pow(prevCoord.first - nextCoord.first, 2) +
+            pow(prevCoord.second - nextCoord.second, 2));
+        torch::Tensor input = torch::tensor({ displacement * roiSizeNormFactor * 2 - 1,
+                                            objectSize * roiSizeNormFactor * 2 - 1,
+                                            averagePredictionDeviation * roiSizeNormFactor * 2 - 1 },
+            torch::TensorOptions().device(torch::kCPU).dtype(torch::kFloat32));
+        input = input.unsqueeze(0).to(device); // Р”РѕР±Р°РІР»СЏРµРј СЂР°Р·РјРµСЂРЅРѕСЃС‚СЊ Р±Р°С‚С‡Р° Рё РїРµСЂРµРЅРѕСЃРёРј РЅР° СѓСЃС‚СЂРѕР№СЃС‚РІРѕ
+
+        // РџСЂРµРґСЃРєР°Р·Р°РЅРёРµ СЂР°Р·РјРµСЂР° ROI
+        model->eval();
+        torch::NoGradGuard no_grad;
+        auto predictedSize = model->forward(input).item<float>();
+        predictedSize = (predictedSize + 1) / roiSizeNormFactor / 2;
+
+        if (predictedSize >= objectSize * 1.1) {
+            return predictedSize;
+        }
+        else {
+            return 0;
+        }
+    }
+
+    void OptimizerCuda::generateSyntheticData() {
+        float baseDisplacement = std::sqrt(pow(prevCoord.first - nextCoord.first, 2) +
+            pow(prevCoord.second - nextCoord.second, 2));
+        std::vector<std::vector<float>> inputData;
+        std::vector<float> targetData;
+
+        // РЎРѕР·РґР°РµРј СЂР°РЅРґРѕРјР°Р№Р·РµСЂ РґР»СЏ СЃРёРЅС‚РµС‚РёС‡РµСЃРєРёС… РґР°РЅРЅС‹С…
+        std::random_device rd;
+        std::mt19937 gen(rd());
+
+        // РџРѕР»СѓС‡Р°РµРј РґРёР°РїР°Р·РѕРЅС‹ РґР»СЏ РєР°Р¶РґРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
+        std::pair<float, float> displacementRange = computeRange(baseDisplacement);
+        std::pair<float, float> objectSizeRange = computeRange(objectSize);
+        std::pair<float, float> deviationRange = computeRange(averagePredictionDeviation);
+
+        std::uniform_real_distribution<> displacementDist(displacementRange.first, displacementRange.second);
+        std::uniform_real_distribution<> sizeDist(objectSizeRange.first, objectSizeRange.second);
+        std::uniform_real_distribution<> deviationDist(deviationRange.first, deviationRange.second);
+
+        for (size_t i = 0; i < sampleSize; ++i) {
+            float displacement = displacementDist(gen);
+            float objectSize = sizeDist(gen);
+            float averagePredictionDeviation = deviationDist(gen);
+            float roiSize = (objectSize + averagePredictionDeviation * 2 + displacement) * 1;
+            inputData.push_back({ displacement, objectSize, averagePredictionDeviation });
+            targetData.push_back(roiSize);
+        }
+
+        float maxRoiSize = 0;
+        for (size_t i = 0; i < sampleSize; ++i) {
+            maxRoiSize = targetData[i] > maxRoiSize ? targetData[i] : maxRoiSize;
+        }
+
+        roiSizeNormFactor = 1 / maxRoiSize;
+
+        for (size_t i = 0; i < sampleSize; ++i) {
+            targetData[i] = targetData[i] * roiSizeNormFactor;
+        }
+
+        // РџСЂРµРѕР±СЂР°Р·СѓРµРј РґР°РЅРЅС‹Рµ РІ С‚РµРЅР·РѕСЂС‹
+        std::vector<torch::Tensor> tensorList;
+        for (const auto& vec : inputData) {
+            tensorList.push_back(torch::tensor({ vec[0] * roiSizeNormFactor * 2 - 1,
+                                               vec[1] * roiSizeNormFactor * 2 - 1,
+                                               vec[2] * roiSizeNormFactor * 2 - 1 },
+                torch::TensorOptions().device(torch::kCPU).dtype(torch::kFloat32)));
+        }
+        inputs = torch::stack(tensorList, 0).to(device);
+        targets = torch::tensor(targetData, torch::TensorOptions().device(torch::kCPU).dtype(torch::kFloat32))
+            .unsqueeze(1)
+            .to(device);
+    }
+
+    void OptimizerCuda::trainModel() {
+        model->train();
+        auto optimizer = torch::optim::Adam(model->parameters(), torch::optim::AdamOptions(0.001));
+        for (size_t epoch = 0; epoch < epochs; ++epoch) {
+            optimizer.zero_grad();
+            torch::Tensor output = model->forward(inputs);
+            torch::Tensor loss = torch::mse_loss(output, targets);
+            loss.backward();
+            optimizer.step();
+        }
+    }
+#endif
 }
