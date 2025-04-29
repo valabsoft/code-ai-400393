@@ -15,6 +15,8 @@
 #include <sys/stat.h>
 #include <vector>
 #include <math.h>
+#include <random>
+#include <map>
 
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
@@ -317,7 +319,21 @@ namespace mrcv
 		ROTATE_IMAGE_270,
 		ROTATE_IMAGE_315,
 		FLIP_HORIZONTAL_AND_VERTICAL,
+		BRIGHTNESS_CONTRAST_ADJUST,
+    GAUSSIAN_NOISE,
+    COLOR_JITTER,
+    GAUSSIAN_BLUR,
+    RANDOM_CROP,
+    PERSPECTIVE_WARP,
 		TEST
+	};
+
+	// Конфигурация пакетной аугментации с процентным распределением
+	struct BatchAugmentationConfig {
+		std::map<AUGMENTATION_METHOD, double> method_weights;
+		bool keep_original = true;
+		int total_output_count = 0;
+		int random_seed = 42;
 	};
 
 	enum class DISPARITY_TYPE
