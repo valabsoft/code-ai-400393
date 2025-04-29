@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(mrcv-sensorsfusion LANGUAGES CXX)
+project(mrcv-extractfeature LANGUAGES CXX)
 
 include("../../cmake/utils.cmake")
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_level)
@@ -19,10 +19,10 @@ endif()
 set(sources main.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
-add_executable(mrcv-sensorsfusion)
-target_sources(mrcv-sensorsfusion PRIVATE ${sources})
-target_link_libraries(mrcv-sensorsfusion PRIVATE mrcv::mrcv)
+add_executable(mrcv-extractfeature)
+target_sources(mrcv-extractfeature PRIVATE ${sources})
+target_link_libraries(mrcv-extractfeature PRIVATE mrcv::mrcv)
 
 if(NOT is_top_level)
-    win_copy_deps_to_target_dir(mrcv-sensorsfusion mrcv::mrcv)
+    win_copy_deps_to_target_dir(mrcv-extractfeature mrcv::mrcv)
 endif()

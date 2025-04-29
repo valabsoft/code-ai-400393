@@ -1052,7 +1052,16 @@ namespace mrcv
 	MRCV_EXPORT int fuseSensorData(const std::string& usblPath, const std::string& imuPath,
 		const std::string& camFolder, const std::string& outYAML, bool visFlag);
 	
-		
+	/** 
+	* @brief Функция формирования вектора признаков из комплексированных данных
+	* 
+	* @param fusedDataPath		- путь к файлу с комплексированными данными
+	* @param camFolder			- путь к папке с изображениями
+	* @param extractedDataPath	- путь для сохранения веткторов признаков
+	* 
+	* @return - код результата работы функции. 0 - успех, 1 - ошибка загрузки файла с комплексированными данными
+	*/
+	MRCV_EXPORT int extractFeatureVector(const std::string& fusedDataPath, const std::string& camFolder, const std::string& extractedDataPath);
 }
 
         

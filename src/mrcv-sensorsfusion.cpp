@@ -1,56 +1,62 @@
-#include "mrcv/mrcv-sensorsfusion.h"
+п»ї#include "mrcv/mrcv-sensorsfusion.h"
 #include <mrcv/mrcv.h>
 
 
 namespace mrcv
 {
-    // Функция синтаксического анализа временных меток 
+    // Р¤СѓРЅРєС†РёСЏ СЃРёРЅС‚Р°РєСЃРёС‡РµСЃРєРѕРіРѕ Р°РЅР°Р»РёР·Р° РІСЂРµРјРµРЅРЅС‹С… РјРµС‚РѕРє
     std::chrono::system_clock::time_point parseTimestamp(const std::string& input) {
-        std::cout << "Parsing input: " << input << std::endl;
 
-        // Регулярное выражение для формата кадров: L_ГГ-ММ-ДД_ЧЧ-ММ-СС или R_ГГ-ММ-ДД_ЧЧ-ММ-СС
-        std::regex frame_re(R"((L|R)_(\d{2})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})(?:\.\w+)?)");
-        // Регулярное выражение для формата USBL: ГГГГ-ММ-ДД ЧЧ:ММ:СС
-        std::regex usbl_re(R"((\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2}))");
+        // Р РµРіСѓР»СЏСЂРЅРѕРµ РІС‹СЂР°Р¶РµРЅРёРµ РґР»СЏ С„РѕСЂРјР°С‚Р° РєР°РґСЂРѕРІ: L/R_Р“Р“-РњРњ-Р”Р”_Р§Р§-РњРњ-РЎРЎ
+        std::regex frameRe(R"((L|R)_(\d{2})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})(?:\.\w+)?)");
+        // Р РµРіСѓР»СЏСЂРЅРѕРµ РІС‹СЂР°Р¶РµРЅРёРµ РґР»СЏ С„РѕСЂРјР°С‚Р° USBL: Р“Р“Р“Р“-РњРњ-Р”Р” Р§Р§:РњРњ:РЎРЎ
+        std::regex usblRe(R"((\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2}))");
 
         std::smatch match;
         int year, month, day, hour, minute, second;
 
-        try {
-            // Проверяем формат кадров
-            if (std::regex_match(input, match, frame_re)) {
-                if (match.size() != 8) {
+        try 
+        {
+            // РџСЂРѕРІРµСЂРєР° С„РѕСЂРјР°С‚Р° РєР°РґСЂРѕРІ
+            if (std::regex_match(input, match, frameRe)) 
+            {
+                if (match.size() != 8) 
+                {
                     throw std::runtime_error("Unexpected number of matches for frame format in: " + input);
 
                 }
 
-                year = std::stoi(match[2]) + 2000; // ГГ -> ГГГГ (например, 25 -> 2025)
+                year = std::stoi(match[2]) + 2000; // РїРµСЂРµРІРѕРґ С„РѕСЂРјР°С‚Р° РіРѕРґР° Р“Р“ -> Р“Р“Р“Р“Р“
                 month = std::stoi(match[3]);
                 day = std::stoi(match[4]);
                 hour = std::stoi(match[5]);
                 minute = std::stoi(match[6]);
                 second = std::stoi(match[7]);
             }
-            // Проверяем формат USBL
-            else if (std::regex_match(input, match, usbl_re)) {
-                if (match.size() != 7) {
+            // РџСЂРѕРІРµСЂРєР° С„РѕСЂРјР°С‚Р° USBL
+            else if (std::regex_match(input, match, usblRe)) 
+            {
+                if (match.size() != 7) 
+                {
                     throw std::runtime_error("Unexpected number of matches for USBL format in: " + input);
                 }
 
-                year = std::stoi(match[1]); // ГГГГ
+                year = std::stoi(match[1]);
                 month = std::stoi(match[2]);
                 day = std::stoi(match[3]);
                 hour = std::stoi(match[4]);
                 minute = std::stoi(match[5]);
                 second = std::stoi(match[6]);
             }
-            else {
+            else 
+            {
                 throw std::runtime_error("Input does not match any supported timestamp format: " + input);
             }
 
-            // Проверка диапазонов
+            // РџСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅРѕРІ РґР°С‚
             if (month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 ||
-                minute < 0 || minute > 59 || second < 0 || second > 59) {
+                minute < 0 || minute > 59 || second < 0 || second > 59) 
+            {
                 throw std::runtime_error("Invalid date/time values in: " + input);
             }
 
@@ -63,73 +69,81 @@ namespace mrcv
             tm.tm_sec = second;
 
             std::time_t time = std::mktime(&tm);
-            if (time == -1) {
+            if (time == -1) 
+            {
                 throw std::runtime_error("Failed to convert timestamp to time_t: " + input);
             }
 
             return std::chrono::system_clock::from_time_t(time);
         }
-        catch (const std::invalid_argument& e) {
+        catch (const std::invalid_argument& e) 
+        {
             throw std::runtime_error("Invalid stoi argument for input: " + input + ", error: " + e.what());
         }
-        catch (const std::out_of_range& e) {
+        catch (const std::out_of_range& e) 
+        {
             throw std::runtime_error("Out of range in stoi for input: " + input + ", error: " + e.what());
         }
     }
 
-    // Загрузка данных с USBL системы
+    // Р—Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С… СЃ USBL СЃРёСЃС‚РµРјС‹
     std::vector<USBLData> loadAcousticCSV(const std::string& filename)
     {
-        if (!std::filesystem::exists(filename)) {
+        if (!std::filesystem::exists(filename)) 
+        {
             std::cerr << "File does not exist: " << filename << std::endl;
             return {};
         }
 
         std::ifstream file(filename);
-        if (!file.is_open()) {
+        if (!file.is_open()) 
+        {
             std::cerr << "Error while opening file: " << filename << std::endl;
             return {};
         }
-        else {
+        else 
+        {
             std::cout << "File was opened: " << filename << std::endl;
         }
 
         std::string line;
         std::vector<USBLData> entries;
 
-        std::getline(file, line); // Пропуск заголовка
+        std::getline(file, line); // РџСЂРѕРїСѓСЃРє Р·Р°РіРѕР»РѕРІРєРѕРІ
 
         while (std::getline(file, line))
         {
             if (line.empty()) continue;
 
-            //std::cout << "Raw line: [" << line << "]" << std::endl;
-
-            // Удаляем кавычки из строки, если они есть
-            if (!line.empty() && line.front() == '"' && line.back() == '"') {
+            // РЈРґР°Р»РµРЅРёРµ РєР°РІС‹С‡РµРє РёР· СЃС‚СЂРѕРєРё, РµСЃР»Рё РѕРЅРё РµСЃС‚СЊ
+            if (!line.empty() && line.front() == '"' && line.back() == '"') 
+            {
                 line = line.substr(1, line.length() - 2);
             }
 
-            // Извлекаем временную метку (первые 19 символов: ГГГГ-ММ-ДД ЧЧ:ММ:СС)
-            if (line.length() < 19) {
+            // РР·РІР»РµС‡РµРЅРёРµ РІСЂРµРјРµРЅРЅРѕР№ РјРµС‚РєРё (РїРµСЂРІС‹Рµ 19 СЃРёРјРІРѕР»РѕРІ: Р“Р“Р“Р“-РњРњ-Р”Р” Р§Р§:РњРњ:РЎРЎ)
+            if (line.length() < 19) 
+            {
                 std::cerr << "Skipping invalid line (too short for timestamp): " << line << std::endl;
                 continue;
             }
-            std::string datetime = line.substr(0, 19); // "ГГГГ-ММ-ДД ЧЧ:ММ:СС" = 19 символов
-            std::string rest = line.substr(20); // Пропускаем пробел после временной метки
+            std::string datetime = line.substr(0, 19);
+            std::string rest = line.substr(20); // РџСЂРѕРїСѓСЃРє РїСЂРѕР±РµР»Р° РїРѕСЃР»Рµ РІСЂРµРјРµРЅРЅРѕР№ РјРµС‚РєРё
 
-            // Разбиваем остальную часть строки на токены по пробелам
+            // Р Р°Р·Р±РёРµРЅРёРµ СЃС‚СЂРѕРєРё РЅР° С‚РѕРєРµРЅС‹
             std::regex delim(R"([ ]+)");
             std::sregex_token_iterator it(rest.begin(), rest.end(), delim, -1);
             std::sregex_token_iterator end;
             std::vector<std::string> tokens(it, end);
 
-            if (tokens.size() < 9) {
+            if (tokens.size() < 9) 
+            {
                 std::cerr << "Skipping invalid line (not enough tokens): " << line << std::endl;
                 continue;
             }
 
-            try {
+            try 
+            {
                 USBLData entry;
                 entry.datetime = datetime;
                 entry.x = std::stod(tokens[0]);
@@ -144,47 +158,57 @@ namespace mrcv
 
                 entries.push_back(entry);
             }
-            catch (const std::exception& e) {
+            catch (const std::exception& e) 
+            {
                 std::cerr << "Error parsing line: " << line << ", error: " << e.what() << std::endl;
                 continue;
             }
         }
 
-        if (entries.empty()) {
+        if (entries.empty()) 
+        {
             std::cerr << "No valid USBL data loaded from " << filename << std::endl;
         }
-        else {
+        else 
+        {
             std::cout << "Loaded " << entries.size() << " USBL entries" << std::endl;
         }
 
         return entries;
     }
 
-    // Загрузка данных с СТЗ (Системы Технического Зрения)
-    std::vector<CameraFrame> loadCameraFrames(const std::filesystem::path& folderPath) {
+    // Р—Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С… СЃ СЃРёСЃС‚РµРјС‹ С‚РµС…РЅРёС‡РµСЃРєРѕРіРѕ Р·СЂРµРЅРёСЏ
+    std::vector<CameraFrame> loadCameraFrames(const std::filesystem::path& folderPath) 
+    {
         std::vector<CameraFrame> frames;
 
         writeLog("Loading frames from folder:" + folderPath.u8string(), LOGTYPE::INFO);
-        for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
-            if (entry.is_regular_file()) {
+        for (const auto& entry : std::filesystem::directory_iterator(folderPath)) 
+        {
+            if (entry.is_regular_file()) 
+            {
                 std::string filename = entry.path().filename().string();
                 std::string ext = entry.path().extension().string();
 
-                if (ext != ".png" && ext != ".jpg") {
+                if (ext != ".png" && ext != ".jpg") 
+                {
                     std::cerr << "Skipping non-image file: " << filename << std::endl;
                     writeLog("Skipping non-image file: " + filename, LOGTYPE::ERROR);
                     continue;
                 }
-                if (filename.substr(0, 2) != "L_" && filename.substr(0, 2) != "R_") {
+                if (filename.substr(0, 2) != "L_" && filename.substr(0, 2) != "R_") 
+                {
                     std::cerr << "Skipping file with invalid prefix: " << filename << std::endl;
                     writeLog("Skipping file with invalid prefix: " + filename, LOGTYPE::ERROR);
                     continue;
                 }
 
-                try {
+                try 
+                {
                     CameraFrame frame;
                     frame.image = cv::imread(entry.path().string(), cv::IMREAD_COLOR);
-                    if (frame.image.empty()) {
+                    if (frame.image.empty()) 
+                    {
                         std::cerr << "Failed to load image: " << filename << std::endl;
                         writeLog("Failed to load image: " + filename, LOGTYPE::ERROR);
                         continue;
@@ -193,18 +217,21 @@ namespace mrcv
                     frame.filename = filename;
                     frames.push_back(frame);
                 }
-                catch (const std::exception& e) {
+                catch (const std::exception& e) 
+                {
                     std::cerr << "Skipping frame " << filename << ": " << e.what() << std::endl;
                     writeLog("Skipping frame " + filename + ": " + std::string(e.what()),mrcv::LOGTYPE::EXCEPTION);
                 }
             }
         }
 
-        if (frames.empty()) {
+        if (frames.empty()) 
+        {
             std::cerr << "Error: No valid frames loaded from folder: " << folderPath << std::endl;
             writeLog("Error: No valid frames loaded from folder: " + folderPath.u8string(), LOGTYPE::ERROR);
         }
-        else {
+        else 
+        {
             std::cout << "Loaded " << frames.size() << " valid frames" << std::endl;
             writeLog("Loaded valid frames: " + frames.size(), mrcv::LOGTYPE::INFO);
         }
@@ -212,7 +239,7 @@ namespace mrcv
         return frames;
     }
 
-    // Загрузка данных с инерциальной системы аппарата
+    // Р—Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С… СЃ РёРЅРµСЂС†РёР°Р»СЊРЅРѕР№ СЃРёСЃС‚РµРјС‹ Р°РїРїР°СЂР°С‚Р°
     std::vector<IMUData> loadIMUData(const std::string& csvFile)
     {
         std::vector<IMUData> imuData;
@@ -220,7 +247,9 @@ namespace mrcv
         std::string line;
 
         writeLog("Loading IMU data from file:" + csvFile, LOGTYPE::INFO);
-        while (std::getline(file, line)) {
+
+        while (std::getline(file, line)) 
+        {
             std::istringstream ss(line);
             std::string timeStr;
 
@@ -252,16 +281,18 @@ namespace mrcv
         return imuData;
     }
 
-    // Поиск ближайшего к временной метке значения от IMU
+    // РџРѕРёСЃРє Р±Р»РёР¶Р°Р№С€РµРіРѕ Рє РІСЂРµРјРµРЅРЅРѕР№ РјРµС‚РєРµ Р·РЅР°С‡РµРЅРёСЏ РѕС‚ IMU
     const IMUData* findNearestIMU(std::chrono::system_clock::time_point& ts,
         const std::vector<IMUData>& imuData)
     {
         const IMUData* nearest = nullptr;
-        auto minDiff = std::chrono::milliseconds(100000); // произвольно большое значение
+        auto minDiff = std::chrono::milliseconds(100000);
 
-        for (const auto& imu : imuData) {
+        for (const auto& imu : imuData) 
+        {
             auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(ts - imu.timestamp);
-            if (std::abs(diff.count()) < std::abs(minDiff.count())) {
+            if (std::abs(diff.count()) < std::abs(minDiff.count())) 
+            {
                 minDiff = diff;
                 nearest = &imu;
             }
@@ -269,16 +300,18 @@ namespace mrcv
         return nearest;
     }
 
-    // Поиск ближайшего к временной метке значения от Камеры
+    // РџРѕРёСЃРє РєР°РґСЂР° СЃ РІСЂРµРјРµРЅРЅРѕР№ РјРµС‚РєРѕР№, Р±Р»РёР·РєРѕР№ Рє Р·Р°РґР°РЅРЅРѕР№
     const CameraFrame* findNearestFrame(std::chrono::system_clock::time_point& ts,
         const std::vector<CameraFrame>& frames)
     {
         const CameraFrame* nearest = nullptr;
-        auto minDiff = std::chrono::milliseconds(100000); // произвольно большое значение
+        auto minDiff = std::chrono::milliseconds(100000);
 
-        for (const auto& frame : frames) {
+        for (const auto& frame : frames) 
+        {
             auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(ts - frame.timestamp);
-            if (std::abs(diff.count()) < std::abs(minDiff.count())) {
+            if (std::abs(diff.count()) < std::abs(minDiff.count())) 
+            {
                 minDiff = diff;
                 nearest = &frame;
             }
@@ -286,23 +319,27 @@ namespace mrcv
         return nearest;
     }
 
-    // Поиск ближайшего к временной метке значения от USBL
+    // РџРѕРёСЃРє Р·РЅР°С‡РµРЅРёСЏ USBL РїРѕ Р±Р»РёР¶Р°Р№С€РµР№ РІСЂРµРјРµРЅРЅРѕР№ РјРµС‚РєРµ
     const USBLData* findNearestUSBL(std::chrono::system_clock::time_point& ts,
         const std::vector<USBLData>& usblData)
     {
         const USBLData* nearest = nullptr;
         auto minDiff = std::chrono::milliseconds(100000);
 
-        for (const auto& usbl : usblData) {
-            try {
+        for (const auto& usbl : usblData) 
+        {
+            try 
+            {
                 auto usblTs = parseTimestamp(usbl.datetime);
                 auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(ts - usblTs);
-                if (std::abs(diff.count()) < std::abs(minDiff.count())) {
+                if (std::abs(diff.count()) < std::abs(minDiff.count())) 
+                {
                     minDiff = diff;
                     nearest = &usbl;
                 }
             }
-            catch (const std::exception& e) {
+            catch (const std::exception& e) 
+            {
                 std::cerr << "Error parsing USBL datetime " << usbl.datetime << ": " << e.what() << std::endl;
                 continue;
             }
@@ -310,22 +347,26 @@ namespace mrcv
         return nearest;
     }
 
-    // Функция для визуализации результата
+    // Р¤СѓРЅРєС†РёСЏ РІРёР·СѓР°Р»РёР·Р°С†РёРё СЂРµР·СѓР»СЊС‚Р°С‚Р° 
     void visualizeResult(const std::string& yamlFile, const std::string& frameFolder)
     {
         YAML::Node root;
-        try {
+        try 
+        {
             root = YAML::LoadFile(yamlFile);
         }
-        catch (const std::exception& e) {
+        catch (const std::exception& e) 
+        {
             std::cerr << "YAML Load error: " << e.what() << std::endl;
             writeLog("YAML Load error: " + std::string(e.what()), mrcv::LOGTYPE::ERROR);
             return;
         }
 
-        for (const auto& entry : root) {
-            try {
-                auto timestamp_ms = entry["timestamp"].as<long long>();
+        for (const auto& entry : root) 
+        {
+            try 
+            {
+                auto timestampMs = entry["timestamp"].as<long long>();
                 auto accel = entry["accel"].as<std::vector<double>>();
                 auto gyro = entry["gyro"].as<std::vector<double>>();
                 auto relativeCoords = entry["relativeCoords"].as<std::vector<double>>();
@@ -334,125 +375,136 @@ namespace mrcv
                 auto remoteDepth = entry["remoteDepth"].as<float>();
                 auto imageName = entry["image"].as<std::string>();
 
-                // Загрузка изображения
+                // РџРѕРґРіСЂСѓР·РєР° РёР·РѕР±СЂР°Р¶РµРЅРёР№
                 std::filesystem::path imagePath = std::filesystem::path(frameFolder) / imageName;
                 cv::Mat image = cv::imread(imagePath.string());
-                if (image.empty()) {
+                if (image.empty()) 
+                {
                     std::cerr << "Failed to load image: " << imagePath << std::endl;
                     writeLog("Failed to load image: " + imagePath.string(), mrcv::LOGTYPE::ERROR);
                     continue;
                 }
 
-                // Центр изображения
+                // РџРѕР»СѓС‡РµРЅРёРµ РєРѕРѕСЂРґРёРЅР°С‚ С†РµРЅС‚СЂР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
                 int cx = image.cols / 2;
                 int cy = image.rows / 2;
 
-                // Угол рысканья (yaw) из IMU (предполагается, что gyro[2] — угол в радианах)
+                // РџРµСЂРµСЃС‡С‘С‚ СѓРіР»Р° СЂС‹СЃРєР°РЅСЊСЏ (yaw) РёР· IMU
                 float yaw = static_cast<float>(gyro[2]);
-                // Примечание: Если gyro[2] — угловая скорость (рад/с), нужно интегрировать:
-                // yaw = integrate_gyro_z(gyro[2], previous_yaw, time_delta);
 
-                // Относительные координаты USBL
-                float x = relativeCoords[0]; // X (вправо/влево)
-                float y = relativeCoords[1]; // Y (вперёд/назад)
-                float z = relativeCoords[2]; // Z (относительная глубина)
+                // РћРЅРѕСЃРёС‚РµР»СЊРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ СѓРґР°Р»С‘РЅРЅРѕРіРѕ СѓСЃС‚СЂРѕР№С‚СЃРІР° (USBL)
+                float x = relativeCoords[0]; 
+                float y = relativeCoords[1]; 
+                float z = relativeCoords[2];
 
-                // Пересчёт координат с учётом yaw
+                // РџРµСЂРµСЃС‡С‘С‚ РєРѕРѕСЂРґРёРЅР°С‚ СЃ СѓС‡С‘С‚РѕРј С‚РµРєСѓС‰РµРіРѕ РєСѓСЂСЃРѕРІРѕРіРѕ СѓРіР»Р° Р°РїРїР°СЂР°С‚Р° (yaw)
                 cv::Point2f relativePoint(
-                    x * std::cos(-yaw) - y * std::sin(-yaw), // X' в системе камеры
-                    x * std::sin(-yaw) + y * std::cos(-yaw)  // Y' в системе камеры
+                    x * std::cos(-yaw) - y * std::sin(-yaw), // X' РІ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹
+                    x * std::sin(-yaw) + y * std::cos(-yaw)  // Y' РІ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹
                 );
 
-                // Масштабирование для проекции на изображение
-                float scale = 10.0f; // Масштаб (настраиваемый)
+                // РњР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ РґР»СЏ РїСЂРѕРµРєС†РёРё РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+                float scale = 10.0f;
                 cv::Point2f pointer(cx + relativePoint.x * scale, cy - relativePoint.y * scale);
 
-                // Проверка направления с использованием азимута
-                float azimuth_rad = azimuth * (CV_PI / 180.0f); // Азимут в радианах
+                // РџСЂРѕРІРµСЂРєР° РЅР°РїСЂР°РІР»РµРЅРёСЏ СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј Р°Р·РёРјСѓС‚Р°
+                float azimuthRad = azimuth * (CV_PI / 180.0f);
 
-                // Определяем поле зрения камеры (120° по горизонтали)
-                float fov_horizontal = 120.0f * (CV_PI / 180.0f); // Угол обзора в радианах
-                float focal_length = (image.cols / 2.0f) / std::tan(fov_horizontal / 2.0f);
+                // РћРїСЂРµРґРµР»РµРЅРёРµ РїРѕР»СЏ Р·СЂРµРЅРёСЏ РєР°РјРµСЂС‹ (120В° РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё)
+                float fovHorizontal = 120.0f * (CV_PI / 180.0f); 
+                float focalLength = (image.cols / 2.0f) / std::tan(fovHorizontal / 2.0f);
 
-                // Проверяем, находится ли устройство в зоне видимости
-                bool is_in_fov = false;
-                if (relativePoint.y > 0) { // Устройство впереди
-                    // Проверяем, попадает ли азимут в угол обзора
-                    if (std::abs(azimuth_rad) < fov_horizontal / 2.0f) {
-                        // Проверяем границы изображения
-                        if (pointer.x >= 0 && pointer.x < image.cols && pointer.y >= 0 && pointer.y < image.rows) {
-                            is_in_fov = true;
+                // РџСЂРѕРІРµСЂРєР°, РЅР°С…РѕРґРёС‚СЃСЏ Р»Рё СѓРґР°Р»С‘РЅРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ РІ Р·РѕРЅРµ РІРёРґРёРјРѕСЃС‚Рё
+                bool isInFov = false;
+                if (relativePoint.y > 0) 
+                {
+                    if (std::abs(azimuthRad) < fovHorizontal / 2.0f) 
+                    {
+                        // РџСЂРѕРІРµСЂРєР° РІС‹С…РѕРґР° Р·Р° РіСЂР°РЅРёС†С‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+                        if (pointer.x >= 0 && pointer.x < image.cols && pointer.y >= 0 && pointer.y < image.rows) 
+                        {
+                            isInFov = true;
                         }
                     }
                 }
 
-                // Определяем выше/ниже на основе глубин
-                bool is_above = remoteDepth < localDepth; // Меньшая глубина => выше
+                // РћРїСЂРµРґРµР»РµРЅРёРµ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРіРѕРіРѕ РїРѕР»РѕР¶РµРЅРёСЏ СѓРґР°Р»С‘РЅРЅРѕРіРѕ Р°РїРїР°СЂР°С‚Р° РїРѕ РіР»СѓР±РёРЅРµ
+                bool is_above = remoteDepth < localDepth;
 
-                if (is_in_fov) {
-                    // Отрисовка точки (красный круг)
+                if (isInFov) 
+                {
+                    // РћС‚СЂРёСЃРѕРІРєР° С‚РѕС‡РєРё, РµСЃР»Рё РѕР±СЉРµРєС‚ РІ Р·РѕРЅРµ РІРёРґРёРјРѕСЃС‚Рё
                     cv::circle(image, pointer, 4, cv::Scalar(0, 0, 255), -1);
                 }
-                else {
-                    // Определяем направление стрелки
-                    bool is_left = azimuth_rad < 0; // Отрицательный азимут => левее
+                else 
+                {
+                    // РћРїСЂРµРґРµР»РµРЅРёРµ РЅР°РїСЂР°РІР»РµРЅРёСЏ СЃС‚СЂРµР»РєРё
+                    bool isLeft = azimuthRad < 0;
 
-                    // Положение и угол стрелки
-                    cv::Point2f arrow_pos;
-                    float arrow_angle = 0.0f;
+                    // РџРѕР»РѕР¶РµРЅРёРµ Рё СѓРіРѕР» СЃС‚СЂРµР»РєРё
+                    cv::Point2f arrowPos;
+                    float arrowAngle = 0.0f;
 
-                    if (relativePoint.y <= 0) { // Устройство позади
-                        // Стрелка на верхнем или нижнем краю
-                        if (is_above) {
-                            arrow_pos = cv::Point2f(is_left ? image.cols * 0.25f : image.cols * 0.75f, 10);
-                            arrow_angle = is_left ? 135.0f : 45.0f; // Вверх-влево/вправо
+                    if (relativePoint.y <= 0) 
+                    { // РЈСЃС‚СЂРѕР№СЃС‚РІРѕ РїРѕР·Р°РґРё
+                        // РџРѕР»РѕР¶РµРЅРёРµ СЃС‚СЂРµР»РєРё РЅР° РІРµСЂС…РЅРµРј РёР»Рё РЅРёР¶РЅРµРј РєСЂР°СЋ
+                        if (is_above) 
+                        {
+                            arrowPos = cv::Point2f(isLeft ? image.cols * 0.25f : image.cols * 0.75f, 10);
+                            arrowAngle = isLeft ? 135.0f : 45.0f;
                         }
-                        else {
-                            arrow_pos = cv::Point2f(is_left ? image.cols * 0.25f : image.cols * 0.75f, image.rows - 10);
-                            arrow_angle = is_left ? -135.0f : -45.0f; // Вниз-влево/вправо
+                        else 
+                        {
+                            arrowPos = cv::Point2f(isLeft ? image.cols * 0.25f : image.cols * 0.75f, image.rows - 10);
+                            arrowAngle = isLeft ? -135.0f : -45.0f;
                         }
                     }
-                    else {
-                        // Устройство впереди, но вне поля зрения
-                        if (is_left) {
-                            arrow_pos = cv::Point2f(10, cy);
-                            arrow_angle = 180.0f; // Влево
+                    else 
+                    {
+                        // РЈСЃС‚СЂРѕР№СЃС‚РІРѕ РІРїРµСЂРµРґРё, РЅРѕ РІРЅРµ РїРѕР»СЏ Р·СЂРµРЅРёСЏ
+                        if (isLeft)
+                        {
+                            arrowPos = cv::Point2f(10, cy);
+                            arrowAngle = 180.0f; 
                         }
-                        else {
-                            arrow_pos = cv::Point2f(image.cols - 10, cy);
-                            arrow_angle = 0.0f; // Вправо
+                        else 
+                        {
+                            arrowPos = cv::Point2f(image.cols - 10, cy);
+                            arrowAngle = 0.0f; 
                         }
-                        // Корректировка по высоте
+                        // РљРѕСЂСЂРµРєС‚РёСЂРѕРІРєР° РїРѕ РІС‹СЃРѕС‚Рµ
                         if (is_above) {
-                            arrow_pos.y = std::max(10.0f, arrow_pos.y - image.rows * 0.25f);
+                            arrowPos.y = std::max(10.0f, arrowPos.y - image.rows * 0.25f);
                         }
-                        else {
-                            arrow_pos.y = std::min(float(image.rows - 10), arrow_pos.y + image.rows * 0.25f);
+                        else 
+                        {
+                            arrowPos.y = std::min(float(image.rows - 10), arrowPos.y + image.rows * 0.25f);
                         }
                     }
 
-                    // Отрисовка красной стрелки
-                    float arrow_length = 20.0f;
-                    cv::Point2f arrow_end(
-                        arrow_pos.x + arrow_length * std::cos(arrow_angle * CV_PI / 180.0f),
-                        arrow_pos.y - arrow_length * std::sin(arrow_angle * CV_PI / 180.0f)
+                    // РћС‚СЂРёСЃРѕРІРєР° РєСЂР°СЃРЅРѕР№ СЃС‚СЂРµР»РєРё
+                    float arrowLength = 20.0f;
+                    cv::Point2f arrowEnd(
+                        arrowPos.x + arrowLength * std::cos(arrowAngle * CV_PI / 180.0f),
+                        arrowPos.y - arrowLength * std::sin(arrowAngle * CV_PI / 180.0f)
                     );
-                    cv::arrowedLine(image, arrow_pos, arrow_end, cv::Scalar(0, 0, 255), 2, cv::LINE_AA, 0, 0.3);
+                    cv::arrowedLine(image, arrowPos, arrowEnd, cv::Scalar(0, 0, 255), 2, cv::LINE_AA, 0, 0.3);
                 }
 
-                // Подпись с временной меткой и информацией
-                std::string label = "t: " + std::to_string(timestamp_ms) +
+                // РџРѕРґРїРёСЃСЊ СЃ РІСЂРµРјРµРЅРЅРѕР№ РјРµС‚РєРѕР№
+                std::string label = "t: " + std::to_string(timestampMs) +
                     ", Azimuth: " + std::to_string(azimuth) +
                     ", Depth: " + std::to_string(remoteDepth) + "/" + std::to_string(localDepth);
                 cv::putText(image, label, cv::Point(10, 30),
                     cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
 
-                // Показываем изображение
+                // Р’С‹РІРѕРґ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
                 cv::imshow("Visualized Frame", image);
                 cv::waitKey(0);
 
             }
-            catch (const std::exception& e) {
+            catch (const std::exception& e) 
+            {
                 std::cerr << "Error while parsing entry: " << e.what() << std::endl;
                 writeLog("Error while parsing entry: " + std::string(e.what()), mrcv::LOGTYPE::ERROR);
                 continue;
@@ -469,14 +521,16 @@ namespace mrcv
         writeLog("The fusion function has been started", mrcv::LOGTYPE::INFO);
 
         std::vector<USBLData> usblData = loadAcousticCSV(usblPath);
-        if (usblData.empty()) {
+        if (usblData.empty()) 
+        {
             std::cerr << "Error: No USBL data loaded from " << usblPath << std::endl;
             writeLog("Error: No USBL data loaded from " + usblPath, mrcv::LOGTYPE::ERROR);
             return 1;
         }
 
         std::vector<IMUData> imuData = loadIMUData(imuPath);
-        if (imuData.empty()) {
+        if (imuData.empty()) 
+        {
             std::cerr << "Error: No IMU data loaded from " << imuPath << std::endl;
             writeLog("Error: No IMU data loaded from " + imuPath, mrcv::LOGTYPE::ERROR);
             return 2;
@@ -491,14 +545,17 @@ namespace mrcv
 
         std::vector<FusedData> fused;
 
-        for (const auto& usbl : usblData) {
-            try {
+        for (const auto& usbl : usblData) 
+        {
+            try 
+            {
                 auto ts = parseTimestamp(usbl.datetime);
 
                 const IMUData* imuNearest = findNearestIMU(ts, imuData);
                 const CameraFrame* camNearest = findNearestFrame(ts, frames);
 
-                if (imuNearest && camNearest) {
+                if (imuNearest && camNearest) 
+                {
                     FusedData data;
                     data.timestamp = ts;
 
@@ -515,27 +572,32 @@ namespace mrcv
 
                     data.featurePoints = {};
 
-                    // Сохраняем дополнительные параметры USBL
                     data.azimuth = usbl.azimuth;
                     data.localDepth = usbl.localDepth;
                     data.remoteDepth = usbl.remoteDepth;
+                    data.propagationTime = usbl.propagationTime;
+                    data.rh = usbl.rh;
+                    data.rs = usbl.rs;
 
                     data.imageFilename = camNearest->filename;
 
                     fused.push_back(data);
                 }
             }
-            catch (const std::exception& e) {
+            catch (const std::exception& e) 
+            {
                 std::cerr << "Error processing USBL entry with datetime " << usbl.datetime << ": " << e.what() << std::endl;
                 writeLog("Error processing USBL entry with datetime " + usbl.datetime + ": " + e.what(), mrcv::LOGTYPE::EXCEPTION);
                 continue;
             }
         }
 
-        try {
+        try 
+        {
             YAML::Emitter out;
             out << YAML::BeginSeq;
-            for (const auto& d : fused) {
+            for (const auto& d : fused) 
+            {
                 out << YAML::BeginMap;
                 out << YAML::Key << "timestamp" << YAML::Value << std::chrono::duration_cast<std::chrono::milliseconds>(d.timestamp.time_since_epoch()).count();
                 out << YAML::Key << "accel" << YAML::Value << YAML::Flow << std::vector<double>(d.accel, d.accel + 3);
@@ -545,6 +607,9 @@ namespace mrcv
                 out << YAML::Key << "azimuth" << YAML::Value << d.azimuth;
                 out << YAML::Key << "localDepth" << YAML::Value << d.localDepth;
                 out << YAML::Key << "remoteDepth" << YAML::Value << d.remoteDepth;
+                out << YAML::Key << "propagationTime" << YAML::Value << d.propagationTime;
+                out << YAML::Key << "rs" << YAML::Value << d.rs;
+                out << YAML::Key << "rh" << YAML::Value << d.rh;
                 out << YAML::Key << "image" << YAML::Value << d.imageFilename;
                 out << YAML::EndMap;
             }
@@ -556,7 +621,8 @@ namespace mrcv
 
             if (visFlag) visualizeResult(outYAML, camFolder);
         }
-        catch (const std::exception& e) {
+        catch (const std::exception& e) 
+        {
             std::cerr << "YAML write error: " << e.what() << std::endl;
             writeLog("YAML write error: " + std::string(e.what()), mrcv::LOGTYPE::EXCEPTION);
             return 4;
@@ -564,5 +630,4 @@ namespace mrcv
         writeLog("Fusion function is complete", mrcv::LOGTYPE::INFO);
         return 0;
     }
-
 }
