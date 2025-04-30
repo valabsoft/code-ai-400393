@@ -49,61 +49,80 @@ add_library(mrcv::mrcv ALIAS mrcv)
 ###############################################################################
 # Определение зависимостей библиотеки
 ###############################################################################
-set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release/;C:/yaml-cpp/")
+option(USE_CUDA "Use CUDA Build" OFF)
 
+if(USE_CUDA)
+    # Добавляем макрос MRCV_CUDA_ENABLED
+    target_compile_definitions(mrcv PRIVATE MRCV_CUDA_ENABLED)
+    set(CMAKE_PREFIX_PATH "C:/libtorch-12.4-cuda/Release;C:/yaml-cpp")
+    set(OpenCV_DIR "C:/opencv-4.10.0-build-cuda/install")
+    set(Torch_DIR "C:/libtorch-12.4-cuda/Release/share/cmake/Torch")
+    # OpenCV DIRs
+    if(WIN32)
+        set(OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build-cuda/install/include")
+        set(OpenCV_LIB_DIR "C:/opencv-4.10.0-build-cuda/install/x64/vc17/lib")
+    else()
+        set(OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4")
+        set(OpenCV_LIB_DIR "/usr/local/lib")
+    endif()
+    # Torch DIRs
+    if(WIN32)
+        set(Torch_INCLUDE_DIRS "C:/libtorch-12.4-cuda/Release/include")
+        set(Torch_LIB_DIR "C:/libtorch-12.4-cuda/Release/lib")
+    else()
+        set(Torch_INCLUDE_DIRS "/usr/local/include/torch")
+        set(Torch_LIB_DIR "/usr/local/lib")
+    endif()
+else()
+    set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release;C:/yaml-cpp")
+    set(OpenCV_DIR "C:/opencv-4.10.0-build/install")
+    set(Torch_DIR "C:/libtorch-12.4/Release/share/cmake/Torch")
+    # OpenCV DIRs
+    if(WIN32)
+        set(OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include")
+        set(OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib")
+    else()
+        set(OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4")
+        set(OpenCV_LIB_DIR "/usr/local/lib")
+    endif()
+    # Torch DIRs
+    if(WIN32)
+        set(Torch_INCLUDE_DIRS "C:/libtorch-12.4/Release/include")
+        set(Torch_LIB_DIR "C:/libtorch-12.4/Release/lib")
+    else()
+        set(Torch_INCLUDE_DIRS "/usr/local/include/torch")
+        set(Torch_LIB_DIR "/usr/local/lib")
+    endif()
+endif()
+
+# Диагностика
+message(STATUS "Torch_DIR: ${Torch_DIR}")
+message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+
+# Поиск библиотек
 find_package(OpenCV REQUIRED)
 find_package(Torch REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-# Диагностический вывод о наличии библиотек
-#if (OpenCV_FOUND)
-#    message(STATUS "OpenCV library found!")
-#else ()
-#    message(FATAL_ERROR "Could not locate OpenCV" \n)
-#endif()
-
-#if (Torch_FOUND)
-#    message(STATUS "Torch library found!")
-#else ()
-#    message(FATAL_ERROR "Could not locate Torch" \n)
-#endif()
-
-# OpenCV DIRs
-IF (WIN32)
-    set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
-    set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
-ELSE()
-    set( OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4/" )
-    set( OpenCV_LIB_DIR "/usr/local/lib/" )
-ENDIF()
-
-# Torch DIRs
-IF (WIN32)
-    set( Torch_INCLUDE_DIRS "C:/libtorch-12.4/Release/include/" )
-    set( Torch_LIB_DIR "C:/libtorch-12.4/Release/lib/" )
-ELSE()
-    set( Torch_INCLUDE_DIRS "/usr/local/include/torch/" )
-    set( Torch_LIB_DIR "/usr/local/lib/" )
-ENDIF()
-
 include_directories( ${OpenCV_INCLUDE_DIRS}; ${Torch_INCLUDE_DIRS}; ${YAML_CPP_INCLUDE_DIR} )
 link_directories( ${OpenCV_LIB_DIR}; ${Torch_LIB_DIR}; ${YAML_CPP_LIBRARY_DIR} )
 
-set(MRCV_CUDA false) # Ключ сборки с/без CUDA
+target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES}; yaml-cpp::yaml-cpp )
 
-IF (MRCV_CUDA)
-    set(ALL_LIBS
-        ${OpenCV_LIBS}
-        ${TORCH_LIBRARIES}
-        yaml-cpp::yaml-cpp
-        ${CUDA_LIBRARIES}
-        ${CUDA_CUBLAS_LIBRARIES}
-        ${CUDA_cudart_static_LIBRARY}
-    )
-    target_link_libraries( mrcv ${ALL_LIBS} )
-ELSE()
-    target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES}; yaml-cpp::yaml-cpp )
-ENDIF()
+#IF (MRCV_CUDA)
+#    set(ALL_LIBS
+#        ${OpenCV_LIBS}
+#        ${TORCH_LIBRARIES}
+#        yaml-cpp::yaml-cpp
+#        ${CUDA_LIBRARIES}
+#        ${CUDA_CUBLAS_LIBRARIES}
+#        ${CUDA_cudart_static_LIBRARY}
+#    )
+#    target_link_libraries( mrcv ${ALL_LIBS} )
+#ELSE()
+#    target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES}; yaml-cpp::yaml-cpp )
+#ENDIF()
+
 # target_link_libraries( mrcv ${OpenCV_LIBS}; ${TORCH_LIBRARIES} )
 ###############################################################################
 # Исходники библиотеки
@@ -139,7 +158,7 @@ set(sources
     src/mrcv-detector.cpp
     src/tinystr.cpp
     src/tinyxml.cpp
-    src/tinyxlmerror.cpp
+    src/tinyxmlerror.cpp
     src/tinyxmlparser.cpp
     src/mrcv-vae.cpp
     src/mrcv-roi.cpp 

@@ -32,34 +32,66 @@ FetchContent_MakeAvailable(googletest)
 # tests dependencies
 #----------------------------------------------------------------------------------------------------------------------
 
-if(is_top_level)    
-    find_package(mrcv REQUIRED)
-    find_package(OpenCV REQUIRED)
-    find_package(Torch REQUIRED)
-
-    set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release/")
-
+if(USE_CUDA)
+    # Добавляем макрос MRCV_CUDA_ENABLED
+    target_compile_definitions(mrcv PRIVATE MRCV_CUDA_ENABLED)
+    set(CMAKE_PREFIX_PATH "C:/libtorch-12.4-cuda/Release;C:/yaml-cpp")
+    set(OpenCV_DIR "C:/opencv-4.10.0-build-cuda/install")
+    set(Torch_DIR "C:/libtorch-12.4-cuda/Release/share/cmake/Torch")
     # OpenCV DIRs
-    IF (WIN32)
-        set( OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include/" )
-        set( OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib/" )
-    ELSE()
-        set( OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4/" )
-        set( OpenCV_LIB_DIR "/usr/local/lib/" )
-    ENDIF()
-
+    if(WIN32)
+        set(OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build-cuda/install/include")
+        set(OpenCV_LIB_DIR "C:/opencv-4.10.0-build-cuda/install/x64/vc17/lib")
+    else()
+        set(OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4")
+        set(OpenCV_LIB_DIR "/usr/local/lib")
+    endif()
     # Torch DIRs
-    IF (WIN32)
-        set( Torch_INCLUDE_DIRS "C:/libtorch-12.4/Release/include/" )
-        set( Torch_LIB_DIR "C:/libtorch-12.4/Release/lib/" )
-    ELSE()
-        set( Torch_INCLUDE_DIRS "/usr/local/include/torch/" )
-        set( Torch_LIB_DIR "/usr/local/lib/" )
-    ENDIF()
-
-    include_directories( ${OpenCV_INCLUDE_DIRS}; ${Torch_INCLUDE_DIRS} )
-    link_directories( ${OpenCV_LIB_DIR}; ${Torch_LIB_DIR} )
+    if(WIN32)
+        set(Torch_INCLUDE_DIRS "C:/libtorch-12.4-cuda/Release/include")
+        set(Torch_LIB_DIR "C:/libtorch-12.4-cuda/Release/lib")
+    else()
+        set(Torch_INCLUDE_DIRS "/usr/local/include/torch")
+        set(Torch_LIB_DIR "/usr/local/lib")
+    endif()
+else()
+    set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release;C:/yaml-cpp")
+    set(OpenCV_DIR "C:/opencv-4.10.0-build/install")
+    set(Torch_DIR "C:/libtorch-12.4/Release/share/cmake/Torch")
+    # OpenCV DIRs
+    if(WIN32)
+        set(OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include")
+        set(OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib")
+    else()
+        set(OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4")
+        set(OpenCV_LIB_DIR "/usr/local/lib")
+    endif()
+    # Torch DIRs
+    if(WIN32)
+        set(Torch_INCLUDE_DIRS "C:/libtorch-12.4/Release/include")
+        set(Torch_LIB_DIR "C:/libtorch-12.4/Release/lib")
+    else()
+        set(Torch_INCLUDE_DIRS "/usr/local/include/torch")
+        set(Torch_LIB_DIR "/usr/local/lib")
+    endif()
 endif()
+
+# Диагностика
+message(STATUS "Torch_DIR: ${Torch_DIR}")
+message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+
+# Поиск библиотек
+find_package(OpenCV REQUIRED)
+find_package(Torch REQUIRED)
+find_package(yaml-cpp REQUIRED)
+
+# Вывод информации о найденных библиотеках
+message(STATUS "OpenCV_FOUND: ${OpenCV_FOUND}")
+message(STATUS "Torch_FOUND: ${Torch_FOUND}")
+message(STATUS "yaml-cpp_FOUND: ${yaml-cpp_FOUND}")
+
+include_directories( ${OpenCV_INCLUDE_DIRS}; ${Torch_INCLUDE_DIRS}; ${YAML_CPP_INCLUDE_DIR} )
+link_directories( ${OpenCV_LIB_DIR}; ${Torch_LIB_DIR}; ${YAML_CPP_LIBRARY_DIR} )
 
 #----------------------------------------------------------------------------------------------------------------------
 # tests sources

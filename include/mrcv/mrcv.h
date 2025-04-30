@@ -29,10 +29,12 @@ namespace mrcv
 	 * @param logType - тип сообщения в лог-файле
 	 */
 	MRCV_EXPORT void writeLog(std::string logText, LOGTYPE logType = LOGTYPE::INFO);
+	
 	/**
 	 * @brief Функция для записи строки-разделителя в текстовый лог-файл
 	 */
 	MRCV_EXPORT void writeLog();
+	
 	/**
 	 * @brief Функция сложения двух целых чисел.
 	 * @param a - Первое слагаемое.
@@ -40,6 +42,7 @@ namespace mrcv
 	 * @return - Резальтат вычсиления выражения a + b
 	 */
 	MRCV_EXPORT int add(int a, int b);
+	
 	/**
 	 * @brief Функция загрузки изображения.
 	 *
@@ -51,11 +54,13 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Невозможно открыть изображение; -1 - Unhandled Exception.
 	 */
 	MRCV_EXPORT int readImage(cv::Mat& image, std::string pathToImage, bool showImage = false);
+	
 	/**
 	 * @brief Функция вывода информации о текущей сборке OpenCV.
 	 * @return Строка с диагностической информацией.
 	 */
 	MRCV_EXPORT std::string getOpenCVBuildInformation();
+	
 	/**
 	 * @brief Функция записи видеопотока на диск.
 	 *
@@ -68,6 +73,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - ID камеры задан неверно; 2 - Интервал захвата меньше минимального; 3 - Не удалось захватить камеру; 4 - Не удалось создать объектс cv::VideoWriter; -1 - Unhandled Exception.
 	 */
 	MRCV_EXPORT int recordVideo(int cameraID, int recorderInterval, std::string fileName, CODEC codec);
+	
 	/**
 	* @brief Функция скачаивания файла Яндекса.
 	* @param query - Строка запроса для поиска.
@@ -87,6 +93,7 @@ namespace mrcv
 	/////////////////////////////////////////////////////////////////////////////
 	// Калибровка
 	/////////////////////////////////////////////////////////////////////////////
+	
 	/**
 	 * @brief Функция общей калибровки.
 	 * @param imagesL - Вектор строк имён изображений левой камеры.
@@ -153,6 +160,7 @@ namespace mrcv
 	 * @return - Структура для хранения калибровочных параметров.
 	 */
 	MRCV_EXPORT CalibrationParametersStereo readCalibrationParametersStereo(std::string fileName);
+	
 	/**
 	 * @brief Функция чтения конфигурационного файла для калибровки
 	 * @param pathToConfigFile - Полный путь к конфигурационному файлу.
@@ -164,8 +172,18 @@ namespace mrcv
 	MRCV_EXPORT class Segmentor
 	{
 	public:
-		Segmentor() { };
-		~Segmentor() { };
+		Segmentor() = default;
+		~Segmentor() = default;
+
+		/**
+		 * @brief Функция инициализации
+		 * @param width - Ширина пердаваемых изображений.
+		 * @param height - Высота пердаваемых изображений.
+		 * @param listName - Список классов.
+		 * @param encoderName - Имя кодировщика.
+		 * @param pretrainedPath - Путь к кодировщику.
+		 */
+		void Initialize(int width, int height, std::vector<std::string>&& listName, std::string encoderName, std::string pretrainedPath);
 		/**
 		 * @brief Функция инициализации
 		 * @param gpu_id - Подключение GPU.
@@ -175,8 +193,7 @@ namespace mrcv
 		 * @param encoderName - Имя кодировщика.
 		 * @param pretrainedPath - Путь к кодировщику.
 		 */
-		void Initialize(int gpu_id, int width, int height, std::vector<std::string>&& listName, std::string encoderName, std::string pretrainedPath);
-
+		void InitializeCuda(int gpu_id, int width, int height, std::vector<std::string>&& listName, std::string encoderName, std::string pretrainedPath);
 		/**
 		 * @brief функция для повышения производительности обучения
 		 * @param tricks - Структура дополнений для обучения таких как скорость оюучения, вращение изображения и вес при проигрыше .
@@ -274,7 +291,6 @@ namespace mrcv
 	/////////////////////////////////////////////////////////////////////////////
 	// Методы препроцессинга изображений
 	/////////////////////////////////////////////////////////////////////////////
-
 	/**
 	 * @brief Функция формирования изображения в случаи ошибки.
 	 * Функция формирует изображение с чёрным фоном и наносит текс (текс должен содержать ссылку на место и тип ошибки)
@@ -283,6 +299,7 @@ namespace mrcv
 	 * @return - выходное цветное RGB изображение: формата cv::Mat CV_8UC3, с кодом ошибки
 	 */
 	cv::Mat getErrorImage(std::string textError);
+	
 	/**
 	 * @brief Функция автоматической предобработки изображения, кооррекции яркости.
 	 * Функция автоматической коррекции яркости изображения с помощью степенного преобразования (метод Гамма-Коррекции)
@@ -292,6 +309,7 @@ namespace mrcv
 	 * @return - код результата работы функции: 0 - Success; 1 - Пустое изображение;  -1 - Неизвестная ошибка.
 	 */
 	int changeImageBrightness(cv::Mat& imageInput, cv::Mat& imageOutput, double gamma);
+	
 	/**
 	 * @brief Функция автоматической кооррекции контраста.
 	 * Функция реализует несколько методов коррекции контраста изображения
@@ -320,6 +338,7 @@ namespace mrcv
 		mrcv::METOD_INCREASE_IMAGE_CONTRAST metodIncreaseContrast, mrcv::COLOR_MODEL colorSpace,
 		double clipLimitCLAHE = 2, cv::Size gridSizeCLAHE = cv::Size(9, 9),
 		float percentContrastBalance = 5, double mContrastExtantion = -1, double eContrastExtantion = 4);
+	
 	/**
 	 * @brief Повышение резкости изображения. Алгоритм №01 (фильтра Лапласа)
 	 * Функция повышения резкости изображения с помощью фильтра Лапласа
@@ -329,6 +348,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; -1 - Неизвестная ошибка.
 	 */
 	int sharpeningImage01(cv::Mat& imageInput, cv::Mat& imageOutput, double gainFactorHighFrequencyComponent);
+	
 	/**
 	 * @brief Повышение резкости изображения. Алгоритм №02 (фильтра Гаусса)
 	 * Функция повышения резкости изображения с помощью фильтра Гаусса
@@ -340,6 +360,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; -1 - Неизвестная ошибка.
 	 */
 	int sharpeningImage02(cv::Mat& imageInput, cv::Mat& imageOutput, cv::Size filterSize, double sigmaFilter, double gainFactorHighFrequencyComponent);
+	
 	/**
 	 * @brief Функция чтения параметров камеры из файла.
 	 * @param fileNameCameraParameters -    путь к файлу c параметрами камеры.
@@ -348,6 +369,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
 	 */
 	int readCameraParametrsFromFile(const char* pathToFileCameraParametrs, mrcv::cameraParameters& cameraParameters);
+	
 	/**
 	 * @brief Функция предварительной обработки изображений (автоматическая коррекция контраста и яркости, резкости)
 	 * Функция интегрирует в себе остальные функции предобработки изображений
@@ -382,6 +404,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
 	 */
 	int preprocessingImage(cv::Mat& imageIn, std::vector<mrcv::METOD_IMAGE_PERPROCESSIN> metodImagePerProcessingm, const std::string& fileNameCameraParameters);
+	
 	/**
 	 * @brief Функция реализует метод Баланса контрастности
 	 * Функция принимает матрицу либо серого изображения, либо одну из координат цветового пространства
@@ -391,6 +414,7 @@ namespace mrcv
 	 * 1 - Пустое массив;  3 - выход за диапазон percent; -1 - Неизвестная ошибка.
 	 */
 	int contrastBalancing(cv::Mat& planeArray, float percent);
+	
 	/**
 	 * @brief Функция реализует метод Расширение контрастности
 	 * Функция принимает матрицу либо серого изображения, либо одну из координат цветового пространства
@@ -400,6 +424,7 @@ namespace mrcv
 	 * @return - код результата работы функции: 0 - Success; 1 - Пустое массив;  -1 - Неизвестная ошибка.
 	 */
 	int contrastExtantion(cv::Mat& planeArray, double m = -1, double e = 2);
+	
 	/**
 	 * @brief Класс для работы с плотным стерео и кластеризацией.
 	 *
@@ -477,11 +502,11 @@ namespace mrcv
 	std::string augmentationMethodToString(AUGMENTATION_METHOD method);
 
 	/**
-		*	@brief Класс детектора
-		*
-		*	Класс реализует атрибуты и методы детекции объектов на изображениях подводных объектов,
-		*	а также аварийных ситуаций, связанных с подводными технологическими сооружениями.
-		*/
+	 *	@brief Класс детектора
+	 *
+	 *	Класс реализует атрибуты и методы детекции объектов на изображениях подводных объектов,
+	 *	а также аварийных ситуаций, связанных с подводными технологическими сооружениями.
+	 */
 	MRCV_EXPORT class Detector
 	{
 	private:
@@ -882,7 +907,7 @@ namespace mrcv
 		std::vector<cv::Rect> getBoxes(void);
 		std::vector<std::string> getClasses(void);
 		float getInference(void);
-	}; // class  neuralNetSegmentator
+	};
 
 	/**
 	 * @brief Функция формирования стереопараы
@@ -974,8 +999,7 @@ namespace mrcv
 	 * @param filePathToClasses - путь к файлй со списоком обнаруживамых класов объектов
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение;  -1 - Неизвестная ошибка.
 	 */
-	int detectingSegmentsNeuralNet(cv::Mat& imageInput, cv::Mat& imageOutput, std::vector<cv::Mat>& replyMasks,
-		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses);
+	int detectingSegmentsNeuralNet(cv::Mat& imageInput, cv::Mat& imageOutput, std::vector<cv::Mat>& replyMasks, const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses);
 	/**
 	 * @brief Функция для определения координат 3D точек в сегментах идентифицированных объектов
 	 * Функция сопосталяет сегмент объекта с 3D точками по их проекциям на изображение и записывает результат в points3D
@@ -1079,6 +1103,325 @@ namespace mrcv
 	* @return - код результата работы функции. 0 - успех, 1 - ошибка загрузки файла с комплексированными данными
 	*/
 	MRCV_EXPORT int extractFeatureVector(const std::string& fusedDataPath, const std::string& camFolder, const std::string& extractedDataPath);
+#ifdef MRCV_CUDA_ENABLED 
+	/**
+	 * @brief Функция отражения изображения с помощью CUDA.
+	 * Отражает изображение по горизонтали, вертикали или обеим осям.
+	 *
+	 * @param imageInput - входное (исходное) изображение cv::Mat.
+	 * @param imageOutput - выходное (преобразованное) изображение cv::Mat.
+	 * @param flipCode - Код отражения: 0 - вертикальное отражение; 1 - горизонтальное отражение; -1 - обе стороны.
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+	 */
+	MRCV_EXPORT int flipImageCuda(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode);
+
+	/**
+	 * @brief Функция поворота изображения на заданный угол с помощью CUDA.
+	 * Поворачивает изображение на определённый угол с использованием центральной точки.
+	 *
+	 * @param imageInput - входное (исходное) изображение cv::Mat.
+	 * @param imageOutput - выходное (преобразованное) изображение cv::Mat.
+	 * @param angle - угол поворота в градусах.
+	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
+	 * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+	 */
+	MRCV_EXPORT int rotateImageCuda(cv::Mat& imageInput, cv::Mat& imageOutput, double angle);
+
+	/**
+	 * @brief Функция аугментации изображений с помощью CUDA.
+	 * Выполняет аугментацию для набора входных изображений на основе заданных методов и сохраняет результат.
+	 *
+	 * @param inputImagesAugmetation - вектор входных изображений (cv::Mat) для аугментации.
+	 * @param outputImagesAugmetation - вектор для сохранения выходных (преобразованных) изображений.
+	 * @param augmetationMethod - вектор методов аугментации (mrcv::AUGMENTATION_METHOD) для применения.
+	 * @return Код результата выполнения функции. 0 - успех; -1 - исключение (OpenCV или файловой системы).
+	 *
+	 * Функция проверяет наличие директории для сохранения изображений и создает её при необходимости. Для каждого изображения
+	 * выполняется указанная операция (например, поворот или отражение) с последующей проверкой и сохранением результата в директорию.
+	 * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+	 */
+	MRCV_EXPORT int augmetationCuda(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation, std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod);
+
+	/**
+	 * @brief Функция общей калибровки с помощью CUDA.
+	 * @param imagesL
+	 * @param imagesR
+	 * @param pathToImagesL
+	 * @param pathToImagesR
+	 * @param calibrationParametersL
+	 * @param calibrationParametersR
+	 * @param calibrationParameters
+	 * @param chessboardColCount
+	 * @param chessboardRowCount
+	 * @param chessboardSquareSize
+	 * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+	 */
+	MRCV_EXPORT void cameraCalibrationCuda(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR, std::string pathToImagesL, std::string pathToImagesR, CalibrationParametersMono& calibrationParametersL, CalibrationParametersMono& calibrationParametersR, CalibrationParametersStereo& calibrationParameters, int chessboardColCount, int chessboardRowCount, float chessboardSquareSize);
+
+	/**
+	 *@brief Функция калибровки одиночной камеры с помощью CUDA.
+	 * @param images
+	 * @param pathToImages
+	 * @param calibrationParameters
+	 * @param chessboardColCount
+	 * @param chessboardRowCount
+	 * @param chessboardSquareSize
+	 * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+	 */
+	MRCV_EXPORT void cameraCalibrationMonoCuda(std::vector<cv::String> images, std::string pathToImages, CalibrationParametersMono& calibrationParameters, int chessboardColCount, int chessboardRowCount, float chessboardSquareSize);
+
+	/**
+	 * @brief Функция калибровки стерео пары с помощью CUDA.
+	 * @param imagesL
+	 * @param imagesR
+	 * @param pathToImagesL
+	 * @param pathToImagesR
+	 * @param calibrationParameters
+	 * @param chessboardColCount
+	 * @param chessboardRowCount
+	 * @param chessboardSquareSize
+	 * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+	 */
+	MRCV_EXPORT void cameraCalibrationStereoCuda(std::vector<cv::String> imagesL, std::vector<cv::String> imagesR, std::string pathToImagesL, std::string pathToImagesR, CalibrationParametersStereo& calibrationParameters, int chessboardColCount, int chessboardRowCount, float chessboardSquareSize);
+
+	/**
+	 * @brief Функция сравнения двух изображений с помощью CUDA.
+	 * @param img1 - Первое входное изображение (cv::Mat).
+	 * @param img2 - Второе входное изображение (cv::Mat).
+	 * @param methodCompare - Метод сравнения (true для гистограммы, false для L2-нормы).
+	 * @return - Различие между изображениями (корреляция гистограмм или нормализованное L2-расстояние).
+	 * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+	 */
+	MRCV_EXPORT double compareImagesCuda(cv::Mat img1, cv::Mat img2, bool methodCompare);
+
+	/**
+	 * @brief Функция для построения карты диспаратности с помощью CUDA.
+	 * @param map - Буфер для карты диспаратности.
+	 * @param imageLeft - Изображение с левой камеры стереопары.
+	 * @param imageRight - Изображение с правой камеры стереопары.
+	 * @param minDisparity - Минимальный размер блока.
+	 * @param numDisparities - Кол-во итераций.
+	 * @param blockSize - Размер блока.
+	 * @param lambda - Параметр lambda.
+	 * @param sigma - Параметр sigma.
+	 * @param colorMap - Цветовая схема для расцвечивания карты.
+	 * @param disparityType - Тип карты диспаратности.
+	 * @param saveToFile - Признак сохранения карты в файл.
+	 * @param showImages - Признак отображения изображений в отдельных окнах.
+	 * @return - Карта диспаратности в cv::Mat формате.
+	 * @note Требуется GPU с поддержкой CUDA и CUDA Toolkit 12.4.
+	 */
+	MRCV_EXPORT int disparityMapCuda(cv::cuda::GpuMat& map, const cv::Mat& imageLeft, const cv::Mat& imageRight, int minDisparity, int numDisparities, int blockSize, double lambda, double sigma, DISPARITY_TYPE disparityType, int colorMap, bool saveToFile, bool showImages);
+
+
+	static std::pair<float, float> computeRange(const float& baseValue) {
+		float lower = std::max(0.0f, baseValue - baseValue * 0.5f);
+		float upper = baseValue + baseValue * 0.5f;
+		return std::make_pair(lower, upper);
+	}
+
+	static float normalizeFactor(const std::pair<float, float>& range) {
+		return 1 / std::max(range.first, range.second);
+	}
+
+	class OptimizerCuda {
+	public:
+		OptimizerCuda(size_t sampleSize_ = 1000, size_t epochs_ = 50000) :
+			sampleSize(sampleSize_),
+			epochs(epochs_),
+			model(torch::nn::Sequential(
+				torch::nn::Linear(3, 3000),
+				torch::nn::ReLU(),
+				torch::nn::Linear(3000, 1000),
+				torch::nn::ReLU(),
+				torch::nn::Linear(1000, 1))),
+			device(torch::kCUDA) {
+			// Перенос модели на устройство CUDA
+			model->to(device);
+		}
+
+		float optimizeRoiSize(const std::pair<float, float>& prevCoord,
+			const std::pair<float, float>& nextCoord,
+			const float& objectSize,
+			const float& averagePredictionError);
+
+	private:
+		void generateSyntheticData();
+
+		void trainModel();
+
+		torch::nn::Sequential model;
+		size_t sampleSize;
+		size_t epochs;
+		float objectSize;
+		float averagePredictionDeviation;
+		float roiSizeNormFactor;
+		std::pair<float, float> prevCoord;
+		std::pair<float, float> nextCoord;
+		torch::Tensor inputs;
+		torch::Tensor targets;
+		torch::Device device;
+	};
+
+	class PredictorCuda {
+	public:
+		PredictorCuda(const int64_t& hiddenSize_,
+			const int64_t& numLayers_,
+			const unsigned int& pointsNumber_,
+			const std::pair<int, int>& imgSize_,
+			const float& failsafeDeviation_ = 100,
+			const unsigned int& failsafeDeviationThreshold_ = 5,
+			const unsigned int& movingAvgScale_ = 25) :
+			hiddenSize(hiddenSize_),
+			numLayers(numLayers_),
+			pointsNumber(pointsNumber_),
+			imgWidth(imgSize_.first),
+			imgHeight(imgSize_.second),
+			failsafeDeviation(failsafeDeviation_),
+			failsafeDeviationThreshold(failsafeDeviationThreshold_),
+			movingAvgScale(movingAvgScale_),
+			inputSize(2),
+			lstm(torch::nn::LSTM(torch::nn::LSTMOptions(2, hiddenSize_).num_layers(numLayers_))),
+			linear(torch::nn::Linear(hiddenSize_, 2)),
+			hiddenState(torch::zeros({ numLayers_, 1, hiddenSize_ }, torch::TensorOptions().dtype(torch::kFloat32))),
+			cellState(torch::zeros({ numLayers_, 1, hiddenSize_ }, torch::TensorOptions().dtype(torch::kFloat32))),
+			device(torch::kCUDA) {
+			lstm->to(device);
+			linear->to(device);
+			hiddenState = hiddenState.to(device);
+			cellState = cellState.to(device);
+		}
+
+		/**
+		 * @brief Функция обучения LSTM сети
+		 *
+		 * @param coordinates - Вектор входных координат.
+		 * @param imageLeft - Флаг обучения. Используется для дообучения модели. (true - первое обучение, false - дообучение).
+		 */
+		void trainLSTMNet(const std::vector<std::pair<float, float>> coordinates, bool isTraining = false);
+
+		/**
+		 * @brief Функция дообучения LSTM сети
+		 *
+		 * @param coordinate - Входные координаты.
+		 */
+		void continueTraining(const std::pair<float, float> coordinate);
+
+		/**
+		 * @brief Функция предсказания следующей координаты
+		 *
+		 * @return - Предсказанные сетью координаты.
+		 */
+		std::pair<float, float> predictNextCoordinate();
+
+		/**
+		 * @brief Функция получения скользящего среднего отклонения предсказания
+		 *
+		 * @return - Скользящее среднее отклонение предсказания.
+		 */
+		float getMovingAverageDeviation();
+
+		/**
+		 * @brief Функция получения среднего отклонения предсказания
+		 *
+		 * @return - Среднее отклонение предсказания.
+		 */
+		float getAverageDeviation();
+
+		/**
+		 * @brief Функция получения последнего отклонения предсказания
+		 *
+		 * @return - Последнее отклонение предсказания.
+		 */
+		float getLastDeviation();
+
+		/**
+		 * @brief Функция получения статуса рабочего состояния
+		 *
+		 * @return - Состояние модели (true - сеть вышла на рабочий режим, false - сеть в состоянии обучения).
+		 */
+		bool isWorkState();
+
+	private:
+		std::pair<float, float> normilizePair(std::pair<float, float> coords);
+		std::vector<std::pair<float, float>> normilizeInput(std::vector<std::pair<float, float>> coords);
+		std::pair<float, float> denormilizeOutput(std::pair<float, float> coords);
+		void updateDeviations();
+		int64_t hiddenSize;
+		int64_t numLayers;
+		unsigned int pointsNumber;
+		int imgWidth;
+		int imgHeight;
+		float failsafeDeviation;
+		unsigned int failsafeDeviationThreshold;
+		unsigned int movingAvgScale;
+		int inputSize;
+		torch::nn::LSTM lstm;
+		torch::nn::Linear linear;
+		torch::Tensor hiddenState;
+		torch::Tensor cellState;
+		std::vector<torch::Tensor> trainingData;
+		std::pair<float, float> coordsReal;
+		std::pair<float, float> coordsPred;
+		float predictionDeviation = 0;
+		float averagePredictionDeviation = 0;
+		float movingAvgPredictionDeviation = 0;
+		std::vector<float> lastPredictionDeviations;
+		int numPredictions = 0;
+		bool workState = false;
+		torch::Device device;
+	};
+
+	class DenseStereoCuda {
+	public:
+	public:
+		/**
+		 * @brief Выполняет кластеризацию загруженных данных.
+		 *
+		 * Функция для выполнения кластеризации данных, хранящихся
+		 * в `vuxyzrgb`. Результаты кластеризации сохраняются в `IDX`.
+		 */
+		void makeClustering();
+
+		/**
+		 * @brief Загружает данные из файла.
+		 *
+		 * Функция считывает данные из указанного файла и сохраняет их
+		 * во внутренней структуре `vuxyzrgb`.
+		 *
+		 * @param filename Имя файла, из которого будут загружены данные.
+		 */
+		void loadDataFromFile(const std::string& filename);
+
+		/**
+		 * @brief Печатает информацию о кластерах.
+		 *
+		 * Функция выводит на экран информацию о кластерах,
+		 * сформированных в результате выполнения кластеризации.
+		 */
+		void printClusters();
+
+	private:
+		/**
+		 * @brief Класс для хранения координат точек.
+		 *
+		 * В этом классе сохраняются трехмерные координаты точек,
+		 * используемых в процессе кластеризации.
+		 */
+		class Vuxyzrgb {
+		public:
+			std::vector<std::vector<double>> xyz; ///< Трехмерные координаты точек.
+		};
+
+		Vuxyzrgb vuxyzrgb; ///< Экземпляр класса для хранения данных.
+		std::mutex vuxyzrgb_mutex; ///< Мьютекс для защиты данных `vuxyzrgb`.
+
+		std::vector<int> IDX; ///< Вектор индексов кластеров для каждой точки.
+	};
+
+#endif
+
 }
 
         

@@ -2,14 +2,23 @@
 
 int main() {
 
-  auto imagePath = "../images/test/43.jpg";
-  cv::Mat image = cv::imread(imagePath);
+	std::filesystem::path weightsFile("file\\weights\\resnet34.pt");
+    std::filesystem::path dataFile("file\\weights\\segmentor.pt");
+    std::filesystem::path imageFile("file\\images\\43.jpg");
 
-  mrcv::Segmentor segmentor;
+    auto currentPath = std::filesystem::current_path();
 
-  segmentor.Initialize(-1, 512, 320, {"background","ship"}, "resnet34", "../weights/resnet34.pt");
-  segmentor.LoadWeight("../weights/segmentor.pt");
-  segmentor.Predict(image, "ship");
+    auto weightsPath = currentPath / weightsFile;
+    auto dataPath = currentPath / dataFile;
+    auto imagePath = currentPath / imageFile;
 
-  return 0;
+	cv::Mat image = cv::imread(imagePath.u8string());
+
+	mrcv::Segmentor segmentor;
+
+	segmentor.Initialize(512, 320, { "background","ship" }, "resnet34", weightsPath.u8string());
+	segmentor.LoadWeight(dataPath.u8string());
+	segmentor.Predict(image, "ship");
+
+	return 0;
 }
