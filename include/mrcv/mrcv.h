@@ -1079,6 +1079,30 @@ namespace mrcv
 		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses,
 		int limitOutPoints = 3000, std::vector<double> limitsOutlierArea = { -4.0e3, -4.0e3, 450, 4.0e3, 4.0e3, 3.0e3 });
 		
+	/**
+	* @brief Функция комлексирования данных с USBL-модема, IMU и СТЗ
+	* @param usblPath	- путь к файлу с данными USBL-модема
+	* @param imuPath	- путь к файлу с данными IMU
+	* @param camFolder	- путь к папке с сохранёнными изображениями
+	* @param outYAML	- путь к файлу для сохранения получившихся кортежей
+	* @param visFlag	- флаг для отображения изображения с нанесённой меткой удалённого объекта
+	* 
+	* @return - код результата работы функции. 0 - успех; 1 - не удалось загрузить данные с UBSL-системы; 2 - не удалось загрузить данные с IMU, 
+												3 - не удалось загрузить изображения; 4 - ошибка сохранения файла с результатом
+	*/
+	MRCV_EXPORT int fuseSensorData(const std::string& usblPath, const std::string& imuPath,
+		const std::string& camFolder, const std::string& outYAML, bool visFlag);
+	
+	/** 
+	* @brief Функция формирования вектора признаков из комплексированных данных
+	* 
+	* @param fusedDataPath		- путь к файлу с комплексированными данными
+	* @param camFolder			- путь к папке с изображениями
+	* @param extractedDataPath	- путь для сохранения веткторов признаков
+	* 
+	* @return - код результата работы функции. 0 - успех, 1 - ошибка загрузки файла с комплексированными данными
+	*/
+	MRCV_EXPORT int extractFeatureVector(const std::string& fusedDataPath, const std::string& camFolder, const std::string& extractedDataPath);
 #ifdef MRCV_CUDA_ENABLED 
 	/**
 	 * @brief Функция отражения изображения с помощью CUDA.
