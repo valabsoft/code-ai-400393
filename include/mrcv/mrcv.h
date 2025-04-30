@@ -456,8 +456,25 @@ namespace mrcv
 
 	int rotateImage(cv::Mat& imageInput, cv::Mat& imageOutput, double angle);
 
+	int adjustBrightnessContrast(cv::Mat& imageInput, cv::Mat& imageOutput, double alpha, double beta);
+
+	int addNoise(cv::Mat& imageInput, cv::Mat& imageOutput, double strength);
+
+	int adjustColorBalance(cv::Mat& imageInput, cv::Mat& imageOutput, const std::vector<double>& factors);
+
+	int applyGaussianBlur(cv::Mat& imageInput, cv::Mat& imageOutput, int kernelSize);
+
+	int randomCrop(cv::Mat& imageInput, cv::Mat& imageOutput, double cropRatio);
+
+	int perspectiveTransform(cv::Mat& imageInput, cv::Mat& imageOutput, float strength);
+
 	int augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
 		std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod);
+
+	int batchAugmentation(const std::vector<cv::Mat>& inputs, std::vector<cv::Mat>& outputs,
+		const BatchAugmentationConfig& config, const std::string& output_dir = "");
+
+	std::string augmentationMethodToString(AUGMENTATION_METHOD method);
 
 	/**
 		*	@brief Класс детектора
