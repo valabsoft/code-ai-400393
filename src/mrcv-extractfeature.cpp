@@ -8,8 +8,8 @@ namespace mrcv
     // Вспомогательная функция для нормализации данных в диапазон [0, 1]
     float normalize(float value, float minVal, float maxVal) 
     {
-        if (maxVal == min_val) return 0.0f;
-        return (value - min_val) / (maxVal - minVal);
+        if (maxVal == minVal) return 0.0f;
+        return (value - minVal) / (maxVal - minVal);
     }
 
     // Вспомогательная функция для вычисления среднего значения вектора
@@ -105,7 +105,7 @@ namespace mrcv
 
                     auto timestampMs = entry["timestamp"].as<long long>();
                     data.timestamp = std::chrono::system_clock::time_point(
-                        std::chrono::milliseconds(timestamp_ms));
+                        std::chrono::milliseconds(timestampMs));
 
                     auto accel = entry["accel"].as<std::vector<double>>();
                     if (accel.size() >= 3) 
