@@ -147,7 +147,7 @@ set(sources
     src/mrcv-optimizer.cpp
     src/mrcv-morphologyImage.cpp
     src/mrcv-compareImages.cpp
-    src/mrcv-sesnsorsfusion.cpp
+    src/mrcv-sensorsfusion.cpp
     src/mrcv-extractfeature.cpp)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
@@ -157,7 +157,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 include(CMakePackageConfigHelpers)
 
-target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp" "src/mrcv-objcourse.cpp" "src/mrcv-imgpreprocessing.cpp" "include/mrcv/mrcv-yolov5.h" "include/mrcv/mrcv-detector.h" "src/mrcv-yolov5.cpp" "src/mrcv-clustering.cpp" "include/mrcv/mrcv-vae.h" "src/mrcv-vae.cpp" "src/mrcv-detector.cpp" "include/mrcv/tinystr.h" "include/mrcv/tinyxml.h" "src/tinystr.cpp" "src/tinyxml.cpp" "src/mrcv-augmentation.cpp" "src/mrcv-disparity.cpp"  "src/mrcv-roi.cpp" "src/mrcv-predictor.cpp" "src/mrcv-optimizer.cpp" "src/mrcv-3dscene.cpp" "src/mrcv-morphologyImage.cpp" "src/mrcv-compareImages.cpp" "include/mrcv/mrcv-sensorsfusion.h" "src/mrcv-sesnsorsfusion.cpp" "src/mrcv-extractfeature.cpp")
+target_sources(mrcv PRIVATE ${sources} "src/mrcv-utility.cpp" "src/mrcv-imgcollection.cpp" "src/mrcv-calibration.cpp"  "include/mrcv/mrcv-common.h" "include/mrcv/mrcv-json.hpp"  "include/mrcv/mrcv-segmentation.h" "src/mrcv-segmentation.cpp" "include/mrcv/mrcv-yolov5.h" "src/mrcv-yolov5.cpp" "src/mrcv-objcourse.cpp" "src/mrcv-imgpreprocessing.cpp" "include/mrcv/mrcv-yolov5.h" "include/mrcv/mrcv-detector.h" "src/mrcv-yolov5.cpp" "src/mrcv-clustering.cpp" "include/mrcv/mrcv-vae.h" "src/mrcv-vae.cpp" "src/mrcv-detector.cpp" "include/mrcv/tinystr.h" "include/mrcv/tinyxml.h" "src/tinystr.cpp" "src/tinyxml.cpp" "src/mrcv-augmentation.cpp" "src/mrcv-disparity.cpp"  "src/mrcv-roi.cpp" "src/mrcv-predictor.cpp" "src/mrcv-optimizer.cpp" "src/mrcv-3dscene.cpp" "src/mrcv-morphologyImage.cpp" "src/mrcv-compareImages.cpp" "include/mrcv/mrcv-sensorsfusion.h" "src/mrcv-sensorsfusion.cpp" "src/mrcv-extractfeature.cpp")
 
 target_compile_definitions(mrcv PUBLIC "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:MRCV_STATIC_DEFINE>")
 
