@@ -3,6 +3,30 @@
 
 namespace mrcv
 {
+#ifdef MRCV_CUDA_ENABLED 
+
+#ifdef _WIN32
+    errno_t ObjCourse::initNN(const std::string pathToModel, const std::string pathToClasses) {
+#else
+    error_t ObjCourse::initNN(const std::string pathToModel, const std::string pathToClasses) {
+#endif
+        try {
+            _network = cv::dnn::readNetFromONNX(pathToModel);
+            _network.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
+            _network.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
+            if (readClasses(pathToClasses) != 0) {
+                return ENOENT;
+            }
+        }
+        catch (const cv::Exception& e) {
+            mrcv::writeLog("Error initializing neural network: " + std::string(e.what()));
+            return EINVAL;
+        }
+        return 0;
+    }
+
+#else
+
 #ifdef _WIN32
     errno_t ObjCourse::initNN(const std::string pathToModel, const std::string pathToClasses)
 #else
@@ -31,6 +55,11 @@ namespace mrcv
 
 		return err;
 	}
+
+#endif
+
+
+
     ObjCourse::ObjCourse(const std::string pathToModel, const std::string pathToClasses)
 	{
 		if (!initNN(pathToModel, pathToClasses))
@@ -113,20 +142,49 @@ namespace mrcv
         // Левый верхний угол
         cv::Point topLeftCorner = cv::Point(left, top);
         // Правый нижний угол
-        cv::Point bottomRightCorner = cv::Point(left + labelSize.width, top + labelSize.height + baseline);        
+        cv::Point bottomRightCorner = cv::Point(left + labelSize.width, top + labelSize.height + baseline);
         // Отрисовка
-        cv::rectangle(img, topLeftCorner, bottomRightCorner, OBJCOURSE_BLACK, cv::FILLED);        
+        cv::rectangle(img, topLeftCorner, bottomRightCorner, OBJCOURSE_BLACK, cv::FILLED);
         cv::putText(img, label, cv::Point(left, top + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, OBJCOURSE_FONT_SCALE, OBJCOURSE_YELLOW, OBJCOURSE_THICKNESS);
     }
-	std::vector<cv::Mat> ObjCourse::preProcess(cv::Mat& img, cv::dnn::Net& net)
-	{
-		cv::Mat blob;
-		cv::dnn::blobFromImage(img, blob, 1.0 / 255.0, cv::Size(_inputWidth, _inputHeight), cv::Scalar(), true, false);
-		net.setInput(blob);
-		std::vector<cv::Mat> outputs;
-		net.forward(outputs, net.getUnconnectedOutLayersNames());
-		return outputs;
-	}
+
+#ifdef MRCV_CUDA_ENABLED 
+    std::vector<cv::Mat> ObjCourse::preProcess(cv::Mat& img, cv::dnn::Net& net) {
+        cv::cuda::GpuMat gpuImg, gpuResized;
+        cv::Mat blob, resized;
+        std::vector<cv::Mat> outputs;
+
+        // Upload image to GPU
+        gpuImg.upload(img);
+
+        // Resize on GPU
+        cv::cuda::resize(gpuImg, gpuResized, cv::Size(_inputWidth, _inputHeight));
+
+        // Convert to CPU Mat for blob creation
+        gpuResized.download(resized);
+
+        // Create blob (normalization)
+        cv::dnn::blobFromImage(resized, blob, 1.0 / 255.0, cv::Size(_inputWidth, _inputHeight), cv::Scalar(), true, false);
+
+        // Set input to network
+        net.setInput(blob);
+
+        // Forward pass
+        net.forward(outputs, net.getUnconnectedOutLayersNames());
+        return outputs;
+    }
+#else
+    std::vector<cv::Mat> ObjCourse::preProcess(cv::Mat& img, cv::dnn::Net& net)
+    {
+        cv::Mat blob;
+        cv::dnn::blobFromImage(img, blob, 1.0 / 255.0, cv::Size(_inputWidth, _inputHeight), cv::Scalar(), true, false);
+        net.setInput(blob);
+        std::vector<cv::Mat> outputs;
+        net.forward(outputs, net.getUnconnectedOutLayersNames());
+        return outputs;
+    }
+#endif
+
 	cv::Mat ObjCourse::postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs, const std::vector<std::string>& classNames)
 	{
         // Начальная инициализация
