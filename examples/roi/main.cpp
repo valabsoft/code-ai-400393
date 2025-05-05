@@ -25,14 +25,14 @@ int main()
 	//Инициализация входых перменных
 	std::pair<float, float> imgSize = { 1440,1080 };  //размер изображения
 	int predictorTrainPointsNum = 50;  //количество точек для обучения модели предсказания положения объекта интереса
-	int totalPointsNum = 500;  //общее количество точек перемещение объекта (кадров)    
-	float objectSize = 100; //размер объекта интереса
+	int totalPointsNum = 5000;  //общее количество точек перемещение объекта (кадров)    
+	float objectSize = 50; //размер объекта интереса
 	int maxError = 200;  //максимальное допустимое отклонение предсказанной координаты от реального значения
 	bool drawObj = 1;
 	//инициализация данных для генератора перемещения
 	int genType = 1;  //Вид генерации траектории 0 - синус, 1 - круг 
 	int R = 300;  //Радиус (размер) генерируемой траектории
-	float timeFracture = 100;  //Управление частотой генерируемых траекторий: чем больше значение, тем медленнее объект движется по траектории
+	float timeFracture = 10;  //Управление частотой генерируемых траекторий: чем больше значение, тем медленнее объект движется по траектории
 	//Инициализация предиктора положения объекта интереса
 	int hiddenSize = 20;  //скрытый размер (20-25 - оптимальное значение)
 	int layersNum = 1;  //количество реккурентных слоев модели (1 - оптимальное значение)
@@ -70,14 +70,15 @@ int main()
 	{
 		tmpPredictedCoordinate = predictedCoordinate;
 		predictedCoordinate = predictor.predictNextCoordinate();
-		cv::line(imgR, toPoint(tmpPredictedCoordinate), toPoint(predictedCoordinate), cv::Scalar(255, 0, 0), 1, 8, 0);
+		
 		if (drawObj)
 		{
 			cv::Mat imgTemp(imgSize.second, imgSize.first, CV_8UC3, cv::Scalar(255, 255, 255));
 			imgR = imgTemp;
-			cv::circle(imgR, { (int)realCoordinate.first,(int)realCoordinate.second }, objectSize / 2, cv::Scalar(0, 124, 0), 1);
+			cv::circle(imgR, { (int)realCoordinate.first +	(rand() % 51 - 25),(int)realCoordinate.second + (rand() % 51 - 25) }, objectSize / 2, cv::Scalar(0, 124, 0), 1);
 		}
 
+		cv::line(imgR, toPoint(tmpPredictedCoordinate), toPoint(predictedCoordinate), cv::Scalar(255, 0, 0), 1, 1, 0);
 		if (predictor.isWorkState() && !ROISizeAquired)
 		{
 			roiTries++;
@@ -123,8 +124,8 @@ int main()
 
 		cv::line(imgR, toPoint(tmpRealCoordinate), toPoint(realCoordinate), cv::Scalar(0, 0, 255), 1, 8, 0);
 
-		//std::cout << "Point: " << i << " Real coordinate: " << realCoordinate << " Predicted coordinate: " << predictedCoordinate << std::endl;
-		//std::cout << "Prediction deviation: " << predictor.getLastDeviation() << " Moving average deviation: " << predictor.getMovingAverageDeviation() << std::endl;
+		std::cout << "Point: " << i << " Real coordinate: " << realCoordinate << " Predicted coordinate: " << predictedCoordinate << std::endl;
+		std::cout << "Prediction deviation: " << predictor.getLastDeviation() << " Moving average deviation: " << predictor.getMovingAverageDeviation() << std::endl;
 	}
 
 	std::time_t stop = std::time(nullptr);
