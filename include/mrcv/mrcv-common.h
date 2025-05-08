@@ -73,15 +73,15 @@ namespace mrcv
 	static cv::Scalar OBJCOURSE_GREEN = cv::Scalar(0, 255, 0);
 	static const bool OBJCOURSE_DRAW_LABEL = true;
 	// Виды методов
-        enum class METOD_MORF
-        {
+	enum class METOD_MORF
+	{
 		OPEN,
 		CLOSE,
 		GRADIENT,
 		ERODE,
 		DILAT
-        };
-        
+	};
+
 	// Виды кодеков
 	enum class CODEC
 	{
@@ -309,7 +309,6 @@ namespace mrcv
 		int image_count = 50;								// Общее число пар изображений в фотосете
 	};
 
-
 	// Структура trianTricks предназначена для повышения производительности обучения
 	struct trainTricks {
 		unsigned int freeze_epochs = 0;					// Замораживает магистраль нейронной сети во время первых freeze_epochs, по умолчанию 0;
@@ -359,6 +358,44 @@ namespace mrcv
 		FILTERED_DISPARITY,
 		FILTERED_HEATMAP,
 	};
-	
 
+	struct Cloud3DItem
+	{
+		int U;      // Координата X на изображении
+		int V;      // Координата Y на изображении
+		double X;   // Координата X в пространстве
+		double Y;   // Координата X в пространстве
+		double Z;   // Координата X в пространстве
+		int R;      // Цвет токчи R
+		int G;      // Цвет токчи G
+		int B;      // Цвет токчи B
+		int C;      // Номер кластера
+	};
+
+	class Point3D {
+	public:
+		// Координаты вершины
+		double X;
+		double Y;
+		double Z;
+		// Кол-во точек возле вершины
+		int NumberOfPoint = 0;
+		// Имя точки
+		std::string Name;
+		Point3D::Point3D(double x, double y, double z, std::string name) {
+			X = x;
+			Y = y;
+			Z = z;
+			Name = name;
+		}
+		// Метод для установки кол-ва точек
+		void Point3D::setNumberOfPoint(int numberofpoints)
+		{
+			NumberOfPoint = numberofpoints;
+		}
+		// Переопределяем оператор для возможности сортировки
+		bool Point3D::operator< (const Point3D& p) {
+			return NumberOfPoint < p.NumberOfPoint;
+		}
+	};
 }

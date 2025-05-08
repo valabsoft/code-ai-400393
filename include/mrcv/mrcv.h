@@ -1103,6 +1103,32 @@ namespace mrcv
 	* @return - код результата работы функции. 0 - успех, 1 - ошибка загрузки файла с комплексированными данными
 	*/
 	MRCV_EXPORT int extractFeatureVector(const std::string& fusedDataPath, const std::string& camFolder, const std::string& extractedDataPath);
+
+	/**
+	* @brief Загрузка данных облака 3D точек для расчета геометрии объекта
+	* @param pathtofile - полный путь к файлу с данными
+	* @param cluster - номер кластера для выборки (по умолчанию = 0)
+	* @param rows - количество строк cvMat объекта (по умолчанию = 0)
+	* @param cols - количество столбцов cvMat объекта (по умолчанию = 0)
+	* @param norm - флаг нормализации данных, если true, данные будут нормализованы (по умолчанию = false)
+	* @return std::vector<Cloud3DItem> вектор точек 3D облака
+	*/
+	MRCV_EXPORT std::vector<Cloud3DItem> geometryLoadData(std::string pathtofile, int cluster = 0, int rows = 0, int cols = 0, bool norm = false);
+
+	/**
+	* @brief Вычисление геометрических характеристик объекта, заданного облаком 3D-точек
+	* @param std::vector<Cloud3DItem> cloud3D - облако 3D-точек объекта
+	* @param double* l - длина bounding box
+	* @param double* w - ширина bounding box
+	* @param double* h - высота bounding box
+	* @param double* length - длина осевой линии
+	* @param double* width - ширина осевой линии
+	* @param double* distance - растояние от камеры до центра масс объекта
+	* @return int - код ошибки {0 - нет ошибок}
+	*/
+	MRCV_EXPORT int geometryCalculateSize(std::vector<Cloud3DItem> cloud3D, double* l, double* w, double* h, double* length, double* width, double* distance);
+
+
 #ifdef MRCV_CUDA_ENABLED 
 	/**
 	 * @brief Функция отражения изображения с помощью CUDA.
@@ -1422,6 +1448,4 @@ namespace mrcv
 
 #endif
 
-}
-
-        
+}      
