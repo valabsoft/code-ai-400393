@@ -455,15 +455,14 @@ namespace mrcv
 			}
 		}
 
-		std::cout << "Batch augmentation completed. Total: "
-			<< successful_augmentations << " images.\n";
+		std::cout << "Batch augmentation completed." << std::endl;
+		std::cout << "Total:\t" << successful_augmentations << " images." << std::endl;
 		for (const auto& [method, count] : method_stats)
 		{
-			std::cout << "  " << method << ": " << count << " images ("
-				<< (count * 100.0 / successful_augmentations) << "%)\n";
+			std::cout << "  " << method << ":\t" << count << " images (" << (count * 100.0 / successful_augmentations) << "%)" << std::endl;
 		}
 
-		return 0;
+		return EXIT_SUCCESS;
 	}
 
 	std::string mrcv::augmentationMethodToString(AUGMENTATION_METHOD method)

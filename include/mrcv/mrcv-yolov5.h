@@ -34,7 +34,7 @@ namespace mrcv
      * @param nc - количество классов (по умолчанию 1).
      * @throws - std::runtime_error если файл не может быть записан.
      */
-    void YOLOv5GenerateConfig(YOLOv5Model model,
+    int YOLOv5GenerateConfig(YOLOv5Model model,
                               const std::string &outputFile,
                               unsigned int nc = 1);
 
@@ -49,7 +49,7 @@ namespace mrcv
      * @param nc - количество классов (по умолчанию 1).
      * @throws - std::runtime_error если файл не может быть записан.
      */
-    void YOLOv5GenerateHyperparameters(YOLOv5Model model,
+    int YOLOv5GenerateHyperparameters(YOLOv5Model model,
                                        unsigned int imgWidth,
                                        unsigned int imgHeight,
                                        const std::string& outputFile,

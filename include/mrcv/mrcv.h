@@ -8,18 +8,20 @@ namespace mrcv
 {
 	/**
 	* @brief функция сравнения изображения.
-	* @param img1 - исходное фото 1, img1 - исходное фото 2, methodCompare - метод сравнения.
+	* @param img1 - исходное изображение 1
+	* @param img2 - исходное исходное изображение 2
+	* @param imethodCompare - метод сравнения.
 	* @return - различия фотографий в процентном соотношении.
 	*/
-	MRCV_EXPORT double compareImages(cv::Mat img1,cv::Mat img2,bool methodCompare);
-	
+	MRCV_EXPORT double compareImages(cv::Mat img1, cv::Mat img2, bool methodCompare);
+
 	/**
-        * @brief функция морфологического преобразования.
-        * @param image - исходное фото, out - путь для нового файла, metod - метод преобразования , morph_size - размер преобразования.
-        *  @return - результат работы функции.
-        */
-        MRCV_EXPORT int morphologyImage(cv::Mat image,std::string out, METOD_MORF metod,int morph_size);
-        
+		* @brief функция морфологического преобразования.
+		* @param image - исходное фото, out - путь для нового файла, metod - метод преобразования , morph_size - размер преобразования.
+		*  @return - результат работы функции.
+		*/
+	MRCV_EXPORT int morphologyImage(cv::Mat image, std::string out, METOD_MORF metod, int morph_size);
+
 	/////////////////////////////////////////////////////////////////////////////
 	// Утилиты
 	/////////////////////////////////////////////////////////////////////////////
@@ -29,12 +31,12 @@ namespace mrcv
 	 * @param logType - тип сообщения в лог-файле
 	 */
 	MRCV_EXPORT void writeLog(std::string logText, LOGTYPE logType = LOGTYPE::INFO);
-	
+
 	/**
 	 * @brief Функция для записи строки-разделителя в текстовый лог-файл
 	 */
 	MRCV_EXPORT void writeLog();
-	
+
 	/**
 	 * @brief Функция сложения двух целых чисел.
 	 * @param a - Первое слагаемое.
@@ -42,7 +44,7 @@ namespace mrcv
 	 * @return - Резальтат вычсиления выражения a + b
 	 */
 	MRCV_EXPORT int add(int a, int b);
-	
+
 	/**
 	 * @brief Функция загрузки изображения.
 	 *
@@ -54,13 +56,13 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Невозможно открыть изображение; -1 - Unhandled Exception.
 	 */
 	MRCV_EXPORT int readImage(cv::Mat& image, std::string pathToImage, bool showImage = false);
-	
+
 	/**
 	 * @brief Функция вывода информации о текущей сборке OpenCV.
 	 * @return Строка с диагностической информацией.
 	 */
 	MRCV_EXPORT std::string getOpenCVBuildInformation();
-	
+
 	/**
 	 * @brief Функция записи видеопотока на диск.
 	 *
@@ -73,7 +75,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - ID камеры задан неверно; 2 - Интервал захвата меньше минимального; 3 - Не удалось захватить камеру; 4 - Не удалось создать объектс cv::VideoWriter; -1 - Unhandled Exception.
 	 */
 	MRCV_EXPORT int recordVideo(int cameraID, int recorderInterval, std::string fileName, CODEC codec);
-	
+
 	/**
 	* @brief Функция скачаивания файла Яндекса.
 	* @param query - Строка запроса для поиска.
@@ -93,7 +95,7 @@ namespace mrcv
 	/////////////////////////////////////////////////////////////////////////////
 	// Калибровка
 	/////////////////////////////////////////////////////////////////////////////
-	
+
 	/**
 	 * @brief Функция общей калибровки.
 	 * @param imagesL - Вектор строк имён изображений левой камеры.
@@ -160,7 +162,7 @@ namespace mrcv
 	 * @return - Структура для хранения калибровочных параметров.
 	 */
 	MRCV_EXPORT CalibrationParametersStereo readCalibrationParametersStereo(std::string fileName);
-	
+
 	/**
 	 * @brief Функция чтения конфигурационного файла для калибровки
 	 * @param pathToConfigFile - Полный путь к конфигурационному файлу.
@@ -299,7 +301,7 @@ namespace mrcv
 	 * @return - выходное цветное RGB изображение: формата cv::Mat CV_8UC3, с кодом ошибки
 	 */
 	cv::Mat getErrorImage(std::string textError);
-	
+
 	/**
 	 * @brief Функция автоматической предобработки изображения, кооррекции яркости.
 	 * Функция автоматической коррекции яркости изображения с помощью степенного преобразования (метод Гамма-Коррекции)
@@ -309,7 +311,7 @@ namespace mrcv
 	 * @return - код результата работы функции: 0 - Success; 1 - Пустое изображение;  -1 - Неизвестная ошибка.
 	 */
 	int changeImageBrightness(cv::Mat& imageInput, cv::Mat& imageOutput, double gamma);
-	
+
 	/**
 	 * @brief Функция автоматической кооррекции контраста.
 	 * Функция реализует несколько методов коррекции контраста изображения
@@ -338,7 +340,7 @@ namespace mrcv
 		mrcv::METOD_INCREASE_IMAGE_CONTRAST metodIncreaseContrast, mrcv::COLOR_MODEL colorSpace,
 		double clipLimitCLAHE = 2, cv::Size gridSizeCLAHE = cv::Size(9, 9),
 		float percentContrastBalance = 5, double mContrastExtantion = -1, double eContrastExtantion = 4);
-	
+
 	/**
 	 * @brief Повышение резкости изображения. Алгоритм №01 (фильтра Лапласа)
 	 * Функция повышения резкости изображения с помощью фильтра Лапласа
@@ -348,7 +350,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; -1 - Неизвестная ошибка.
 	 */
 	int sharpeningImage01(cv::Mat& imageInput, cv::Mat& imageOutput, double gainFactorHighFrequencyComponent);
-	
+
 	/**
 	 * @brief Повышение резкости изображения. Алгоритм №02 (фильтра Гаусса)
 	 * Функция повышения резкости изображения с помощью фильтра Гаусса
@@ -360,7 +362,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; -1 - Неизвестная ошибка.
 	 */
 	int sharpeningImage02(cv::Mat& imageInput, cv::Mat& imageOutput, cv::Size filterSize, double sigmaFilter, double gainFactorHighFrequencyComponent);
-	
+
 	/**
 	 * @brief Функция чтения параметров камеры из файла.
 	 * @param fileNameCameraParameters -    путь к файлу c параметрами камеры.
@@ -369,7 +371,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
 	 */
 	int readCameraParametrsFromFile(const char* pathToFileCameraParametrs, mrcv::cameraParameters& cameraParameters);
-	
+
 	/**
 	 * @brief Функция предварительной обработки изображений (автоматическая коррекция контраста и яркости, резкости)
 	 * Функция интегрирует в себе остальные функции предобработки изображений
@@ -404,7 +406,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
 	 */
 	int preprocessingImage(cv::Mat& imageIn, std::vector<mrcv::METOD_IMAGE_PERPROCESSIN> metodImagePerProcessingm, const std::string& fileNameCameraParameters);
-	
+
 	/**
 	 * @brief Функция реализует метод Баланса контрастности
 	 * Функция принимает матрицу либо серого изображения, либо одну из координат цветового пространства
@@ -414,7 +416,7 @@ namespace mrcv
 	 * 1 - Пустое массив;  3 - выход за диапазон percent; -1 - Неизвестная ошибка.
 	 */
 	int contrastBalancing(cv::Mat& planeArray, float percent);
-	
+
 	/**
 	 * @brief Функция реализует метод Расширение контрастности
 	 * Функция принимает матрицу либо серого изображения, либо одну из координат цветового пространства
@@ -424,7 +426,7 @@ namespace mrcv
 	 * @return - код результата работы функции: 0 - Success; 1 - Пустое массив;  -1 - Неизвестная ошибка.
 	 */
 	int contrastExtantion(cv::Mat& planeArray, double m = -1, double e = 2);
-	
+
 	/**
 	 * @brief Класс для работы с плотным стерео и кластеризацией.
 	 *
@@ -439,7 +441,7 @@ namespace mrcv
 		 * Функция для выполнения кластеризации данных, хранящихся
 		 * в `vuxyzrgb`. Результаты кластеризации сохраняются в `IDX`.
 		 */
-		void makeClustering();
+		int makeClustering();
 
 		/**
 		 * @brief Загружает данные из файла.
@@ -1078,7 +1080,7 @@ namespace mrcv
 		cv::Mat& outputImage3dSceene, mrcv::parameters3dSceene& parameters3dSceene,
 		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses,
 		int limitOutPoints = 3000, std::vector<double> limitsOutlierArea = { -4.0e3, -4.0e3, 450, 4.0e3, 4.0e3, 3.0e3 });
-		
+
 	/**
 	* @brief Функция комлексирования данных с USBL-модема, IMU и СТЗ
 	* @param usblPath	- путь к файлу с данными USBL-модема
@@ -1086,20 +1088,20 @@ namespace mrcv
 	* @param camFolder	- путь к папке с сохранёнными изображениями
 	* @param outYAML	- путь к файлу для сохранения получившихся кортежей
 	* @param visFlag	- флаг для отображения изображения с нанесённой меткой удалённого объекта
-	* 
-	* @return - код результата работы функции. 0 - успех; 1 - не удалось загрузить данные с UBSL-системы; 2 - не удалось загрузить данные с IMU, 
+	*
+	* @return - код результата работы функции. 0 - успех; 1 - не удалось загрузить данные с UBSL-системы; 2 - не удалось загрузить данные с IMU,
 												3 - не удалось загрузить изображения; 4 - ошибка сохранения файла с результатом
 	*/
 	MRCV_EXPORT int fuseSensorData(const std::string& usblPath, const std::string& imuPath,
 		const std::string& camFolder, const std::string& outYAML, bool visFlag);
-	
-	/** 
+
+	/**
 	* @brief Функция формирования вектора признаков из комплексированных данных
-	* 
+	*
 	* @param fusedDataPath		- путь к файлу с комплексированными данными
 	* @param camFolder			- путь к папке с изображениями
 	* @param extractedDataPath	- путь для сохранения веткторов признаков
-	* 
+	*
 	* @return - код результата работы функции. 0 - успех, 1 - ошибка загрузки файла с комплексированными данными
 	*/
 	MRCV_EXPORT int extractFeatureVector(const std::string& fusedDataPath, const std::string& camFolder, const std::string& extractedDataPath);
@@ -1448,4 +1450,4 @@ namespace mrcv
 
 #endif
 
-}      
+}

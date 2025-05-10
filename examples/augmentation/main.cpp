@@ -71,8 +71,7 @@ int main()
     };
 
     std::vector<cv::Mat> batchOutput;
-    state = mrcv::batchAugmentation(inputImagesCopy, batchOutput, config,
-                                    "files" FILE_SEPARATOR "batch_output");
+    state = mrcv::batchAugmentation(inputImagesCopy, batchOutput, config, "files" FILE_SEPARATOR "batch_output");
     if (state != 0) {
         std::cerr << "Error: Batch augmentation failed with code: " << state << std::endl;
         return -1;

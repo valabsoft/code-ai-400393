@@ -5,8 +5,7 @@ int main(void)
 {
     try
     {
-        mrcv::YOLOv5GenerateConfig(mrcv::YOLOv5Model::YOLOv5s,
-                                   "yolov5s-coco.yaml", 80);
+        mrcv::YOLOv5GenerateConfig(mrcv::YOLOv5Model::YOLOv5s, "yolov5s-coco.yaml", 80);
         std::cout << "Configuration file generated successfully!" << std::endl;
     }
     catch (const std::exception &ex)
@@ -16,8 +15,7 @@ int main(void)
 
     try
     {
-        mrcv::YOLOv5GenerateHyperparameters(mrcv::YOLOv5Model::YOLOv5s,
-                                            640, 640, "yolov5s-hyp.yaml", 80);
+        mrcv::YOLOv5GenerateHyperparameters(mrcv::YOLOv5Model::YOLOv5s, 640, 640, "yolov5s-hyp.yaml", 80);
         std::cout << "Configuration file generated successfully!" << std::endl;
     }
     catch (const std::exception &ex)

@@ -360,7 +360,7 @@ namespace mrcv
 
 namespace mrcv
 {
-    void YOLOv5GenerateConfig(YOLOv5Model model,
+    int YOLOv5GenerateConfig(YOLOv5Model model,
                               const std::string &outputFile,
                               unsigned int nc)
     {
@@ -397,6 +397,7 @@ namespace mrcv
 
             default:
                 throw std::invalid_argument("Unsupported YOLOv5 model type!");
+                return EXIT_FAILURE;
         }
 
         config["anchors"] = YAML::Node(YAML::NodeType::Sequence);
@@ -448,13 +449,16 @@ namespace mrcv
         {
             throw std::runtime_error("Unable to open file for writing: " +
                                      outputFile);
+            return EXIT_FAILURE;
         }
 
         fout << config;
         fout.close();
+
+        return EXIT_SUCCESS;
     }
 
-    void YOLOv5GenerateHyperparameters(YOLOv5Model model,
+    int YOLOv5GenerateHyperparameters(YOLOv5Model model,
                                        unsigned int imgWidth,
                                        unsigned int imgHeight,
                                        const std::string &outputFile,
@@ -463,6 +467,7 @@ namespace mrcv
         if ((imgWidth <= 0) || (imgHeight <= 0))
         {
             throw std::invalid_argument("Image dimensions must be positive!");
+            return EXIT_FAILURE;
         }
 
         YAML::Node config;
@@ -551,8 +556,10 @@ namespace mrcv
         {
             throw std::runtime_error("Unable to open file for writing: " +
                                      outputFile);
+            return EXIT_FAILURE;
         }
         fout << config;
         fout.close();
+        return EXIT_SUCCESS;
     }
 }

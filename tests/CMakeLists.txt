@@ -98,7 +98,11 @@ link_directories( ${OpenCV_LIB_DIR}; ${Torch_LIB_DIR}; ${YAML_CPP_LIBRARY_DIR} )
 #----------------------------------------------------------------------------------------------------------------------
 
 set(sources
-    add_test.cpp)
+    add_test.cpp
+    augmentation_test.cpp
+    clustering_test.cpp
+    compareimages_test.cpp
+)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -106,7 +110,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 #----------------------------------------------------------------------------------------------------------------------
 
 add_executable(mrcv-tests)
-target_sources(mrcv-tests PRIVATE ${sources})
+target_sources(mrcv-tests PRIVATE ${sources} "augmentation_test.cpp" "clustering_test.cpp" "compareimages_test.cpp" "configuration_test.cpp")
 
 target_link_libraries(mrcv-tests
     PRIVATE
