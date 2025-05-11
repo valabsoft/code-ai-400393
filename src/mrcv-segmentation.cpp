@@ -93,18 +93,34 @@ namespace mrcv
         register_module("segmentation_head", segmentation_head);
     }
 
-    torch::Tensor FPNImpl::forward(torch::Tensor x) {
-        std::cout << "FPN Input shape: " << x.sizes() << std::endl;
+    torch::Tensor FPNImpl::forward(torch::Tensor x, bool extendlog)
+    {
+        if (extendlog)
+            std::cout << "FPN Input shape: " << x.sizes() << std::endl;
+        
         std::vector<torch::Tensor> features = encoder->features(x);
-        std::cout << "Features sizes: ";
-        for (const auto& f : features) {
-            std::cout << f.sizes() << " ";
-        }
-        std::cout << std::endl;
+        
+        if (extendlog)
+        {
+            std::cout << "Features sizes: ";
+
+            for (const auto& f : features) {
+
+                std::cout << f.sizes() << " ";
+            }
+            std::cout << std::endl;
+        }        
+        
         x = decoder->forward(features);
-        std::cout << "Decoder output shape: " << x.sizes() << std::endl;
+        
+        if (extendlog)
+            std::cout << "Decoder output shape: " << x.sizes() << std::endl;
+        
         x = segmentation_head->forward(x);
-        std::cout << "Segmentation head output shape: " << x.sizes() << std::endl;
+        
+        if (extendlog)
+            std::cout << "Segmentation head output shape: " << x.sizes() << std::endl;
+        
         return x;
     }
 
@@ -551,8 +567,11 @@ namespace mrcv
         trainTricks tricks;
     };
 
-    torch::Tensor DiceLoss(torch::Tensor prediction, torch::Tensor target, int classNum) {
-        std::cout << "DiceLoss - Prediction shape: " << prediction.sizes() << ", Target shape: " << target.sizes() << std::endl;
+    torch::Tensor DiceLoss(torch::Tensor prediction, torch::Tensor target, int classNum, bool extendlog = false)
+    {
+        if (extendlog)
+            std::cout << "DiceLoss - Prediction shape: " << prediction.sizes() << ", Target shape: " << target.sizes() << std::endl;
+        
         if (classNum > prediction.size(1)) {
             writeLog("Class number exceeds prediction channels: " + std::to_string(classNum) + " vs " + std::to_string(prediction.size(1)));
             throw std::runtime_error("Invalid class number in DiceLoss");
@@ -571,25 +590,34 @@ namespace mrcv
         return torch::nll_loss2d(torch::log_softmax(prediction, 1), target);
     }
 
-    void Segmentor::Initialize(int _width, int _height, std::vector<std::string>&& _listName,
-        std::string encoderName, std::string pretrainedPath) {
+    int Segmentor::Initialize(int _width, int _height, std::vector<std::string>&& _listName, std::string encoderName, std::string pretrainedPath)
+    {
         width = _width;
         height = _height;
         listName = _listName;
 
-        if (listName.size() < 2) {
+        if (listName.size() < 2)
+        {
             writeLog("Class number is less than 2");
             throw std::runtime_error("At least two classes required");
+            return EXIT_FAILURE;
         }
+        
         device = torch::Device(torch::kCPU);
-        try {
+        
+        try
+        {
             fpn = FPN(listName.size(), encoderName, pretrainedPath);
             fpn->to(device);
         }
-        catch (const std::exception& e) {
+        catch (const std::exception& e)
+        {
             writeLog("Failed to initialize FPN: " + std::string(e.what()));
             throw;
+            return EXIT_FAILURE;
         }
+
+        return EXIT_SUCCESS;
     }
 #ifdef MRCV_CUDA_ENABLED
     void Segmentor::InitializeCuda(int gpu_id, int _width, int _height, std::vector<std::string>&& _listName,
@@ -626,9 +654,10 @@ namespace mrcv
         this->tricks = tricks;
     }
 
-    void Segmentor::Train(float learning_rate, unsigned int epochs, int batch_size,
-        std::string train_val_path, std::string imageType, std::string save_path) {
-        try {
+    int Segmentor::Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string imageType, std::string save_path, bool extendlog)
+    {
+        try
+        {
             std::string train_dir = train_val_path + file_sepator() + "train";
             std::string val_dir = train_val_path + file_sepator() + "test";
 
@@ -640,13 +669,17 @@ namespace mrcv
             loadDataFromFolder(train_dir, imageType, listImagesTrain, listLabelsTrain);
             loadDataFromFolder(val_dir, imageType, listImagesVal, listLabelsVal);
 
-            if (listImagesTrain.empty() || listLabelsTrain.empty()) {
+            if (listImagesTrain.empty() || listLabelsTrain.empty())
+            {
                 writeLog("No training data found in: " + train_dir);
                 throw std::runtime_error("Empty training dataset");
+                return EXIT_FAILURE;
             }
-            if (listImagesVal.empty() || listLabelsVal.empty()) {
+            if (listImagesVal.empty() || listLabelsVal.empty())
+            {
                 writeLog("No validation data found in: " + val_dir);
                 throw std::runtime_error("Empty validation dataset");
+                return EXIT_FAILURE;
             }
 
             auto customTrainDataset = SegDataset(width, height, listImagesTrain, listLabelsTrain,
@@ -690,13 +723,15 @@ namespace mrcv
                 for (auto& batch : *data_loader_train) {
                     auto data = batch.data;
                     auto target = batch.target;
-                    std::cout << "Train - Data shape: " << data.sizes() << ", Target shape: " << target.sizes() << std::endl;
+                    if (extendlog)
+                        std::cout << "Train - Data shape: " << data.sizes() << ", Target shape: " << target.sizes() << std::endl;
                     data = data.to(torch::kF32).to(device).div(255.0);
                     target = target.to(torch::kLong).to(device).squeeze(1);
 
                     optimizer.zero_grad();
                     torch::Tensor prediction = fpn->forward(data);
-                    std::cout << "Train - Prediction shape: " << prediction.sizes() << std::endl;
+                    if (extendlog)
+                        std::cout << "Train - Prediction shape: " << prediction.sizes() << std::endl;
                     torch::Tensor ce_loss = CELoss(prediction, target);
                     torch::Tensor dice_loss = DiceLoss(torch::softmax(prediction, 1), target.unsqueeze(1), (int)listName.size());
                     auto loss = dice_loss * tricks.dice_ce_ratio + ce_loss * (1 - tricks.dice_ce_ratio);
@@ -708,8 +743,7 @@ namespace mrcv
                     loss_train = loss_sum / batch_count / batch_size;
                     auto dice_coef = dice_coef_sum / batch_count;
 
-                    std::cout << "Epoch: " << epoch << ", Training Loss: " << loss_train
-                        << ", Dice coefficient: " << dice_coef << "\r";
+                    std::cout << "Epoch: " << epoch << ", Training Loss: " << loss_train << ", Dice coefficient: " << dice_coef << "\r";
 
                     // Освобождение памяти
                     data.reset();
@@ -726,12 +760,14 @@ namespace mrcv
                 for (auto& batch : *data_loader_val) {
                     auto data = batch.data;
                     auto target = batch.target;
-                    std::cout << "Val - Data shape: " << data.sizes() << ", Target shape: " << target.sizes() << std::endl;
+                    if (extendlog)
+                        std::cout << "Val - Data shape: " << data.sizes() << ", Target shape: " << target.sizes() << std::endl;
                     data = data.to(torch::kF32).to(device).div(255.0);
                     target = target.to(torch::kLong).to(device).squeeze(1);
 
                     torch::Tensor prediction = fpn->forward(data);
-                    std::cout << "Val - Prediction shape: " << prediction.sizes() << std::endl;
+                    if (extendlog)
+                        std::cout << "Val - Prediction shape: " << prediction.sizes() << std::endl;
                     torch::Tensor ce_loss = CELoss(prediction, target);
                     torch::Tensor dice_loss = DiceLoss(torch::softmax(prediction, 1), target.unsqueeze(1), (int)listName.size());
                     auto loss = dice_loss * tricks.dice_ce_ratio + ce_loss * (1 - tricks.dice_ce_ratio);
@@ -749,42 +785,57 @@ namespace mrcv
                     dice_loss.reset();
                     loss.reset();
                 }
-                std::cout << "Epoch: " << epoch << ", Validation Loss: " << loss_val
-                    << ", Dice coefficient: " << dice_coef_sum / batch_count << std::endl;
-                if (loss_val < best_loss) {
+                std::cout << "Epoch: " << epoch << ", Validation Loss: " << loss_val << ", Dice coefficient: " << dice_coef_sum / batch_count << std::endl;
+                if (loss_val < best_loss)
+                {
                     torch::save(fpn, save_path);
                     best_loss = loss_val;
                 }
             }
+
+            return EXIT_SUCCESS;
         }
-        catch (const c10::Error& e) {
-            writeLog("c10::Error in Train: " + std::string(e.what()));
+        catch (const c10::Error& e)
+        {
+            writeLog("c10::Error in Train: " + std::string(e.what()));            
             throw;
+            return EXIT_FAILURE;
         }
-        catch (const std::exception& e) {
-            writeLog("Standard exception in Train: " + std::string(e.what()));
+        catch (const std::exception& e)
+        {
+            writeLog("Standard exception in Train: " + std::string(e.what()));            
             throw;
+            return EXIT_FAILURE;
         }
-        catch (...) {
+        catch (...)
+        {
             writeLog("Unknown exception in Train");
             throw;
+            return EXIT_FAILURE;
         }
     }
 
-    void Segmentor::LoadWeight(std::string pathWeight) {
-        try {
+    int Segmentor::LoadWeight(std::string pathWeight)
+    {
+        try
+        {
             torch::load(fpn, pathWeight);
             fpn->to(device);
             fpn->eval();
+            return EXIT_SUCCESS;
         }
-        catch (const std::exception& e) {
+        catch (const std::exception& e)
+        {
             writeLog("Failed to load weights: " + pathWeight + ", Error: " + e.what());
             throw;
+            return EXIT_FAILURE;
         }
     }
 
-    void Segmentor::Predict(cv::Mat& image, const std::string& which_class) {
-        try {
+    int Segmentor::Predict(cv::Mat& image, const std::string& which_class, bool showimages)
+    {
+        try
+        {
             cv::Mat srcImg = image.clone();
             int which_class_index = -1;
             for (int i = 0; i < listName.size(); i++) {
@@ -793,9 +844,11 @@ namespace mrcv
                     break;
                 }
             }
-            if (which_class_index == -1) {
+            if (which_class_index == -1)
+            {
                 writeLog("Class not found: " + which_class);
                 throw std::runtime_error("Class not in name list");
+                return EXIT_FAILURE;
             }
             int image_width = image.cols;
             int image_height = image.rows;
@@ -814,14 +867,22 @@ namespace mrcv
             cv::resize(image, image, cv::Size(image_width, image_height));
 
             cv::imwrite("prediction.jpg", image);
-            cv::imshow("prediction", image);
-            cv::imshow("srcImage", srcImg);
-            cv::waitKey(0);
-            cv::destroyAllWindows();
+            
+            if (showimages)
+            {
+                cv::imshow("prediction", image);
+                cv::imshow("srcImage", srcImg);
+                cv::waitKey(0);
+                cv::destroyAllWindows();
+            }
+            
+            return EXIT_SUCCESS;
         }
-        catch (const std::exception& e) {
+        catch (const std::exception& e)
+        {
             writeLog("Error in Predict: " + std::string(e.what()));
             throw;
+            return EXIT_FAILURE;
         }
     }
 

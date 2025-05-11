@@ -139,7 +139,7 @@ namespace mrcv
         FPNImpl(int numberClasses, std::string encoderName = "resnet18", std::string pretrainedPath = "", int encoderDepth = 5,
             int decoderChannelPyramid = 256, int decoderChannelsSegmentation = 128, std::string decoderMergePolicy = "add",
             float decoder_dropout = 0.2, double upsampling = 4);
-        torch::Tensor forward(torch::Tensor x);
+        torch::Tensor forward(torch::Tensor x, bool extendlog = false);
     private:
         Backbone* encoder;
         FPNDecoder decoder{ nullptr };

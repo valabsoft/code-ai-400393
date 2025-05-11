@@ -185,7 +185,7 @@ namespace mrcv
 		 * @param encoderName - Имя кодировщика.
 		 * @param pretrainedPath - Путь к кодировщику.
 		 */
-		void Initialize(int width, int height, std::vector<std::string>&& listName, std::string encoderName, std::string pretrainedPath);
+		int Initialize(int width, int height, std::vector<std::string>&& listName, std::string encoderName, std::string pretrainedPath);
 		/**
 		 * @brief Функция инициализации
 		 * @param gpu_id - Подключение GPU.
@@ -211,20 +211,20 @@ namespace mrcv
 		 * @param imageType - Тип изображений.
 		 * @param save_path - Путь для сохранения своих весов.
 		 */
-		void Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string imageType, std::string save_path);
+		int Train(float learning_rate, unsigned int epochs, int batch_size, std::string train_val_path, std::string imageType, std::string save_path, bool extendlog = false);
 
 		/**
 		 * @brief функция загрузки своих весов
 		 * @param pathWeight - Путь к своим весам.
 		 */
-		void LoadWeight(std::string pathWeight);
+		int LoadWeight(std::string pathWeight);
 
 		/**
 		 * @brief Функция прогноза
 		 * @param image - Тестируемое изображение.
 		 * @param which_class - Список классов.
 		 */
-		void Predict(cv::Mat& image, const std::string& which_class);
+		int Predict(cv::Mat& image, const std::string& which_class, bool showimages = false);
 
 	private:
 		int width = 512;

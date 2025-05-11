@@ -24,7 +24,7 @@ TEST(disparity_test, disparity)
         mrcv::DISPARITY_TYPE::ALL,
         cv::COLORMAP_TURBO,
         true,
-        true);
+        false);
 
     EXPECT_EQ(exitcode, EXIT_SUCCESS);
 }
