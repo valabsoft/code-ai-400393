@@ -103,6 +103,10 @@ set(sources
     clustering_test.cpp
     compareimages_test.cpp
     disparitymap_test.cpp
+    imgpreprocessing_test.cpp
+    morphologyimage_test.cpp
+    objcourse_test.cpp
+    sensorsfusion_test.cpp
 )
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
@@ -111,7 +115,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 #----------------------------------------------------------------------------------------------------------------------
 
 add_executable(mrcv-tests)
-target_sources(mrcv-tests PRIVATE ${sources} "augmentation_test.cpp" "clustering_test.cpp" "compareimages_test.cpp" "configuration_test.cpp" "disparitymap_test.cpp" "geometry_test.cpp")
+target_sources(mrcv-tests PRIVATE ${sources} "augmentation_test.cpp" "clustering_test.cpp" "compareimages_test.cpp" "configuration_test.cpp" "disparitymap_test.cpp" "geometry_test.cpp" "imgpreprocessing_test.cpp" "morphologyimage_test.cpp" "objcourse_test.cpp" "sensorsfusion_test.cpp")
 
 target_link_libraries(mrcv-tests
     PRIVATE
