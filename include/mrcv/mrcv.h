@@ -598,7 +598,7 @@ namespace mrcv
 		*			-1	- Неизвестная ошибка.
 		*/
 		int AutoTrain(std::string trainValPath, std::string imageType, std::vector<int> epochsList = { 10, 30, 50 }, std::vector<int> batchSizes = { 4, 8, 10 },
-			std::vector<float> learningRates = { 0.1, 0.01 }, std::string pretrainedPath = "detector", std::string savePath = "detector.pt");
+			std::vector<float> learningRates = { 0.1, 0.01 }, std::string pretrainedPath = "detector", std::string savePath = "detector.pt", bool extendlog = false);
 		/**
 		* @brief Функция валидации модели
 		*

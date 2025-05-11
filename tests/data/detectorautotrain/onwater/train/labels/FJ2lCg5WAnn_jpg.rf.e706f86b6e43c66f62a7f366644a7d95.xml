@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>FJ2lCg5WAnn_jpg.rf.e706f86b6e43c66f62a7f366644a7d95.jpg</filename>
+	<path>FJ2lCg5WAnn_jpg.rf.e706f86b6e43c66f62a7f366644a7d95.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>fish-b</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>137</xmin>
+			<xmax>471</xmax>
+			<ymin>33</ymin>
+			<ymax>574</ymax>
+		</bndbox>
+	</object>
+</annotation>

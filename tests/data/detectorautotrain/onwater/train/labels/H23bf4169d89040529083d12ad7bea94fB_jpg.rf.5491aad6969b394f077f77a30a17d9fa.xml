@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>H23bf4169d89040529083d12ad7bea94fB_jpg.rf.5491aad6969b394f077f77a30a17d9fa.jpg</filename>
+	<path>H23bf4169d89040529083d12ad7bea94fB_jpg.rf.5491aad6969b394f077f77a30a17d9fa.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>buoy</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>153</xmin>
+			<xmax>487</xmax>
+			<ymin>29</ymin>
+			<ymax>518</ymax>
+		</bndbox>
+	</object>
+</annotation>

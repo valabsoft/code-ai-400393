@@ -190,7 +190,7 @@ namespace mrcv
         {
             std::cerr << "Error: No data loaded from YAML file " << fusedDataPath << std::endl;
             writeLog("Error: No data loaded from YAML file " + fusedDataPath, mrcv::LOGTYPE::ERROR);
-            return 1;
+            return EXIT_FAILURE;
         }
 
         // Извлечение признаков
@@ -346,6 +346,6 @@ namespace mrcv
             writeLog("Error writing features YAML: " + std::string(e.what()), mrcv::LOGTYPE::ERROR);
         }
         
-        return 0;
+        return EXIT_SUCCESS;
     }
 }

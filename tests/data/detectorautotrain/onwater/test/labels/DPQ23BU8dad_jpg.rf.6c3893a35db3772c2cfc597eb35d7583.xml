@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>DPQ23BU8dad_jpg.rf.6c3893a35db3772c2cfc597eb35d7583.jpg</filename>
+	<path>DPQ23BU8dad_jpg.rf.6c3893a35db3772c2cfc597eb35d7583.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>buoy</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>213</xmin>
+			<xmax>482</xmax>
+			<ymin>84</ymin>
+			<ymax>596</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,27 @@
+<annotation>
+	<folder></folder>
+	<filename>download-8_jpg.rf.604955e4c925023beeeace3461b8a322.jpg</filename>
+	<path>download-8_jpg.rf.604955e4c925023beeeace3461b8a322.jpg</path>
+	<source>
+		<database>roboflow.com</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>fish-b</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<occluded>0</occluded>
+		<bndbox>
+			<xmin>30</xmin>
+			<xmax>604</xmax>
+			<ymin>187</ymin>
+			<ymax>430</ymax>
+		</bndbox>
+	</object>
+</annotation>

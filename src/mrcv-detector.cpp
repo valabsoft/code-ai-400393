@@ -1235,7 +1235,7 @@ namespace mrcv
 	}
 
 	int Detector::AutoTrain(std::string trainValPath, std::string imageType, std::vector<int> epochsList, std::vector<int> batchSizes,
-		std::vector<float> learningRates, std::string pretrainedPath, std::string savePath)
+		std::vector<float> learningRates, std::string pretrainedPath, std::string savePath, bool extendlog)
 	{
 		float bestLoss = 10;
 		int bestEpochs = 0;
@@ -1250,8 +1250,8 @@ namespace mrcv
 			{
 				for (float learningRate : learningRates) 
 				{
-					std::cout << "Training with epochs: " << numEpochs << ", batch size: " << batchSize
-						<< ", learning rate: " << learningRate << std::endl;
+					if (extendlog)
+						std::cout << "Training with epochs: " << numEpochs << ", batch size: " << batchSize << ", learning rate: " << learningRate << std::endl;
 
 					statusCode = Train(trainValPath, imageType, numEpochs, batchSize, learningRate, savePath, pretrainedPath);
 
@@ -1273,9 +1273,9 @@ namespace mrcv
 		}
 
 		std::cout << "Best hyperparameters: " << std::endl;
-		std::cout << "  Epochs: " << bestEpochs << std::endl;
-		std::cout << "  Batch size: " << bestBatchSize << std::endl;
-		std::cout << "  Learning rate: " << bestLearningRate << std::endl;
+		std::cout << "\tEpochs: " << bestEpochs << std::endl;
+		std::cout << "\tBatch size: " << bestBatchSize << std::endl;
+		std::cout << "\tLearning rate: " << bestLearningRate << std::endl;
 		std::cout << "Best validation loss: " << bestLoss << std::endl;
 
 		statusCode = Train(trainValPath, imageType, bestEpochs, bestBatchSize, bestLearningRate, savePath, pretrainedPath);
