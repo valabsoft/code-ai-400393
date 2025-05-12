@@ -12,14 +12,14 @@ TEST(detectorautotrain_test, detectorautotrain)
     auto pretrainedModelPath = path / "yolo4_tiny.pt";
 
     mrcv::Detector detector;
-    detector.Initialize(0, 416, 416, vocClassesPath.string());
+    detector.Initialize(-1, 416, 416, vocClassesPath.string());
     int exitcode = detector.AutoTrain
     (
         datasetPath.u8string(),
         ".jpg",
-        { 2 }, // { 10, 15, 30 },
-        { 2 }, // { 4, 8 },
-        { 0.1, 0.01 }, // { 0.001, 1.0E-4F },
+        { 1 },
+        { 4 },
+        { 0.001, 0.0001 },
         pretrainedModelPath.u8string(),
         modelSavePath.u8string()
     );
