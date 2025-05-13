@@ -14,9 +14,9 @@ TEST(emergencydetector_test, emergencydetector)
     bool classesPathExists = std::filesystem::exists(vocClassesPath);
     bool weightPathExists = std::filesystem::exists(weightPath);
 
-    auto imageExists = imagePathExists ? "-- OK" : "-- FAILURE";
-    auto classesExists = classesPathExists ? "-- OK" : "-- FAILURE";
-    auto weightExists = weightPathExists ? "-- OK" : "-- FAILURE";
+    auto imageExists = imagePathExists ? " -- OK" : " -- FAILURE";
+    auto classesExists = classesPathExists ? " -- OK" : " -- FAILURE";
+    auto weightExists = weightPathExists ? " -- OK" : " -- FAILURE";
 
     std::cout << "Image path: " << imagePath.u8string() << imageExists << std::endl;
     std::cout << "Classes path: " << vocClassesPath.u8string() << classesExists << std::endl;
@@ -26,20 +26,13 @@ TEST(emergencydetector_test, emergencydetector)
 
     int exitcode = EXIT_FAILURE;
 
-    try
-    {
-        mrcv::Detector detector;
-        // Инициализация структуры модели
-        detector.Initialize(0, 416, 416, vocClassesPath.string());
-        // Загрузка весов обученной модели
-        detector.LoadWeight(weightPath.u8string());
-        // Детекция объектов на изображении
-        exitcode = detector.Predict(image, false, 0.1);
-    }
-    catch (...)
-    {
-        exitcode = EXIT_FAILURE;
-    }
+    mrcv::Detector detector;
+    // Инициализация структуры модели
+    detector.Initialize(-1, 416, 416, vocClassesPath.string());
+    // Загрузка весов обученной модели
+    detector.LoadWeight(weightPath.u8string());
+    // Детекция объектов на изображении
+    exitcode = detector.Predict(image, false, 0.1);
 
     EXPECT_EQ(exitcode, EXIT_SUCCESS);
 }

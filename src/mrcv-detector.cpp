@@ -1343,9 +1343,13 @@ namespace mrcv
 		}
 		writeLog("Detector is complete!", mrcv::LOGTYPE::INFO);
 
-		cv::resize(image, image, { originWidth,originHeight });
+		
 		if (show)
+		{
+			cv::resize(image, image, { originWidth, originHeight });
 			showBbox(image, detection[0], confidence, nameList);
+		}
+			
 		return EXIT_SUCCESS;
 	}
 }
