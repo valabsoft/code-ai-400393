@@ -1,0 +1,19 @@
+[project]
+name = "mrcv"
+version = "0.1.0"
+description = "A short description of your library"
+readme = "README.md"
+authors = [{name = "Your Name", email = "your.email@example.com"}]
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["mrcv"]

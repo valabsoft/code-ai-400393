@@ -1,3 +1,9 @@
 .vs/
 build/
 tests/data/augmentation/batchOutput/
+python/exaples/detector/files/
+python/exaples/segmentation/file/
+python/exaples/vae/files/
+python/mrcv/__pycache__/
+python/exaples/augmentation/files/
+python/exaples/clustering/files/
