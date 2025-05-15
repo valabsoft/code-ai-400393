@@ -57,9 +57,9 @@
 
 | Назначение | Классы | Архитектуры |
 |------------|--------|-------------|
-| Подводная археология | Амфоры, пушечные ядра, посуда, фрагменты кораблей, корабельные орудия                 | [yolov5n](https://disk.yandex.ru/d/v7zyKX-ggxNm-g) |
-| Поисковые операции   | Затонувшие корабли, самолёты                                                          | [yolov5n](https://disk.yandex.ru/d/QYB4u4gkHHIWoQ) |
-| Классификация судов  | Авианосцы, грузовые суда, круизные лайнеры, рыболовные суда, танкеры, военные корабли | [yolov5n](https://disk.yandex.ru/d/BvOk5oChQ67Vnw) |
+| Подводная археология | Амфоры, пушечные ядра, посуда, фрагменты кораблей, корабельные орудия                 | [yolov5n](https://disk.yandex.ru/d/v7zyKX-ggxNm-g), [yolov5s](https://disk.yandex.ru/d/B1xEyi3OhfJIcw) |
+| Поисковые операции   | Затонувшие корабли, самолёты                                                          | [yolov5n](https://disk.yandex.ru/d/QYB4u4gkHHIWoQ), [yolov5s](https://disk.yandex.ru/d/qLuCnBADkr1WUw) |
+| Классификация судов  | Авианосцы, грузовые суда, круизные лайнеры, рыболовные суда, танкеры, военные корабли | [yolov5n](https://disk.yandex.ru/d/BvOk5oChQ67Vnw), [yolov5s](https://disk.yandex.ru/d/cqkz5-npK2RQaA) |
 
 ____
 [:arrow_up:Оглавление](#Оглавление)
