@@ -54,13 +54,13 @@ namespace mrcv
 {
 	// Флаг отладочного лога, если false - лог не создается
 	static const bool IS_DEBUG_LOG_ENABLED = true;
-	
+
 	// Маска файла для функции записи видео
 	static const std::string UTILITY_DEFAULT_RECORDER_FILENAME = "video";
-	
+
 	// Интервал записи видео файла по умолчанию
 	static const int UTILITY_DEFAULT_RECORDER_INTERVAL = 5;
-	
+
 	// FPS камеры по умолчанию
 	static const int UTILITY_DEFAULT_CAMERA_FPS = 25;
 
@@ -90,7 +90,7 @@ namespace mrcv
 		mp4v,
 		h265
 	};
-	
+
 	// Виды записей в лог-файле
 	enum class LOGTYPE
 	{
@@ -100,7 +100,7 @@ namespace mrcv
 		INFO,		// Информация		INFO
 		WARNING		// Предупреждение	WARN
 	};
-	
+
 	// Методы коррекции конраста изобрадения (цветовые пространства) для функции increaseImageContrast
 	enum class METOD_INCREASE_IMAGE_CONTRAST
 	{
@@ -178,7 +178,7 @@ namespace mrcv
 		double avgErr;      // средняя ошибка
 		char pathToFileCameraParametrs; // путь к файлу c параметрами камеры (c которого загружены данные).
 	};
-	
+
 	// Список методов построение карты расхождений
 	enum class METOD_DISPARITY
 	{
@@ -269,7 +269,7 @@ namespace mrcv
 		double scale = 1;   // Масштаб
 		double dZ = -3000;  // смещение центра вращения от камер вдоль оси z (мм)
 	};
-	
+
 	// Структура для хранения параметров калибровки одиночной камеры
 	struct CalibrationParametersMono
 	{
@@ -334,11 +334,11 @@ namespace mrcv
 		ROTATE_IMAGE_315,
 		FLIP_HORIZONTAL_AND_VERTICAL,
 		BRIGHTNESS_CONTRAST_ADJUST,
-    GAUSSIAN_NOISE,
-    COLOR_JITTER,
-    GAUSSIAN_BLUR,
-    RANDOM_CROP,
-    PERSPECTIVE_WARP,
+		GAUSSIAN_NOISE,
+		COLOR_JITTER,
+		GAUSSIAN_BLUR,
+		RANDOM_CROP,
+		PERSPECTIVE_WARP,
 		TEST
 	};
 
@@ -397,5 +397,43 @@ namespace mrcv
 		bool Point3D::operator< (const Point3D& p) {
 			return NumberOfPoint < p.NumberOfPoint;
 		}
+	};
+
+	//	////////////////////
+	//  Данные для хранения информации о параметрах и форме идентифицированного объекта
+	// ////////////////////
+	struct primitiveData
+	{
+		int numPointsInSegment;
+		std::vector<cv::Point2d> segmentPoints2Dvu;   // 2D точки сегмента (на изображении)
+		std::vector<cv::Point3d> segmentPoints3Dxyz;  // 3D точки сегмента (в пространстве)
+		std::vector<cv::Vec3b> segmentPointsRGB;            // цвет точки сегмента в RGB
+
+		// количество точек в сегменте
+	    // для храниения, какого вида примитив у объекта
+	    //-1 - ошибка
+	    // 0 - не определено
+	    // 1 - плоскость
+	    // 2 - сфера
+	    // 3 - цилиндр
+		int primitiveType = -1;                                  //  тип примитива объектов (номер)
+		std::string primitiveTypeName = "none";                  //  тип примитивов объектов (имя)
+		//  параметры модели привитивов (всех кластеров)
+		// 1 - плоскость: 4-е параметра: x,y,z, meanErr
+		// 2 - сфера:     5-е параметра: x,y,z,R, meanErr
+		// 3 - цилиндр:   8-е параметра: x1,y1,z1, x2,y2,z2, R1, R2
+		std::vector<double> primitiveParameter; //  параметры модели привитивов (всех кластеров)
+		std::vector<cv::Point3d> primitivePoints;            // векотор точек плоскоси (4 шт) и цилиндра (30 шт) для прорисовки их на изображении
+	};
+
+	// ////////////////////
+	//  Структура данных визуализации о параметрах и форме идентифицированных объектов
+	// ////////////////////
+	struct outputPrimitivesImages
+	{
+		cv::Mat outputImageGeneralProjection;   // изгбражение + 3-и проекции XY, YZ и XZ
+		cv::Mat outputImageProjectionXY;        // проекция XY
+		cv::Mat outputImageProjectionYZ;        // проекция YZ
+		cv::Mat outputImageProjectionXZ;        // проекция XZ
 	};
 }

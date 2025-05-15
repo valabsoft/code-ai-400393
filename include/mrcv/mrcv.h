@@ -848,14 +848,14 @@ namespace mrcv
 			int segHeight = 160;
 			int netWidth = 640;
 			int netHeight = 640;
-			float maskThreshold = 0.5;
+			float maskThreshold = 0.85;
 			cv::Size srcImgShape;
 			cv::Vec4d params;
 		};
 		// Параметры обработки
-		const float SCORE_THRESHOLD = 0.50;
-		const float NMS_THRESHOLD = 0.45;
-		const float CONFIDENCE_THRESHOLD = 0.45;
+		float SCORE_THRESHOLD = 0.35;
+		float NMS_THRESHOLD = 0.45;
+		float CONFIDENCE_THRESHOLD = 0.30;
 		// Параметры шрифтов
 		const float FONT_SCALE = 0.7;
 		const int   THICKNESS = 1;
@@ -1130,7 +1130,22 @@ namespace mrcv
 	*/
 	MRCV_EXPORT int geometryCalculateSize(std::vector<Cloud3DItem> cloud3D, double* l, double* w, double* h, double* length, double* width, double* distance);
 
+	// ////////////////////
+	//  Список фунций
+	// ////////////////////
+	MRCV_EXPORT int detectObjectPrimitives(mrcv::pointsData& points3D, mrcv::primitiveData& primitive, int numberSelectedSegment, double coefFilterSigma = 2.5);
+	MRCV_EXPORT int drawPrimitives(cv::Mat& inputImageCamera01Undistort, outputPrimitivesImages& outputImages, std::vector<mrcv::primitiveData>& primitives);
 
+	// ////////////////////
+	//  Вспомогательные функции
+	// ////////////////////
+	std::vector<double> FitPlane(std::vector<cv::Point3d> clastersData, std::vector<cv::Point3d>& planePoints);
+	std::vector<double> FitSphere(std::vector<cv::Point3d> clastersData);
+	std::vector<double> FitCylinder(std::vector< cv::Point3d> clastersData, std::vector<double> planeModel, std::vector<cv::Point3d>& cylinderPoints);
+
+	cv::Mat MNK(cv::Mat A, cv::Mat b);
+	double minMatElement(cv::Mat data);
+	double maxMatElement(cv::Mat data);
 #ifdef MRCV_CUDA_ENABLED 
 	/**
 	 * @brief Функция отражения изображения с помощью CUDA.
