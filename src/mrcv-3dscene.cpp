@@ -2334,4 +2334,132 @@ namespace mrcv {
 				temp = data.at<double>(i);
 		return temp;
 	}
+
+
+	/**
+		 * @brief readVideoFile
+		 * @brief Функции чтения видео файла, создаёт последовательность кадров в виде std::vector<cv::Mat>
+		 * @param videoPath          - путь и имя к видео файлу
+		 * @param exitCode           - код прерывания и выхода из чтения видео файла true - функция работает; false - прерывание
+		 * @param inputVideoFrames   - последовательность кадров
+		 * @return - код результата работы функции. 0 - Success; 1 - Пустое имя файла;  -1 - Неизвестная ошибка.
+		 */
+	int  mrcv::readVideoFile(cv::String& videoPath, bool& exitCode, std::vector<cv::Mat>& inputVideoFrames)
+	{
+		try
+		{
+			if (videoPath.empty())
+			{
+				return 1; // 1 - Пустое имя файла
+			}
+
+			// Переменные для чтения из видео файла
+			cv::VideoCapture capture;
+
+			capture.open(videoPath, cv::CAP_ANY);
+
+			//        std::cout << "img1Path  " << videoPath << std::endl;
+			//        std::cout << "cap_left.isOpened() = " << capture.isOpened() << std::endl;
+
+			while (exitCode)
+			{
+				cv::Mat outputFrame;
+				capture >> outputFrame;
+				// Выход, если фрейм пустой, break
+				if (outputFrame.empty())
+				{
+					exitCode = 0;
+					break;
+				}
+				inputVideoFrames.push_back(outputFrame);
+
+				//            cv::String windowName = "Webcam Video";
+				//            namedWindow(windowName, cv::WINDOW_AUTOSIZE );
+				//            imshow(windowName, outputFrame);
+				//            cv::waitKey(40);
+			}
+
+			// Когда чтение из файла завершено, закритие
+			capture.release();
+			// Sleep(500);
+		}
+		catch (...)
+		{
+
+			return -1; // Unhandled Exception
+		}
+		exitCode = 0;
+		return 0; // SUCCESS
+
+	}
+
+	/**
+		 * @brief writeVideoFile
+		 * @brief Функции записи видео файла
+		 * @param pathSaveVideoFile  - путь и имя видео файла для записи
+		 * @param exitCode           - код прерывания и выхода из чтения видео файла true - функция работает; false - прерывание
+		 * @param inputVideoFrames   - последовательность кадров
+		 * @return - код результата работы функции. 0 - Success; 1 - Пустое имя файла; 2 - Пустая последовательность кадров;
+		 * 3 - Не открылся файл для записи; -1 - Неизвестная ошибка.
+		 */
+	int  mrcv::writeVideoFile(cv::String& pathSaveVideoFile, bool& exitCode, std::vector<cv::Mat>& inputVideoFrames)
+	{
+		try
+		{
+			if (pathSaveVideoFile.empty())
+			{
+				return 1; // 1 - Пустое имя файла
+			}
+
+			if (inputVideoFrames.empty())
+			{
+				return 2; // 2 - Пустая последовательность кадров
+			}
+
+			// Переменные для записи видео файла
+			int numberFrames = inputVideoFrames.size();
+			cv::Size frameSize = inputVideoFrames.at(0).size();
+
+			cv::VideoWriter writer;
+			double fps = 23;
+			int codec = cv::VideoWriter::fourcc('H', 'F', 'Y', 'U');
+
+			writer.open(pathSaveVideoFile, codec, fps, frameSize, 1);
+
+			if (!writer.isOpened())
+			{
+				return 3; // 3 - Не открылся файл для записи
+			}
+
+			for (int frame = 0; frame < numberFrames; ++frame)
+			{
+
+				// =====================================
+				// Запись
+				// =====================================
+				// Если кадр пустой то пропуск записи
+				if (inputVideoFrames.at(frame).empty())
+				{
+					continue;
+				}
+				else
+				{
+					// encode the frame into the videofile stream
+					writer.write(inputVideoFrames.at(frame));
+				}
+
+			}
+
+			// Когда запись  файла завершена, закритие
+			writer.release();
+			// Sleep(500);
+		}
+		catch (...)
+		{
+			return -1; // Unhandled Exception
+		}
+		exitCode = 0;
+		return 0; // SUCCESS
+
+	}
 }

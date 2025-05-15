@@ -1146,6 +1146,9 @@ namespace mrcv
 	cv::Mat MNK(cv::Mat A, cv::Mat b);
 	double minMatElement(cv::Mat data);
 	double maxMatElement(cv::Mat data);
+
+	MRCV_EXPORT int readVideoFile(cv::String& videoPath, bool& exitCode, std::vector<cv::Mat>& outputVideoFrames);
+	MRCV_EXPORT int writeVideoFile(cv::String& pathSaveVideoFile, bool& exitCode, std::vector<cv::Mat>& outputVideoFrames);
 #ifdef MRCV_CUDA_ENABLED 
 	/**
 	 * @brief Функция отражения изображения с помощью CUDA.
