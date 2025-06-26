@@ -45,10 +45,11 @@
 └── README.md
 ```
 
-Датасет изображений для работы с библиотекой доступен по ссылке [code-ai-400393-image-dataset.7z](https://disk.yandex.ru/d/TxReQ9J6PAo9Nw).
+Датасет изображений для работы с библиотекой доступен по ссылке [code-ai-400393-image-dataset.7z](https://disk.yandex.ru/d/TxReQ9J6PAo9Nw) или [huggingface.co](https://huggingface.co/datasets/saigon-89/code-ai-400393).
 
 ## Предобученные нейросети
 Ниже представлены предобученные модели YOLOv5 для различных задач подводного обнаружения объектов. Каждая модель обучалась на специализированных датасетах.
+Доступ к моделям открыт по ссылке [huggingface.co](https://huggingface.co/saigon-89/code-ai-400393).
 
 Детали обучения:
 - Эпохи: 500
