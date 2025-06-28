@@ -18,7 +18,7 @@ mrcv-yolov5
 ```
 Функции написаны с поддержкой языка программирования python v. 3.10 и таких библиотек как:
 ```
-opencv-python v. 4.10.0.84",
+opencv-python v. 4.10.0.84
 opencv-contrib-python v. 4.10.0.84
 pyyaml v. 6.0.2
 pytorch v. 2.6.0
