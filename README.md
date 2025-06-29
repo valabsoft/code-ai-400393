@@ -1,5 +1,5 @@
 # Marine Robotics Computer Vision
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Documentation](https://img.shields.io/badge/docs-readthedocs-blue)](https://marine-robotics-computer-vision.readthedocs.io)
 
 Открытая библиотека компьютерного зрения для морских робототехнических систем
 
@@ -15,6 +15,7 @@
 ## Оглавление
 1. [Структура каталогов](#Структура-каталогов)
 2. [Предобученные нейросети](#Предобученные-нейросети)
+3. [Дополнительные ссылки](#Дополнительные-ссылки)
 
 ## Структура каталогов
 
@@ -97,6 +98,11 @@ pytorch v. 2.6.0
 | Подводная археология | Амфоры, пушечные ядра, посуда, фрагменты кораблей, корабельные орудия                 | [yolov5n](https://disk.yandex.ru/d/v7zyKX-ggxNm-g), [yolov5s](https://disk.yandex.ru/d/B1xEyi3OhfJIcw) |
 | Поисковые операции   | Затонувшие корабли, самолёты                                                          | [yolov5n](https://disk.yandex.ru/d/QYB4u4gkHHIWoQ), [yolov5s](https://disk.yandex.ru/d/qLuCnBADkr1WUw) |
 | Классификация судов  | Авианосцы, грузовые суда, круизные лайнеры, рыболовные суда, танкеры, военные корабли | [yolov5n](https://disk.yandex.ru/d/BvOk5oChQ67Vnw), [yolov5s](https://disk.yandex.ru/d/cqkz5-npK2RQaA) |
+
+## Дополнительные ссылки
+- Документация [readthedocs.io](https://marine-robotics-computer-vision.readthedocs.io)
+- Датасет изображений [huggingface.co](https://huggingface.co/saigon-89/code-ai-400393)
+- Страница проекта [Marine Robotics Computer Vision](https://vasoftlab.ru/mrcv/)
 
 ____
 [:arrow_up:Оглавление](#Оглавление)
