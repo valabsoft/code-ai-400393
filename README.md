@@ -1,5 +1,6 @@
 # Marine Robotics Computer Vision
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Открытая библиотека компьютерного зрения для морских робототехнических систем
 
 Библиотека, в первую очередь, предназначена для разработчиков роботизированных систем морского назначения, оснащенных системами технического зрения:
