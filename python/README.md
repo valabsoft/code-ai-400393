@@ -23,9 +23,6 @@ opencv-contrib-python v. 4.10.0.84
 pyyaml v. 6.0.2
 pytorch v. 2.6.0
 ```		        
-## Лицензия
-
-Эта библиотека распространяется под лицензией MIT. См. файл `LICENSE` для подробностей.
 
 ### Зависимости
 - **OpenCV**: Лицензия Apache 2.0 (https://opencv.org/license/)
