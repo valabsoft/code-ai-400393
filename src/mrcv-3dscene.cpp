@@ -2,7 +2,7 @@
 #include <mrcv/mrcv-common.h>
 
 namespace mrcv {
-	int mrcv::makingStereoPair(cv::Mat& inputImageCamera01, cv::Mat& inputImageCamera02, cv::Mat& outputStereoPair)
+	int makingStereoPair(cv::Mat& inputImageCamera01, cv::Mat& inputImageCamera02, cv::Mat& outputStereoPair)
 	{
 		try
 		{
@@ -11,7 +11,7 @@ namespace mrcv {
 			// ////////////////////
 			if (inputImageCamera01.empty() || inputImageCamera02.empty())
 			{
-				outputStereoPair = mrcv::getErrorImage("makingStereoPair:: Image is Empty");
+				outputStereoPair = getErrorImage("makingStereoPair:: Image is Empty");
 				return 1; // 1 - Пустое изображение
 			}
 			// ////////////////////
@@ -32,7 +32,7 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::showImage(cv::Mat& inputImage, const cv::String windowName, double CoefShowWindow)
+	int showImage(cv::Mat& inputImage, const cv::String windowName, double CoefShowWindow)
 	{
 		try
 		{
@@ -41,8 +41,8 @@ namespace mrcv {
 			// ////////////////////
 			if (inputImage.empty())
 			{
-				inputImage = mrcv::getErrorImage("showImage:: Image is Empty");
-				mrcv::writeLog("showImage:: Image is Empty, status =  1", mrcv::LOGTYPE::ERROR);
+				inputImage = getErrorImage("showImage:: Image is Empty");
+				writeLog("showImage:: Image is Empty, status =  1", LOGTYPE::ERROR);
 				return 1; // 1 - Пустое изображение
 			}
 			// ////////////////////
@@ -63,7 +63,7 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::readCameraStereoParametrsFromFile(const char* pathToFileCameraParametrs, mrcv::cameraStereoParameters& cameraParameters)
+	int readCameraStereoParametrsFromFile(const char* pathToFileCameraParametrs, cameraStereoParameters& cameraParameters)
 	{
 		try
 		{
@@ -125,13 +125,13 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::convetingUndistortRectify(cv::Mat& imageInput, cv::Mat& imageOutput, cv::Mat& map11, cv::Mat& map12)
+	int convetingUndistortRectify(cv::Mat& imageInput, cv::Mat& imageOutput, cv::Mat& map11, cv::Mat& map12)
 	{
 		try
 		{
 			if (imageInput.empty())
 			{
-				imageOutput = mrcv::getErrorImage("convetingUndistortRectify:: Image is Empty");
+				imageOutput = getErrorImage("convetingUndistortRectify:: Image is Empty");
 				return 1; // 1 - Пустое изображение
 			}
 			cv::remap(imageInput, imageOutput, map11, map12, cv::INTER_LINEAR);
@@ -143,9 +143,9 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::find3dPointsADS(cv::Mat& inputImageCamera01, cv::Mat& inputImageCamera02, mrcv::pointsData& points3D,
-		mrcv::settingsMetodDisparity& settingsMetodDisparity, cv::Mat& disparityMap,
-		mrcv::cameraStereoParameters& cameraParameters, int limit3dPoints, std::vector<double> limitsOutlierArea)
+	int find3dPointsADS(cv::Mat& inputImageCamera01, cv::Mat& inputImageCamera02, pointsData& points3D,
+		settingsMetodDisparity& settingsMetodDisparity, cv::Mat& disparityMap,
+		cameraStereoParameters& cameraParameters, int limit3dPoints, std::vector<double> limitsOutlierArea)
 	{
 		try
 		{
@@ -156,7 +156,7 @@ namespace mrcv {
 			{
 				return 1; // 1 - Пустое изображение
 			}
-			if (settingsMetodDisparity.metodDisparity == mrcv::METOD_DISPARITY::MODE_NONE && disparityMap.empty())
+			if (settingsMetodDisparity.metodDisparity == METOD_DISPARITY::MODE_NONE && disparityMap.empty())
 			{
 				return 2; // 2 - Пустая исходная карта диспаратности, елсли MODE_NONE
 			}
@@ -177,7 +177,7 @@ namespace mrcv {
 			// ///////////////////////////////////
 			// Получение карты расхождения (диспаратности)
 			// ///////////////////////////////////
-			if (settingsMetodDisparity.metodDisparity == mrcv::METOD_DISPARITY::MODE_BM) // BM
+			if (settingsMetodDisparity.metodDisparity == METOD_DISPARITY::MODE_BM) // BM
 			{
 				cv::Ptr<cv::StereoBM> bm = cv::StereoBM::create(settingsMetodDisparity.smbNumDisparities, settingsMetodDisparity.smbBlockSize);
 				bm->setPreFilterType(cv::StereoBM::PREFILTER_XSOBEL);
@@ -192,10 +192,10 @@ namespace mrcv {
 				// Расчёт карты диспаратности
 				bm->compute(imgage01Gray, imgage02Gray, disparityMap);
 			}
-			else if (settingsMetodDisparity.metodDisparity == mrcv::METOD_DISPARITY::MODE_SGBM ||
-				settingsMetodDisparity.metodDisparity == mrcv::METOD_DISPARITY::MODE_SGBM_3WAY ||
-				settingsMetodDisparity.metodDisparity == mrcv::METOD_DISPARITY::MODE_HH ||
-				settingsMetodDisparity.metodDisparity == mrcv::METOD_DISPARITY::MODE_HH4)
+			else if (settingsMetodDisparity.metodDisparity == METOD_DISPARITY::MODE_SGBM ||
+				settingsMetodDisparity.metodDisparity == METOD_DISPARITY::MODE_SGBM_3WAY ||
+				settingsMetodDisparity.metodDisparity == METOD_DISPARITY::MODE_HH ||
+				settingsMetodDisparity.metodDisparity == METOD_DISPARITY::MODE_HH4)
 			{
 				// SGBM
 				int sgbmWinSize = settingsMetodDisparity.smbBlockSize;
@@ -212,16 +212,16 @@ namespace mrcv {
 					false);  //bool fullDP = false
 				switch (settingsMetodDisparity.metodDisparity)
 				{
-				case mrcv::METOD_DISPARITY::MODE_SGBM:
+				case METOD_DISPARITY::MODE_SGBM:
 					sgbm->setMode(cv::StereoSGBM::MODE_SGBM);
 					break;
-				case mrcv::METOD_DISPARITY::MODE_HH:
+				case METOD_DISPARITY::MODE_HH:
 					sgbm->setMode(cv::StereoSGBM::MODE_HH);
 					break;
-				case mrcv::METOD_DISPARITY::MODE_SGBM_3WAY:
+				case METOD_DISPARITY::MODE_SGBM_3WAY:
 					sgbm->setMode(cv::StereoSGBM::MODE_SGBM_3WAY);
 					break;
-				case mrcv::METOD_DISPARITY::MODE_HH4:
+				case METOD_DISPARITY::MODE_HH4:
 					sgbm->setMode(cv::StereoSGBM::MODE_HH4);
 					break;
 				}// switch
@@ -308,7 +308,7 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::detectingSegmentsNeuralNet(cv::Mat& imageInput, cv::Mat& imageOutput, std::vector<cv::Mat>& replyMasks,
+	int detectingSegmentsNeuralNet(cv::Mat& imageInput, cv::Mat& imageOutput, std::vector<cv::Mat>& replyMasks,
 		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses)
 	{
 		try
@@ -318,14 +318,14 @@ namespace mrcv {
 			// ////////////////////
 			if (imageInput.empty())
 			{
-				imageOutput = mrcv::getErrorImage("detectingSegmentsNeuralNet:: Image is Empty");
+				imageOutput = getErrorImage("detectingSegmentsNeuralNet:: Image is Empty");
 				return 1; // 1 - Пустое изображение
 			}
 			// ////////////////////
 
 			bool reply = false;
 			std::string replyAll = "-";
-			mrcv::neuralNetSegmentator* segmentator = new mrcv::neuralNetSegmentator(filePathToModelYoloNeuralNet, filePathToClasses);
+			neuralNetSegmentator* segmentator = new neuralNetSegmentator(filePathToModelYoloNeuralNet, filePathToClasses);
 
 			segmentator->process(imageInput);
 			replyMasks = segmentator->getMasks();
@@ -339,7 +339,7 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::matchSegmentsWith3dPoints(mrcv::pointsData& points3D, std::vector<cv::Mat>& replyMasks)
+	int matchSegmentsWith3dPoints(pointsData& points3D, std::vector<cv::Mat>& replyMasks)
 	{
 		try
 		{
@@ -430,7 +430,7 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::addToImageCenter3dSegments(cv::Mat& inputImage, cv::Mat& outputImage, mrcv::pointsData& points3D)
+	int addToImageCenter3dSegments(cv::Mat& inputImage, cv::Mat& outputImage, pointsData& points3D)
 	{
 		try
 		{
@@ -486,7 +486,7 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::showDispsarityMap(cv::Mat& disparityMap, const cv::String windowName, double CoefShowWindow)
+	int showDispsarityMap(cv::Mat& disparityMap, const cv::String windowName, double CoefShowWindow)
 	{
 		try
 		{
@@ -495,7 +495,7 @@ namespace mrcv {
 			// ////////////////////
 			if (disparityMap.empty())
 			{
-				disparityMap = mrcv::getErrorImage("showDispsarityMap:: Image is Empty");
+				disparityMap = getErrorImage("showDispsarityMap:: Image is Empty");
 				return 1; // 1 - Пустое изображение
 			}
 			// ////////////////////
@@ -524,8 +524,8 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::getImage3dSceene(mrcv::pointsData& points3D, mrcv::parameters3dSceene& parameters3dSceene,
-		mrcv::cameraStereoParameters& cameraParameters, cv::Mat& outputImage3dSceene)
+	int getImage3dSceene(pointsData& points3D, parameters3dSceene& parameters3dSceene,
+		cameraStereoParameters& cameraParameters, cv::Mat& outputImage3dSceene)
 	{
 		try
 		{
@@ -662,7 +662,7 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::saveInFile3dPointsInObjectsSegments(pointsData& points3D, const cv::String pathToFile)
+	int saveInFile3dPointsInObjectsSegments(pointsData& points3D, const cv::String pathToFile)
 	{
 		try
 		{
@@ -702,12 +702,12 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	int mrcv::find3dPointsInObjectsSegments(cv::Mat& inputImageCamera01, cv::Mat& inputImageCamera02,
-		mrcv::cameraStereoParameters& cameraParameters,
+	int find3dPointsInObjectsSegments(cv::Mat& inputImageCamera01, cv::Mat& inputImageCamera02,
+		cameraStereoParameters& cameraParameters,
 		cv::Mat& inputImageCamera01Remap, cv::Mat& inputImageCamera02Remap,
-		mrcv::settingsMetodDisparity& settingsMetodDisparity, cv::Mat& disparityMap,
-		mrcv::pointsData& points3D, std::vector<cv::Mat>& replyMasks, cv::Mat& outputImage,
-		cv::Mat& outputImage3dSceene, mrcv::parameters3dSceene& parameters3dSceene,
+		settingsMetodDisparity& settingsMetodDisparity, cv::Mat& disparityMap,
+		pointsData& points3D, std::vector<cv::Mat>& replyMasks, cv::Mat& outputImage,
+		cv::Mat& outputImage3dSceene, parameters3dSceene& parameters3dSceene,
 		const std::string filePathToModelYoloNeuralNet, const std::string filePathToClasses,
 		int limitOutPoints, std::vector<double> limitsOutlierArea)
 	{
@@ -717,45 +717,45 @@ namespace mrcv {
 			// ////////////////////
 			// A1. Подготовка изображений (коррекция искажений и выравнивание)
 			// ////////////////////
-			state = mrcv::convetingUndistortRectify(inputImageCamera01, inputImageCamera01Remap, cameraParameters.map11, cameraParameters.map12);
+			state = convetingUndistortRectify(inputImageCamera01, inputImageCamera01Remap, cameraParameters.map11, cameraParameters.map12);
 			// ////////////////////
 			if (state == 0)
 			{
-				mrcv::writeLog("A1. Выравнивание изображения камера 01 (успешно)");
+				writeLog("A1. Выравнивание изображения камера 01 (успешно)");
 			}
 			else
 			{
-				mrcv::writeLog("convetingUndistortRectify 01, status = " + std::to_string(state), mrcv::LOGTYPE::ERROR);
+				writeLog("convetingUndistortRectify 01, status = " + std::to_string(state), LOGTYPE::ERROR);
 			}
 
 			// ////////////////////
-			state = mrcv::convetingUndistortRectify(inputImageCamera02, inputImageCamera02Remap, cameraParameters.map21, cameraParameters.map22);
+			state = convetingUndistortRectify(inputImageCamera02, inputImageCamera02Remap, cameraParameters.map21, cameraParameters.map22);
 			// ////////////////////
 			if (state == 0)
 			{
-				mrcv::writeLog("A1. Выравнивание изображения камера 02 (успешно)");
+				writeLog("A1. Выравнивание изображения камера 02 (успешно)");
 			}
 			else
 			{
-				mrcv::writeLog("convetingUndistortRectify 02, status = " + std::to_string(state), mrcv::LOGTYPE::ERROR);
+				writeLog("convetingUndistortRectify 02, status = " + std::to_string(state), LOGTYPE::ERROR);
 			}
 
 			// ////////////////////
 			// A2. Поиск точек
 			// ////////////////////
-			state = mrcv::find3dPointsADS(inputImageCamera01Remap, inputImageCamera02Remap, points3D, settingsMetodDisparity, disparityMap,
+			state = find3dPointsADS(inputImageCamera01Remap, inputImageCamera02Remap, points3D, settingsMetodDisparity, disparityMap,
 				cameraParameters, limitOutPoints, limitsOutlierArea);
 			// ////////////////////
 			if (state == 0)
 			{
-				mrcv::writeLog("A2. Облако 3D точек сцены найдено (успешно)");
-				mrcv::writeLog("    points3D.numPoints0 = " + std::to_string(points3D.numPoints0));
-				mrcv::writeLog("    points3D.numPoints = " + std::to_string(points3D.numPoints));
-				mrcv::writeLog("    points3D.numSegments = " + std::to_string(points3D.numSegments));
+				writeLog("A2. Облако 3D точек сцены найдено (успешно)");
+				writeLog("    points3D.numPoints0 = " + std::to_string(points3D.numPoints0));
+				writeLog("    points3D.numPoints = " + std::to_string(points3D.numPoints));
+				writeLog("    points3D.numSegments = " + std::to_string(points3D.numSegments));
 			}
 			else
 			{
-				mrcv::writeLog("find3dPointsADS, status = " + std::to_string(state), mrcv::LOGTYPE::ERROR);
+				writeLog("find3dPointsADS, status = " + std::to_string(state), LOGTYPE::ERROR);
 			}
 
 			if (replyMasks.empty()) // Если данные о сегменте не введены то используется алгоритм сегментации
@@ -763,65 +763,65 @@ namespace mrcv {
 				// ////////////////////
 				// A3. Сегментация изображения (по результатам обнаружения и распознания объектов)
 				// ////////////////////
-				state = mrcv::detectingSegmentsNeuralNet(inputImageCamera01Remap, outputImage, replyMasks, filePathToModelYoloNeuralNet, filePathToClasses);
+				state = detectingSegmentsNeuralNet(inputImageCamera01Remap, outputImage, replyMasks, filePathToModelYoloNeuralNet, filePathToClasses);
 				// ////////////////////
 				if (state == 0)
 				{
-					mrcv::writeLog("A3. Сегментация изображения (успешно)");
-					mrcv::writeLog("    путь к модели нейронной сети " + filePathToModelYoloNeuralNet);
-					mrcv::writeLog("    replyMasks.size() =  " + std::to_string(replyMasks.size()));
+					writeLog("A3. Сегментация изображения (успешно)");
+					writeLog("    путь к модели нейронной сети " + filePathToModelYoloNeuralNet);
+					writeLog("    replyMasks.size() =  " + std::to_string(replyMasks.size()));
 				}
 				else
 				{
-					mrcv::writeLog("detectingSegmentsNeuralNet, status = " + std::to_string(state), mrcv::LOGTYPE::ERROR);
+					writeLog("detectingSegmentsNeuralNet, status = " + std::to_string(state), LOGTYPE::ERROR);
 				}
 			}
 			// ////////////////////
 			// A4. Определения координат 3D точек в сегментах идентифицированных объектов
 			// ////////////////////
-			state = mrcv::matchSegmentsWith3dPoints(points3D, replyMasks);
+			state = matchSegmentsWith3dPoints(points3D, replyMasks);
 			// ////////////////////
 			if (state == 0)
 			{
-				mrcv::writeLog("A4. Сопоставление координат и сегментов (успешно)");
-				mrcv::writeLog("    points3D.numSegments = " + std::to_string(points3D.numSegments));
+				writeLog("A4. Сопоставление координат и сегментов (успешно)");
+				writeLog("    points3D.numSegments = " + std::to_string(points3D.numSegments));
 				for (int qs = 0; qs < points3D.numSegments; ++qs)
 				{
-					mrcv::writeLog("    точек в сегменте " + std::to_string(qs) + " = " + std::to_string(points3D.numPointsInSegments.at(qs)) +
+					writeLog("    точек в сегменте " + std::to_string(qs) + " = " + std::to_string(points3D.numPointsInSegments.at(qs)) +
 						"; 3D центр: " + std::to_string(points3D.center3dSegments.at(qs).x) + ", " +
 						std::to_string(points3D.center3dSegments.at(qs).y) + ", " + std::to_string(points3D.center3dSegments.at(qs).z));
 				}
 			}
 			else
 			{
-				mrcv::writeLog("matchSegmentsWith3dPoints, status = " + std::to_string(state), mrcv::LOGTYPE::ERROR);
+				writeLog("matchSegmentsWith3dPoints, status = " + std::to_string(state), LOGTYPE::ERROR);
 			}
 
 			// ////////////////////
 			// A5. Нанесения координат 3D центра сегмента на изображени в виде текста
 			// ////////////////////
-			state = mrcv::addToImageCenter3dSegments(outputImage, outputImage, points3D);
+			state = addToImageCenter3dSegments(outputImage, outputImage, points3D);
 			// ////////////////////
 			if (state == 0)
 			{
-				mrcv::writeLog("A5. Нанесение координат 3D центра сегмента на результирующие изображение (успешно)");
+				writeLog("A5. Нанесение координат 3D центра сегмента на результирующие изображение (успешно)");
 			}
 			else
 			{
-				mrcv::writeLog("drawCenter3dSegments, status = " + std::to_string(state), mrcv::LOGTYPE::ERROR);
+				writeLog("drawCenter3dSegments, status = " + std::to_string(state), LOGTYPE::ERROR);
 			}
 			// ////////////////////
 			// A6. Получение 3D сцены
 			// ////////////////////
-			state = mrcv::getImage3dSceene(points3D, parameters3dSceene, cameraParameters, outputImage3dSceene);
+			state = getImage3dSceene(points3D, parameters3dSceene, cameraParameters, outputImage3dSceene);
 			// ////////////////////
 			if (state == 0)
 			{
-				mrcv::writeLog("A6. Проекция 3D сцены на 2D изображение для вывода на экран (успешно)");
+				writeLog("A6. Проекция 3D сцены на 2D изображение для вывода на экран (успешно)");
 			}
 			else
 			{
-				mrcv::writeLog("getImage3dSceene, status = " + std::to_string(state), mrcv::LOGTYPE::ERROR);
+				writeLog("getImage3dSceene, status = " + std::to_string(state), LOGTYPE::ERROR);
 			}
 
 		}
@@ -832,27 +832,27 @@ namespace mrcv {
 		return 0; // SUCCESS
 	}
 
-	mrcv::neuralNetSegmentator::neuralNetSegmentator(const std::string model, const std::string classes)
+	neuralNetSegmentator::neuralNetSegmentator(const std::string model, const std::string classes)
 	{
 		if (!initializationNetwork(model, classes))
 		{
-			mrcv::writeLog("Neural network been inited!");
-			mrcv::writeLog("  Input width: " + std::to_string(input_width) + "; Input height: " + std::to_string(input_height));
+			writeLog("Neural network been inited!");
+			writeLog("  Input width: " + std::to_string(input_width) + "; Input height: " + std::to_string(input_height));
 		}
 		else
 		{
-			mrcv::writeLog("Failed to init neural network!", mrcv::LOGTYPE::ERROR);
+			writeLog("Failed to init neural network!", LOGTYPE::ERROR);
 		}
 	}
 
-	int mrcv::neuralNetSegmentator::readСlasses(const std::string file_path)
+	int neuralNetSegmentator::readСlasses(const std::string file_path)
 	{
 		std::ifstream classes_file(file_path);
 		std::string line;
 		srand(time(0));
 
 		if (!classes_file) {
-			mrcv::writeLog("network: Failed to open classes names!", mrcv::LOGTYPE::ERROR);
+			writeLog("network: Failed to open classes names!", LOGTYPE::ERROR);
 			return ENOENT;
 		}
 		while (std::getline(classes_file, line)) {
@@ -863,13 +863,13 @@ namespace mrcv {
 		return 0;
 	}
 
-	int mrcv::neuralNetSegmentator::initializationNetwork(const std::string model_path, const std::string classes_path) {
+	int neuralNetSegmentator::initializationNetwork(const std::string model_path, const std::string classes_path) {
 		int err = readСlasses(classes_path);
 		if (err == 0) {
 			try {
 				network = cv::dnn::readNetFromONNX(model_path);
 				if (network.empty()) {
-					mrcv::writeLog("Не удалось загрузить модель ONNX!", mrcv::LOGTYPE::ERROR);
+					writeLog("Не удалось загрузить модель ONNX!", LOGTYPE::ERROR);
 					return ENETDOWN;
 				}
 
@@ -878,10 +878,10 @@ namespace mrcv {
 				if (cv::cuda::getCudaEnabledDeviceCount() > 0) {
 					network.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
 					network.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
-					mrcv::writeLog("Бэкенд CUDA успешно инициализирован.");
+					writeLog("Бэкенд CUDA успешно инициализирован.");
 				}
 				else {
-					mrcv::writeLog("CUDA недоступен, используется CPU.", mrcv::LOGTYPE::WARNING);
+					writeLog("CUDA недоступен, используется CPU.", LOGTYPE::WARNING);
 					network.setPreferableBackend(cv::dnn::DNN_BACKEND_DEFAULT);
 					network.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
 				}
@@ -891,7 +891,7 @@ namespace mrcv {
 #endif 
 			}
 			catch (const cv::Exception& e) {
-				mrcv::writeLog("Ошибка инициализации сети: " + std::string(e.what()), mrcv::LOGTYPE::ERROR);
+				writeLog("Ошибка инициализации сети: " + std::string(e.what()), LOGTYPE::ERROR);
 				return -1;
 			}
 		}
@@ -899,7 +899,7 @@ namespace mrcv {
 	}
 
 	// Для подписей
-	void mrcv::neuralNetSegmentator::letterBox(const cv::Mat& img, cv::Mat& out, cv::Vec4d& params,
+	void neuralNetSegmentator::letterBox(const cv::Mat& img, cv::Mat& out, cv::Vec4d& params,
 		cv::Size& newShape, bool autoShape = false, bool scaleFill = false,
 		bool scaleUp = true, int stride = 32)
 	{
@@ -952,7 +952,7 @@ namespace mrcv {
 		cv::copyMakeBorder(out, out, top, bottom, left, right, cv::BORDER_CONSTANT, BLACK);
 	}
 
-	std::vector<cv::Mat> mrcv::neuralNetSegmentator::preProcess(cv::Mat& img, cv::Vec4d& params)
+	std::vector<cv::Mat> neuralNetSegmentator::preProcess(cv::Mat& img, cv::Vec4d& params)
 	{
 		cv::Mat input;
 		cv::Mat blob;
@@ -967,7 +967,7 @@ namespace mrcv {
 		return outputs;
 	}
 
-	void mrcv::neuralNetSegmentator::getMask(const cv::Mat& mask_proposals, const cv::Mat& mask_protos,
+	void neuralNetSegmentator::getMask(const cv::Mat& mask_proposals, const cv::Mat& mask_protos,
 		outputSegment& output, const maskParams& maskParams)
 	{
 		int seg_channels = maskParams.segChannels;
@@ -1036,7 +1036,7 @@ namespace mrcv {
 	}
 
 	// Прорисовка рамки выделяющей объеект.
-	void mrcv::neuralNetSegmentator::drawLabel(cv::Mat& img, std::string label, int left, int top)
+	void neuralNetSegmentator::drawLabel(cv::Mat& img, std::string label, int left, int top)
 	{
 		// Отображение надписи в верхней части ограничивающего прямоугольника
 		int baseline;
@@ -1055,7 +1055,7 @@ namespace mrcv {
 			cv::FONT_HERSHEY_SIMPLEX, FONT_SCALE, YELLOW, THICKNESS);
 	}
 
-	void mrcv::neuralNetSegmentator::drawResult(cv::Mat& img, std::vector<outputSegment> result, std::vector<std::string> class_name)
+	void neuralNetSegmentator::drawResult(cv::Mat& img, std::vector<outputSegment> result, std::vector<std::string> class_name)
 	{
 		cv::Mat mask = img.clone();
 		for (int i = 0; i < (int)result.size(); i++)
@@ -1071,7 +1071,7 @@ namespace mrcv {
 		cv::addWeighted(img, 0.5, mask, 0.5, 0, img);
 	}
 
-	cv::Mat mrcv::neuralNetSegmentator::postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs,
+	cv::Mat neuralNetSegmentator::postProcess(cv::Mat& img, std::vector<cv::Mat>& outputs,
 		const std::vector<std::string>& class_name, cv::Vec4d& params)
 	{
 		classesIDSet.clear();
@@ -1160,7 +1160,7 @@ namespace mrcv {
 	}
 
 	// Обрабокта
-	cv::Mat mrcv::neuralNetSegmentator::process(cv::Mat& img)
+	cv::Mat neuralNetSegmentator::process(cv::Mat& img)
 	{
 		cv::Mat input = img.clone();
 		std::vector<cv::Mat> detections;
@@ -1176,37 +1176,37 @@ namespace mrcv {
 		return res;
 	}
 
-	cv::Mat mrcv::neuralNetSegmentator::getImage()
+	cv::Mat neuralNetSegmentator::getImage()
 	{
 		return processedImage;
 	}
 
-	std::vector<cv::Mat> mrcv::neuralNetSegmentator::getMasks()
+	std::vector<cv::Mat> neuralNetSegmentator::getMasks()
 	{
 		return masksSet;
 	}
 
-	std::vector<int> mrcv::neuralNetSegmentator::getClassIDs()
+	std::vector<int> neuralNetSegmentator::getClassIDs()
 	{
 		return classesIDSet;
 	}
 
-	std::vector<float> mrcv::neuralNetSegmentator::getConfidences()
+	std::vector<float> neuralNetSegmentator::getConfidences()
 	{
 		return confidencesSet;
 	}
 
-	std::vector<cv::Rect> mrcv::neuralNetSegmentator::getBoxes()
+	std::vector<cv::Rect> neuralNetSegmentator::getBoxes()
 	{
 		return boxesSet;
 	}
 
-	std::vector<std::string> mrcv::neuralNetSegmentator::getClasses()
+	std::vector<std::string> neuralNetSegmentator::getClasses()
 	{
 		return classesSet;
 	}
 
-	float mrcv::neuralNetSegmentator::getInference()
+	float neuralNetSegmentator::getInference()
 	{
 		return timeInference;
 	}
@@ -1222,7 +1222,7 @@ namespace mrcv {
 		 * @return - код результата работы функции. 0 - Success; 2 - пустое облако 3D; 3 - Нет точек в сегменте; 4 - Не верный номер сигмента;
 		 * 5 - Недостаточно точек в сегменте; -1 - Неизвестная ошибка.
 		 */
-	int mrcv::detectObjectPrimitives(mrcv::pointsData& points3D, mrcv::primitiveData& primitive, int numberSelectedSegment, double coefFilterSigma)
+	int detectObjectPrimitives(pointsData& points3D, primitiveData& primitive, int numberSelectedSegment, double coefFilterSigma)
 	{
 		try
 		{
@@ -1366,12 +1366,12 @@ namespace mrcv {
 
 			// Fit plane
 			std::vector<cv::Point3d> planePoints;
-			std::vector<double> PlaneModel = mrcv::FitPlane(primitive.segmentPoints3Dxyz, planePoints);
+			std::vector<double> PlaneModel = FitPlane(primitive.segmentPoints3Dxyz, planePoints);
 			// Fit sphere
-			std::vector<double> SphereModel = mrcv::FitSphere(primitive.segmentPoints3Dxyz);
+			std::vector<double> SphereModel = FitSphere(primitive.segmentPoints3Dxyz);
 			//Fit cylinder
 			std::vector<cv::Point3d> cylinderPoints;
-			std::vector<double> CylinderModel = mrcv::FitCylinder(primitive.segmentPoints3Dxyz, PlaneModel, cylinderPoints);
+			std::vector<double> CylinderModel = FitCylinder(primitive.segmentPoints3Dxyz, PlaneModel, cylinderPoints);
 
 			// ////////////////////
 			// Определение вида примитива
@@ -1478,7 +1478,7 @@ namespace mrcv {
 		 *                                       идентифицированного объекта (примитивов объектов)
 		 * @return - код результата работы функции. 0 - Success; -1 - Неизвестная ошибка.
 		 */
-	int mrcv::drawPrimitives(cv::Mat& inputImageCamera01Undistort, outputPrimitivesImages& outputImages, std::vector<mrcv::primitiveData>& primitives)
+	int drawPrimitives(cv::Mat& inputImageCamera01Undistort, outputPrimitivesImages& outputImages, std::vector<primitiveData>& primitives)
 	{
 		try
 		{
@@ -1929,7 +1929,7 @@ namespace mrcv {
 		 * @param planePoints       -
 		 * @return - std::vector<double> PlaneModel
 		 */
-	std::vector<double> mrcv::FitPlane(std::vector<cv::Point3d> clastersData, std::vector<cv::Point3d>& planePoints)
+	std::vector<double> FitPlane(std::vector<cv::Point3d> clastersData, std::vector<cv::Point3d>& planePoints)
 	{
 
 		std::vector<double> abd(4, 0);   // z = ax + by + c: [a, b, c, err]
@@ -1953,7 +1953,7 @@ namespace mrcv {
 			A.at<double>(i, 2) = 1;
 			b.at<double>(i) = xyzClaster.at<double>(2, i);
 		}
-		resX = mrcv::MNK(A, b);
+		resX = MNK(A, b);
 
 		abd[0] = resX.at<double>(0);
 		abd[1] = resX.at<double>(1);
@@ -1974,7 +1974,7 @@ namespace mrcv {
 			A.at<double>(i, 2) = 1;
 			b.at<double>(i) = planeRotated0.at<double>(2, i);
 		}
-		resX = mrcv::MNK(A, b);
+		resX = MNK(A, b);
 
 		double xRad = -atan2(resX.at<double>(1), 1.0);
 		cv::Mat Rx = cv::Mat::eye(3, 3, CV_64F);
@@ -2006,10 +2006,10 @@ namespace mrcv {
 		{
 			std::vector<double> rotationStep(6, 0);
 			planeRotatedStep = Rz * planeRotatedStep;
-			double xmin = mrcv::minMatElement(planeRotatedStep.row(0));
-			double xmax = mrcv::maxMatElement(planeRotatedStep.row(0));
-			double ymin = mrcv::minMatElement(planeRotatedStep.row(1));
-			double ymax = mrcv::maxMatElement(planeRotatedStep.row(1));
+			double xmin = minMatElement(planeRotatedStep.row(0));
+			double xmax = maxMatElement(planeRotatedStep.row(0));
+			double ymin = minMatElement(planeRotatedStep.row(1));
+			double ymax = maxMatElement(planeRotatedStep.row(1));
 			double stepSq = (xmax - xmin) * (ymax - ymin);
 			rotationStep[0] = stepSq;
 			rotationStep[1] = xmin;
@@ -2069,7 +2069,7 @@ namespace mrcv {
 		 * @param clastersData      -  координаты 3D точек сегмента (объекта)
 		 * @return -  std::vector<double> SphereModel
 		 */
-	std::vector<double> mrcv::FitSphere(std::vector<cv::Point3d> clastersData)
+	std::vector<double> FitSphere(std::vector<cv::Point3d> clastersData)
 	{
 		std::vector<double>  SphereModel(5, 0);  //[xc, yc, zc, radius, err]
 		int MatSize = int(clastersData.size());
@@ -2109,7 +2109,7 @@ namespace mrcv {
 		}
 		A *= 2;
 
-		resX = mrcv::MNK(A, b);
+		resX = MNK(A, b);
 
 		double Radius = 0.0;
 		for (int i = 0; i < MatSize; i++)
@@ -2138,7 +2138,7 @@ namespace mrcv {
 		 * @param cylinderPoints    -
 		 * @return - std::vector<double> CylinderModel
 		 */
-	std::vector<double> mrcv::FitCylinder(std::vector< cv::Point3d> clastersData, std::vector<double> planeModel, std::vector<cv::Point3d>& cylinderPoints)
+	std::vector<double> FitCylinder(std::vector< cv::Point3d> clastersData, std::vector<double> planeModel, std::vector<cv::Point3d>& cylinderPoints)
 	{
 		std::vector<double> CylinderModel(8, 0.0);    //[xc1, yc1, zc1, xc2, yc2, zc2, radius, err]
 		int MatSize = int(clastersData.size());
@@ -2200,12 +2200,12 @@ namespace mrcv {
 				Ac.at<double>(i, 2) = 1;
 				b.at<double>(i) = -(pow(cylinderRotatedStep.at<double>(0, i), 2) + pow(cylinderRotatedStep.at<double>(2, i), 2));
 			}
-			circleKoef = mrcv::MNK(Ac, b);
+			circleKoef = MNK(Ac, b);
 			double xc1 = -circleKoef.at<double>(0) / 2;
 			double zc1 = -circleKoef.at<double>(1) / 2;
 			double radius1 = sqrt((pow(xc1, 2) + pow(zc1, 2)) - circleKoef.at<double>(2));
-			double ymin = mrcv::minMatElement(cylinderRotatedStep.row(1));
-			double ymax = mrcv::maxMatElement(cylinderRotatedStep.row(1));
+			double ymin = minMatElement(cylinderRotatedStep.row(1));
+			double ymax = maxMatElement(cylinderRotatedStep.row(1));
 			double stepRad = zRad * (i + 1);
 			double meanErr = 0.0;
 			for (int i = 0; i < MatSize; i++)
@@ -2293,7 +2293,7 @@ namespace mrcv {
 		 * @param b  - вектор правых частей
 		 * @return - cv::Mat x - вектор неизвестрых
 		 */
-	cv::Mat mrcv::MNK(cv::Mat A, cv::Mat b)
+	cv::Mat MNK(cv::Mat A, cv::Mat b)
 	{
 		cv::Mat resX = cv::Mat::zeros(3, 1, CV_64F);
 		cv::Mat At, Ainv, Aleft;
@@ -2311,7 +2311,7 @@ namespace mrcv {
 		 * @param data  -  входная матрица-
 		 * @return - double min - минимальное значение в матрице
 		 */
-	double mrcv::minMatElement(cv::Mat data)
+	double minMatElement(cv::Mat data)
 	{
 		double temp = 1e+8;
 		for (int i = 0; i < data.cols; i++)
@@ -2326,7 +2326,7 @@ namespace mrcv {
 		 * @param data  -  входная матрица
 		 * @return - double min - минимальное значение в матрице
 		 */
-	double mrcv::maxMatElement(cv::Mat data)
+	double maxMatElement(cv::Mat data)
 	{
 		double temp = -1e+8;
 		for (int i = 0; i < data.cols; i++)
@@ -2344,7 +2344,7 @@ namespace mrcv {
 		 * @param inputVideoFrames   - последовательность кадров
 		 * @return - код результата работы функции. 0 - Success; 1 - Пустое имя файла;  -1 - Неизвестная ошибка.
 		 */
-	int  mrcv::readVideoFile(cv::String& videoPath, bool& exitCode, std::vector<cv::Mat>& inputVideoFrames)
+	int  readVideoFile(cv::String& videoPath, bool& exitCode, std::vector<cv::Mat>& inputVideoFrames)
 	{
 		try
 		{
@@ -2402,7 +2402,7 @@ namespace mrcv {
 		 * @return - код результата работы функции. 0 - Success; 1 - Пустое имя файла; 2 - Пустая последовательность кадров;
 		 * 3 - Не открылся файл для записи; -1 - Неизвестная ошибка.
 		 */
-	int  mrcv::writeVideoFile(cv::String& pathSaveVideoFile, bool& exitCode, std::vector<cv::Mat>& inputVideoFrames)
+	int  writeVideoFile(cv::String& pathSaveVideoFile, bool& exitCode, std::vector<cv::Mat>& inputVideoFrames)
 	{
 		try
 		{

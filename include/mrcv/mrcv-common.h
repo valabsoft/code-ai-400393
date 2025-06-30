@@ -382,19 +382,19 @@ namespace mrcv
 		int NumberOfPoint = 0;
 		// Имя точки
 		std::string Name;
-		Point3D::Point3D(double x, double y, double z, std::string name) {
+		Point3D(double x, double y, double z, std::string name) {
 			X = x;
 			Y = y;
 			Z = z;
 			Name = name;
 		}
 		// Метод для установки кол-ва точек
-		void Point3D::setNumberOfPoint(int numberofpoints)
+		void setNumberOfPoint(int numberofpoints)
 		{
 			NumberOfPoint = numberofpoints;
 		}
 		// Переопределяем оператор для возможности сортировки
-		bool Point3D::operator< (const Point3D& p) {
+		bool operator< (const Point3D& p) {
 			return NumberOfPoint < p.NumberOfPoint;
 		}
 	};

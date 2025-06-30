@@ -18,7 +18,7 @@ namespace mrcv
  * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
  */
 
-	int mrcv::rotateImage(cv::Mat& imageInput, cv::Mat& imageOutput, double angle)
+	int rotateImage(cv::Mat& imageInput, cv::Mat& imageOutput, double angle)
 	{
 		try
 		{
@@ -49,7 +49,7 @@ namespace mrcv
 	 * @return - код результата работы функции. 0 - Success; 1 - Пустое изображение; 2 - Неизвестный формат изображения; -1 - Неизвестная ошибка.
 	 */
 
-	int mrcv::flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode)
+	int flipImage(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode)
 	{
 		try
 		{
@@ -65,7 +65,7 @@ namespace mrcv
 		return 0; // SUCCESS
 	}
 
-	int mrcv::adjustBrightnessContrast(cv::Mat& imageInput, cv::Mat& imageOutput,
+	int adjustBrightnessContrast(cv::Mat& imageInput, cv::Mat& imageOutput,
 		double alpha, double beta)
 	{
 		try
@@ -79,7 +79,7 @@ namespace mrcv
 		return 0;
 	}
 
-	int mrcv::addNoise(cv::Mat& imageInput, cv::Mat& imageOutput, double strength)
+	int addNoise(cv::Mat& imageInput, cv::Mat& imageOutput, double strength)
 	{
 		try
 		{
@@ -95,7 +95,7 @@ namespace mrcv
 		return 0;
 	}
 
-	int mrcv::adjustColorBalance(cv::Mat& imageInput, cv::Mat& imageOutput,
+	int adjustColorBalance(cv::Mat& imageInput, cv::Mat& imageOutput,
 		const std::vector<double>& factors)
 	{
 		try
@@ -117,7 +117,7 @@ namespace mrcv
 		return 0;
 	}
 
-	int mrcv::applyGaussianBlur(cv::Mat& imageInput, cv::Mat& imageOutput,
+	int applyGaussianBlur(cv::Mat& imageInput, cv::Mat& imageOutput,
 		int kernelSize)
 	{
 		try
@@ -132,7 +132,7 @@ namespace mrcv
 		return 0;
 	}
 
-	int mrcv::randomCrop(cv::Mat& imageInput, cv::Mat& imageOutput,
+	int randomCrop(cv::Mat& imageInput, cv::Mat& imageOutput,
 		double cropRatio)
 	{
 		try
@@ -151,7 +151,7 @@ namespace mrcv
 		return 0;
 	}
 
-	int mrcv::perspectiveTransform(cv::Mat& imageInput, cv::Mat& imageOutput,
+	int perspectiveTransform(cv::Mat& imageInput, cv::Mat& imageOutput,
 		float strength)
 	{
 		try
@@ -189,7 +189,7 @@ namespace mrcv
 	 *
 	 * @param inputImagesAugmetation - вектор входных изображений (cv::Mat) для аугментации.
 	 * @param outputImagesAugmetation - вектор для сохранения выходных (преобразованных) изображений.
-	 * @param augmetationMethod - вектор методов аугментации (mrcv::AUGMENTATION_METHOD) для применения.
+	 * @param augmetationMethod - вектор методов аугментации (AUGMENTATION_METHOD) для применения.
 	 * @return Код результата выполнения функции. 0 - успех; -1 - исключение (OpenCV или файловой системы).
 	 *
 	 * Функция проверяет наличие директории для сохранения изображений и создает её при необходимости. Для каждого изображения
@@ -197,8 +197,8 @@ namespace mrcv
 	 */
 
 
-	int mrcv::augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
-		std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod)
+	int augmetation(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation,
+		std::vector<AUGMENTATION_METHOD> augmetationMethod)
 	{
 		std::mt19937 gen(0);
 		std::uniform_real_distribution<> dist(0.7, 1.3);
@@ -228,46 +228,46 @@ namespace mrcv
 
 					switch (augmetationMethod.at(q))
 					{
-					case mrcv::AUGMENTATION_METHOD::FLIP_HORIZONTAL:
-						status = mrcv::flipImage(image, resultImage, 1);
+					case AUGMENTATION_METHOD::FLIP_HORIZONTAL:
+						status = flipImage(image, resultImage, 1);
 						methodName = "flipHorizontal";
 						break;
-					case mrcv::AUGMENTATION_METHOD::FLIP_VERTICAL:
-						status = mrcv::flipImage(image, resultImage, 0);
+					case AUGMENTATION_METHOD::FLIP_VERTICAL:
+						status = flipImage(image, resultImage, 0);
 						methodName = "flipVertical";
 						break;
-					case mrcv::AUGMENTATION_METHOD::FLIP_HORIZONTAL_AND_VERTICAL:
-						status = mrcv::flipImage(image, resultImage, -1);
+					case AUGMENTATION_METHOD::FLIP_HORIZONTAL_AND_VERTICAL:
+						status = flipImage(image, resultImage, -1);
 						methodName = "flipHorizontalandVertical";
 						break;
-					case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_90:
-						status = mrcv::rotateImage(image, resultImage, 90);
+					case AUGMENTATION_METHOD::ROTATE_IMAGE_90:
+						status = rotateImage(image, resultImage, 90);
 						methodName = "rotate90";
 						break;
-					case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_45:
-						status = mrcv::rotateImage(image, resultImage, 45);
+					case AUGMENTATION_METHOD::ROTATE_IMAGE_45:
+						status = rotateImage(image, resultImage, 45);
 						methodName = "rotate45";
 						break;
-					case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_315:
-						status = mrcv::rotateImage(image, resultImage, 315);
+					case AUGMENTATION_METHOD::ROTATE_IMAGE_315:
+						status = rotateImage(image, resultImage, 315);
 						methodName = "rotate315";
 						break;
-					case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_270:
-						status = mrcv::rotateImage(image, resultImage, 270);
+					case AUGMENTATION_METHOD::ROTATE_IMAGE_270:
+						status = rotateImage(image, resultImage, 270);
 						methodName = "rotate270";
 						break;
-					case mrcv::AUGMENTATION_METHOD::BRIGHTNESS_CONTRAST_ADJUST: {
+					case AUGMENTATION_METHOD::BRIGHTNESS_CONTRAST_ADJUST: {
 						double alpha = 0.7 + 0.6 * (rand() % 100) / 100.0;
 						double beta = -30 + 60 * (rand() % 100) / 100.0;
 						status = adjustBrightnessContrast(image, resultImage, alpha, beta);
 						methodName = "brightnessContrast";
 						break;
 					}
-					case mrcv::AUGMENTATION_METHOD::GAUSSIAN_NOISE:
+					case AUGMENTATION_METHOD::GAUSSIAN_NOISE:
 						status = addNoise(image, resultImage, 0.05);
 						methodName = "gaussianNoise";
 						break;
-					case mrcv::AUGMENTATION_METHOD::COLOR_JITTER: {
+					case AUGMENTATION_METHOD::COLOR_JITTER: {
 						std::vector<double> factors = {
 							0.7 + 0.6 * (rand() % 100) / 100.0,
 							0.7 + 0.6 * (rand() % 100) / 100.0,
@@ -277,19 +277,19 @@ namespace mrcv
 						methodName = "colorJitter";
 						break;
 					}
-					case mrcv::AUGMENTATION_METHOD::GAUSSIAN_BLUR: {
+					case AUGMENTATION_METHOD::GAUSSIAN_BLUR: {
 						int kernelSize = 3 + 2 * (rand() % 3);
 						status = applyGaussianBlur(image, resultImage, kernelSize);
 						methodName = "gaussianBlur";
 						break;
 					}
-					case mrcv::AUGMENTATION_METHOD::RANDOM_CROP: {
+					case AUGMENTATION_METHOD::RANDOM_CROP: {
 						double ratio = 0.7 + 0.2 * (rand() % 100) / 100.0;
 						status = randomCrop(image, resultImage, ratio);
 						methodName = "randomCrop";
 						break;
 					}
-					case mrcv::AUGMENTATION_METHOD::PERSPECTIVE_WARP:
+					case AUGMENTATION_METHOD::PERSPECTIVE_WARP:
 						status = perspectiveTransform(image, resultImage, 0.1f);
 						methodName = "perspectiveWarp";
 						break;
@@ -328,28 +328,28 @@ namespace mrcv
 			}
 
 			// Записываем в лог успешное завершение с названиями методов
-			writeLog("Augmentation completed successfully. Methods used: " + methodsString + ". Files saved: " + std::to_string(savedFilesCount), mrcv::LOGTYPE::INFO);
+			writeLog("Augmentation completed successfully. Methods used: " + methodsString + ". Files saved: " + std::to_string(savedFilesCount), LOGTYPE::INFO);
 		}
 		catch (const cv::Exception& ex)
 		{
-			writeLog("Augmentation failed: " + std::string(ex.what()), mrcv::LOGTYPE::ERROR);
+			writeLog("Augmentation failed: " + std::string(ex.what()), LOGTYPE::ERROR);
 			return -1;
 		}
 		catch (const std::filesystem::filesystem_error& ex)
 		{
-			writeLog("Filesystem error: " + std::string(ex.what()), mrcv::LOGTYPE::ERROR);
+			writeLog("Filesystem error: " + std::string(ex.what()), LOGTYPE::ERROR);
 			return -1;
 		}
 		catch (...)
 		{
-			writeLog("Unhandled exception occurred during augmentation.", mrcv::LOGTYPE::EXCEPTION);
+			writeLog("Unhandled exception occurred during augmentation.", LOGTYPE::EXCEPTION);
 			return -1;
 		}
 
 		return 0;
 	}
 
-	int mrcv::batchAugmentation(const std::vector<cv::Mat>& inputs,
+	int batchAugmentation(const std::vector<cv::Mat>& inputs,
 		std::vector<cv::Mat>& outputs,
 		const BatchAugmentationConfig& config,
 		const std::string& output_dir)
@@ -465,7 +465,7 @@ namespace mrcv
 		return EXIT_SUCCESS;
 	}
 
-	std::string mrcv::augmentationMethodToString(AUGMENTATION_METHOD method)
+	std::string augmentationMethodToString(AUGMENTATION_METHOD method)
 	{
 		switch (method)
 		{
@@ -506,7 +506,7 @@ namespace mrcv
 
 
 #ifdef MRCV_CUDA_ENABLED 
-	int mrcv::rotateImageCuda(cv::Mat& imageInput, cv::Mat& imageOutput, double angle)
+	int rotateImageCuda(cv::Mat& imageInput, cv::Mat& imageOutput, double angle)
 	{
 		try
 		{
@@ -527,7 +527,7 @@ namespace mrcv
 		return 0; // SUCCESS
 	}
 
-	int mrcv::flipImageCuda(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode)
+	int flipImageCuda(cv::Mat& imageInput, cv::Mat& imageOutput, int flipCode)
 	{
 		try
 		{
@@ -543,7 +543,7 @@ namespace mrcv
 		return 0; // SUCCESS
 	}
 
-	int mrcv::augmetationCuda(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation, std::vector<mrcv::AUGMENTATION_METHOD> augmetationMethod)
+	int augmetationCuda(std::vector<cv::Mat>& inputImagesAugmetation, std::vector<cv::Mat>& outputImagesAugmetation, std::vector<AUGMENTATION_METHOD> augmetationMethod)
 	{
 		std::set<std::string> methodsUsed; // Уникальные методы аугментации
 		int savedFilesCount = 0;
@@ -571,32 +571,32 @@ namespace mrcv
 
 					switch (augmetationMethod.at(q))
 					{
-					case mrcv::AUGMENTATION_METHOD::FLIP_HORIZONTAL:
-						status = mrcv::flipImageCuda(image, resultImage, 1);
+					case AUGMENTATION_METHOD::FLIP_HORIZONTAL:
+						status = flipImageCuda(image, resultImage, 1);
 						methodName = "flipHorizontal";
 						break;
-					case mrcv::AUGMENTATION_METHOD::FLIP_VERTICAL:
-						status = mrcv::flipImageCuda(image, resultImage, 0);
+					case AUGMENTATION_METHOD::FLIP_VERTICAL:
+						status = flipImageCuda(image, resultImage, 0);
 						methodName = "flipVertical";
 						break;
-					case mrcv::AUGMENTATION_METHOD::FLIP_HORIZONTAL_AND_VERTICAL:
-						status = mrcv::flipImageCuda(image, resultImage, -1);
+					case AUGMENTATION_METHOD::FLIP_HORIZONTAL_AND_VERTICAL:
+						status = flipImageCuda(image, resultImage, -1);
 						methodName = "flipHorizontalandVertical";
 						break;
-					case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_90:
-						status = mrcv::rotateImageCuda(image, resultImage, 90);
+					case AUGMENTATION_METHOD::ROTATE_IMAGE_90:
+						status = rotateImageCuda(image, resultImage, 90);
 						methodName = "rotate90";
 						break;
-					case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_45:
-						status = mrcv::rotateImageCuda(image, resultImage, 45);
+					case AUGMENTATION_METHOD::ROTATE_IMAGE_45:
+						status = rotateImageCuda(image, resultImage, 45);
 						methodName = "rotate45";
 						break;
-					case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_315:
-						status = mrcv::rotateImageCuda(image, resultImage, 315);
+					case AUGMENTATION_METHOD::ROTATE_IMAGE_315:
+						status = rotateImageCuda(image, resultImage, 315);
 						methodName = "rotate315";
 						break;
-					case mrcv::AUGMENTATION_METHOD::ROTATE_IMAGE_270:
-						status = mrcv::rotateImageCuda(image, resultImage, 270);
+					case AUGMENTATION_METHOD::ROTATE_IMAGE_270:
+						status = rotateImageCuda(image, resultImage, 270);
 						methodName = "rotate270";
 						break;
 					default:
@@ -634,21 +634,21 @@ namespace mrcv
 			}
 
 			// Записываем в лог успешное завершение с названиями методов
-			writeLog("Augmentation completed successfully. Methods used: " + methodsString + ". Files saved: " + std::to_string(savedFilesCount), mrcv::LOGTYPE::INFO);
+			writeLog("Augmentation completed successfully. Methods used: " + methodsString + ". Files saved: " + std::to_string(savedFilesCount), LOGTYPE::INFO);
 		}
 		catch (const cv::Exception& ex)
 		{
-			writeLog("Augmentation failed: " + std::string(ex.what()), mrcv::LOGTYPE::ERROR);
+			writeLog("Augmentation failed: " + std::string(ex.what()), LOGTYPE::ERROR);
 			return -1;
 		}
 		catch (const std::filesystem::filesystem_error& ex)
 		{
-			writeLog("Filesystem error: " + std::string(ex.what()), mrcv::LOGTYPE::ERROR);
+			writeLog("Filesystem error: " + std::string(ex.what()), LOGTYPE::ERROR);
 			return -1;
 		}
 		catch (...)
 		{
-			writeLog("Unhandled exception occurred during augmentation.", mrcv::LOGTYPE::EXCEPTION);
+			writeLog("Unhandled exception occurred during augmentation.", LOGTYPE::EXCEPTION);
 			return -1;
 		}
 
