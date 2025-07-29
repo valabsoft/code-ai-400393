@@ -3,7 +3,7 @@ name = "mrcv"
 version = "0.1.0"
 description = "Marine Robotics Computer Vision"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {file = "../LICENSE"}
 requires-python = ">=3.10"
 dependencies = [
     "opencv-python==4.10.0.84",
