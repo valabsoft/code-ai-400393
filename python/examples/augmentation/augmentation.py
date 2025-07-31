@@ -4,7 +4,7 @@ from mrcv import AugmentationMethod, BatchAugmentationConfig, augmentation, batc
 
 input_images = []
 for i in range(10):
-    img_path = os.path.join("files", f"img{i}.jpg")
+    img_path = os.path.join("../../../examples/augmentation/files", f"img{i}.jpg")
     img = cv2.imread(img_path, cv2.IMREAD_COLOR)
     if img is None:
         print(f"Error: Could not load image at {img_path}")

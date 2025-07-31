@@ -12,8 +12,8 @@ class DisparityType(Enum):
     FILTERED_HEATMAP = 3
     ALL = 4
 # Загрузка тестовых изображений
-file_image_left = os.path.join("files", "example_left.jpg")
-file_image_right = os.path.join("files", "example_right.jpg")
+file_image_left = os.path.join("../../../examples/disparitymap/files", "example_left.jpg")
+file_image_right = os.path.join("../../../examples/disparitymap/files", "example_right.jpg")
 
 current_path = os.getcwd()
 path_image_left = os.path.join(current_path, file_image_left)

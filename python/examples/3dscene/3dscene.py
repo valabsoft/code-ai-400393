@@ -14,8 +14,8 @@ def main():
     write_log("=== NEW RUN ===")
 
     # Load images
-    input_image_camera01 = cv2.imread("./files/L1000.bmp")
-    input_image_camera02 = cv2.imread("./files/R1000.bmp")
+    input_image_camera01 = cv2.imread("../../../examples/3dscene/files/L1000.bmp")
+    input_image_camera02 = cv2.imread("../../../examples/3dscene/files/R1000.bmp")
     if input_image_camera01 is None or input_image_camera02 is None:
         write_log("Failed to load images", "ERROR")
         return
@@ -27,7 +27,7 @@ def main():
 
     # Load camera parameters
     camera_parameters, state = read_camera_stereo_parameters_from_file(
-        "./files/(66a)_(960p)_NewCamStereoModule_Air.xml")
+        "../../../examples/3dscene/files/(66a)_(960p)_NewCamStereoModule_Air.xml")
     if state == 0:
         write_log("2. Loading stereo camera parameters from file (success)")
     else:
@@ -37,8 +37,8 @@ def main():
     settings_metod_disparity = {'metodDisparity': METOD_DISPARITY.MODE_SGBM}
     limit_out_points = 8000
     limits_outlier_area = [-4.0e3, -4.0e3, 450, 4.0e3, 4.0e3, 3.0e3]
-    file_path_model_yolo_neural_net = "./files/NeuralNet/yolov5n-seg.onnx"
-    file_path_classes = "./files/NeuralNet/yolov5.names"
+    file_path_model_yolo_neural_net = "../../../examples/3dscene/files/NeuralNet/yolov5n-seg.onnx"
+    file_path_classes = "../../../examples/3dscene/files/NeuralNet/yolov5.names"
     parameters_3d_scene = {
         'angX': 25, 'angY': 45, 'angZ': 35,
         'tX': -200, 'tY': 200, 'tZ': -600,
@@ -53,7 +53,7 @@ def main():
     )
 
     # Display results
-    foto_experimental_stand = cv2.imread("./files/experimantalStand.jpg")
+    foto_experimental_stand = cv2.imread("../../../examples/3dscene/files/experimantalStand.jpg")
     show_image(foto_experimental_stand, "fotoExperimantalStand")
 
     output_stereo_pair, state = making_stereo_pair(input_image_camera01, input_image_camera02)
@@ -81,7 +81,7 @@ def main():
         show_image(mask, f"replyMasks {qs}", 0.5)
     write_log("4.5 Displaying binary segment images (success)")
 
-    path_to_file = "./files/3DPointsInObjectsSegments.txt"
+    path_to_file = "../../../examples/3dscene/files/3DPointsInObjectsSegments.txt"
     state = save_in_file_3d_points_in_objects_segments(points_3d, path_to_file)
     if state == 0:
         write_log("4.6 Saving 3D points to text file (success)")

@@ -1,9 +1,9 @@
 from mrcv import Detector
 
-voc_classes_path = "files/onwater/voc_classes.txt"
-dataset_path = "files/onwater/"
-pretrained_model_path = "files/onwater_autodetector.pt"
-model_save_path = "files/yolo4_tiny.pt"
+voc_classes_path = "../../../examples/detectorautotrain/files/onwater/voc_classes.txt"
+dataset_path = "../../../examples/detectorautotrain/files/onwater/"
+pretrained_model_path = "../../../examples/detectorautotrain/files/onwater_autodetector.pt"
+model_save_path = "../../../examples/detectorautotrain/files/yolo4_tiny.pt"
 
 detector = Detector()
 detector.initialize(416, 416, voc_classes_path)

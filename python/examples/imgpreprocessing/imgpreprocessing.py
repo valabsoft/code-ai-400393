@@ -4,14 +4,14 @@ import os
 from mrcv import MRCV, METOD_IMAGE_PERPROCESSIN, LOGTYPE
 
 # Create output directory
-os.makedirs("./files/outImages", exist_ok=True)
+os.makedirs("../../../examples/imgpreprocessing/files/outImages", exist_ok=True)
 
 # Logging is already configured in mrcv.py
 MRCV.writeLog(" ")
 MRCV.writeLog(" === НОВЫЙ ЗАПУСК === ")
 
 # Load image
-imageInputFilePath = "./files/img02.jfif"
+imageInputFilePath = "../../../examples/imgpreprocessing/files/img02.jfif"
 imageIn = cv2.imread(imageInputFilePath, cv2.IMREAD_COLOR)
 imageOut = imageIn.copy() if imageIn is not None else None
 
@@ -32,14 +32,14 @@ methodImagePreProcessingBrightnessContrast = [
 ]
 
 # Preprocess image
-state, imageOut = MRCV.preprocessingImage(imageOut, methodImagePreProcessingBrightnessContrast, "./files/camera-parameters.xml")
+state, imageOut = MRCV.preprocessingImage(imageOut, methodImagePreProcessingBrightnessContrast, "../../../examples/imgpreprocessing/files/camera-parameters.xml")
 if state == 0:
     MRCV.writeLog(" Предобработка изображения завершена (успешно)")
 else:
     MRCV.writeLog(f" preprocessingImage, state = {state}", LOGTYPE.ERROR)
 
 # Save output image
-imageOutputFilePath = "./files/outImages/test.png"
+imageOutputFilePath = "../../../examples/imgpreprocessing/files/outImages/test.png"
 cv2.imwrite(imageOutputFilePath, imageOut)
 MRCV.writeLog(f"\t результат предобработки сохранён: {imageOutputFilePath}")
 

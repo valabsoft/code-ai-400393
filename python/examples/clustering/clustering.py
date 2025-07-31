@@ -1,7 +1,7 @@
 from mrcv import DenseStereo
 import logging
 
-data_path = "files/claster.dat"
+data_path = "../../../examples/clustering/files/claster.dat"
 
 def main():
     """

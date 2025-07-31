@@ -3,7 +3,7 @@ import cv2
 from mrcv import compare_images
 
 # Путь к папке с изображениями
-image_dir = "files"
+image_dir = "../../../examples/compareImages/files"
 current_path = os.getcwd()
 image_path = os.path.join(current_path, image_dir)
 

@@ -2,10 +2,10 @@ import os
 import cv2
 from mrcv import neural_network_augmentation_as_mat, semi_automatic_labeler_image
 
-images_path = "vae/files/images"
-result_path = "vae/files/result"
-model_path = "vae/files/ship.onnx"
-class_path = "vae/files/ship.names"
+images_path = "../../../examples/vae/files/images"
+result_path = "../../../examples/vae/files/result"
+model_path = "../../../examples/vae/files/ship.onnx"
+class_path = "../../../examples/vae/files/ship.names"
 
 height = 640
 width = 640

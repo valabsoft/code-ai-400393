@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 # Пути к файлам модели
-model_file = Path("files/ship.onnx")
-class_file = Path("files/ship.names")
-ship_file = Path("files/ship.bmp")
+model_file = Path("../../../examples/objcourse/files/ship.onnx")
+class_file = Path("../../../examples/objcourse/files/ship.names")
+ship_file = Path("../../../examples/objcourse/files/ship.bmp")
 
 current_path = Path.cwd()
 
