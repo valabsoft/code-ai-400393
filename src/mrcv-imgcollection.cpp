@@ -120,7 +120,7 @@ namespace mrcv
 			std::string concat_str = wgetString1 + wgetString2 + " -O " + path + fileName + namestep + ".jpg ";
 			std::string cmd = concat_str + arrUrl[i];
 			// вызов исполняемой функции
-			system(cmd.c_str());
+			int ret = system(cmd.c_str());
 		}
 		return index; // возвращаем последний индекс
 	}
@@ -235,7 +235,7 @@ namespace mrcv
 
 		std::string cmd = strqueryString;
 		std::cout << cmd << '\n';
-		system(cmd.c_str());
+		int ret = system(cmd.c_str());
 
 		if (!std::filesystem::exists("result.xml"))
 			return 8;
