@@ -3,11 +3,11 @@
 int main()
 {
     // Пути к файлам модели
-    std::filesystem::path modelFile("files\\ship.onnx");
-    std::filesystem::path classFile("files\\ship.names");
-    std::filesystem::path shipFile("files\\ship.bmp");
-    
     auto currentPath = std::filesystem::current_path();
+
+    std::filesystem::path modelFile(currentPath / "files" / "ship.onnx");
+    std::filesystem::path classFile(currentPath / "files" / "ship.names");
+    std::filesystem::path shipFile(currentPath / "files" / "ship.bmp");
     
     auto modelPath = currentPath / modelFile;
     auto classPath = currentPath / classFile;
