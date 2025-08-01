@@ -3,18 +3,14 @@
 
 int main()
 {
-    // Пути к файлам модели
-   std::filesystem::path imagesFile("files\\images");
-   std::filesystem::path modelFile("files\\ship.onnx");
-   std::filesystem::path classFile("files\\ship.names");
-   std::filesystem::path resultFile("files\\result");
-    
+    // Пути к файлам модели    
    auto currentPath = std::filesystem::current_path();
-
-   auto imagesPath = currentPath / imagesFile;
-   auto modelPath = currentPath / modelFile;
-   auto classPath = currentPath / classFile;
-   auto resultPath = currentPath / resultFile;
+   std::filesystem::path path = currentPath / "files";
+   
+   std::filesystem::path imagesPath = path / "images";
+   std::filesystem::path modelPath = path / "ship.onnx";
+   std::filesystem::path classPath = path / "ship.names";
+   std::filesystem::path resultPath = path / "result";
    
    // Размер изображений в датасете
    int height = 640;

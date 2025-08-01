@@ -2,11 +2,9 @@
 
 int main()
 {
-    std::filesystem::path imageFile("file\\images");
-
     auto currentPath = std::filesystem::current_path();
-
-    auto imagePath = currentPath / imageFile;
+    std::filesystem::path path = currentPath / "files";
+    std::filesystem::path imagePath = path / "images";
 
 
     std::string queryString = "sunken+ships"; // строка запроса, для двойного запроса использовать "+" без пробелов  Ex: sunken+ships

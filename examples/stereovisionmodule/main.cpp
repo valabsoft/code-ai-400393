@@ -4,31 +4,34 @@
 int main() {
     // Пути к файлам (настрой под свои)
     // Пути к файлам 
-    std::filesystem::path model_path = "files/ship.onnx";
+    auto currentPath = std::filesystem::current_path();
+    std::filesystem::path path = currentPath / "files";
+    
+    std::filesystem::path model_path = path / "ship.onnx";
     if (!std::filesystem::exists(model_path)) {
         std::cerr << "Model file does not exist: " << model_path << std::endl;
         return -1;
     }
 
-    std::filesystem::path class_path = "files/ship.names";
+    std::filesystem::path class_path = path / "ship.names";
     if (!std::filesystem::exists(class_path)) {
         std::cerr << "Class file does not exist: " << class_path << std::endl;
         return -1;
     }
 
-    std::filesystem::path segmentor_weights = "files/weights/segmentor.pt";
+    std::filesystem::path segmentor_weights = path / "weights/segmentor.pt";
     if (!std::filesystem::exists(segmentor_weights)) {
         std::cerr << "Segmentor weights file does not exist: " << segmentor_weights << std::endl;
         return -1;
     }
 
-    std::filesystem::path weightsFile = "files/weights/resnet34.pt";
+    std::filesystem::path weightsFile = path / "weights" / "resnet34.pt";
     if (!std::filesystem::exists(weightsFile)) {
         std::cerr << "Segmentor weights file does not exist: " << segmentor_weights << std::endl;
         return -1;
     }
 
-    std::filesystem::path stereo_params = "files/camCalibrarion.xml";
+    std::filesystem::path stereo_params = path / "camCalibrarion.xml";
     if (!std::filesystem::exists(stereo_params)) {
         std::cerr << "Camera parameters file does not exist: " << stereo_params << std::endl;
         return -1;

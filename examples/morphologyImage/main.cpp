@@ -2,11 +2,8 @@
 
 int main()
 {
-    std::filesystem::path imageFile("files\\");
-
     auto currentPath = std::filesystem::current_path();
-
-    auto imagePath = currentPath / imageFile;
+    std::filesystem::path imagePath = currentPath / "files" / "";
 
     int morph_size = 1;
 

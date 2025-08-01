@@ -2,11 +2,10 @@
 
 int main()
 {
-	std::filesystem::path imageFile("files\\");
-
 	auto currentPath = std::filesystem::current_path();
 
-	auto imagePath = currentPath / imageFile;
+	std::filesystem::path path = currentPath / "files" / "";
+	std::filesystem::path imagePath = path;
 
 	cv::Mat img1 = cv::imread(imagePath.u8string() + "img1.png");
 	cv::Mat img2 = cv::imread(imagePath.u8string() + "img2.png");

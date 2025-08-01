@@ -2,16 +2,21 @@
 
 int main()
 {
-    std::filesystem::path weightsFile("file\\weights\\resnet34.pt");
-    std::filesystem::path dataFile("file\\images");
-    std::filesystem::path saveFile("file\\weights\\segmentor.pt");
+    //std::filesystem::path weightsFile("file\\weights\\resnet34.pt");
+    //std::filesystem::path dataFile("file\\images");
+    //std::filesystem::path saveFile("file\\weights\\segmentor.pt");
 
     auto currentPath = std::filesystem::current_path();
 
-    auto weightsPath = currentPath / weightsFile;
-    auto dataPath = currentPath / dataFile;
-    auto savePath = currentPath / saveFile;
+    //auto weightsPath = currentPath / weightsFile;
+    //auto dataPath = currentPath / dataFile;
+    //auto savePath = currentPath / saveFile;
 
+    std::filesystem::path path = currentPath / "files";
+    
+    std::filesystem::path weightsPath = path / "weights" / "resnet34.pt";
+    std::filesystem::path dataPath = path / "images";
+    std::filesystem::path savePath = path / "weights" / "segmentor.pt";
 
     mrcv::Segmentor segmentor;
     segmentor.Initialize(512, 320, { "background","ship" }, "resnet34", weightsPath.u8string());
