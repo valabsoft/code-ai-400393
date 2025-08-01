@@ -2,15 +2,14 @@
 
 int main() 
 {
-	std::filesystem::path imageFiles("files\\Images\\");
-	std::filesystem::path fuseFile("files\\fuseData.yaml");
-	std::filesystem::path extractedFeaturesFile("files\\extractedData.yaml");
 
 	auto currentPath = std::filesystem::current_path();
 
-	auto fuseTupleSavePath = currentPath / fuseFile;
-	auto datasetPath = currentPath / imageFiles;
-	auto extracedFeaturesPath = currentPath / extractedFeaturesFile;
+	std::filesystem::path path = currentPath / "files";
+	std::filesystem::path fuseTupleSavePath = path / "fuseData.yaml";
+	std::filesystem::path datasetPath = path / "Images" / "";
+	std::filesystem::path extracedFeaturesPath = path / "extractedData.yaml";
+
 
 	int res = mrcv::extractFeatureVector(fuseTupleSavePath.u8string(), datasetPath.u8string(), extracedFeaturesPath.u8string());
 

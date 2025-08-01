@@ -1,10 +1,11 @@
 ﻿#include <mrcv/mrcv.h>
 
 int main() {
-
-    std::filesystem::path dataFile("files\\claster.dat");    
+ 
     auto currentPath = std::filesystem::current_path();
-    auto dataPath = currentPath / dataFile;
+    std::filesystem::path path = currentPath / "files";
+    
+    auto dataPath = path / "claster.dat";
 
     mrcv::DenseStereo denseStereo;    
     denseStereo.loadDataFromFile(dataPath.u8string());

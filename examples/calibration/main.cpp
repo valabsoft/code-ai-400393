@@ -10,11 +10,9 @@ int main()
     mrcv::CalibrationConfig config;
 
     // Пути к конфигурационному файлу
-    std::filesystem::path configFile("files\\config.dat");
-
     auto currentPath = std::filesystem::current_path();
-    
-    auto configPath = currentPath / configFile;
+    std::filesystem::path path = currentPath / "files";
+    std::filesystem::path configPath = path / "config.dat";
 
     // Чтение конфигуарции процедуры калибровки
     mrcv::readCalibrartionConfigFile(configPath.u8string(), config);
@@ -114,8 +112,11 @@ int main()
     std::vector<cv::String> imagesLeft;
     std::vector<cv::String> imagesRight;
     
-    std::filesystem::path calibrationFile("files\\calibration.xml");    
-    auto calibrationPath = currentPath / calibrationFile;
+    //std::filesystem::path calibrationFile("files\\calibration.xml");    
+    //auto calibrationPath = currentPath / calibrationFile;
+    
+    std::filesystem::path calibrationPath = path / "calibration.xml";
+    
     mrcv::cameraCalibrationStereo(imagesLeft, imagesRight, leftFramePath.u8string() + "/", rightFramePath.u8string() + "/", stereoPar, config.keypoints_c, config.keypoints_r, config.square_size);
     mrcv::writeCalibrationParametersStereo(calibrationPath.u8string(), stereoPar);
 

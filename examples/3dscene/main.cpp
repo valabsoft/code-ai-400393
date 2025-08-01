@@ -19,10 +19,19 @@ int main()
 	// параметры области для отсеивания выбросов {x_min, y_min, z_min, x_max, y_max, z_max}
 	std::vector<double> limitsOutlierArea = { -4.0e3, -4.0e3, 450, 4.0e3, 4.0e3, 3.0e3 };
 	std::vector<cv::Mat> replyMasks;        // вектор бинарных масок сегментов обнаруженных объектов
+	
+	//auto currentPath = std::filesystem::current_path();
+
+	//std::filesystem::path path = currentPath / "files";
+	//const std::filesystem::path filePathModelYoloNeuralNet = path / "NeuralNet" / "yolov5n-seg.onnx";
+	//const std::filesystem::path filePathClasses = path / "NeuralNet" / "yolov5.names";
+	
 	const  std::string filePathModelYoloNeuralNet = "./files/NeuralNet/yolov5n-seg.onnx";  // путь к файлу моддель нейронной сери
 	const  std::string filePathClasses = "./files/NeuralNet/yolov5.names";      // путь к файлу списоком обнаруживамых класов
+	
 	cv::String filePathOutputImage01 = "./files/L1000.bmp";                   // путь к файлу изображения камера 01
 	cv::String filePathOutputImage02 = "./files/R1000.bmp";                   // путь к файлу изображения камера 02
+	
 	cv::Mat outputImage3dSceene;  // 3D сцена
 	mrcv::parameters3dSceene parameters3dSceene; // параметры 3D сцены
 	parameters3dSceene.angX = 25;
