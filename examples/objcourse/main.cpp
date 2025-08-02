@@ -5,19 +5,12 @@ int main()
     auto currentPath = std::filesystem::current_path();
     std::filesystem::path path = currentPath / "files";
     
+    // Пути к файлам модели
     std::filesystem::path modelPath = path / "ship.onnx";
     std::filesystem::path classPath = path / "ship.names";
     std::filesystem::path shipPath = path / "ship.bmp";
     
-    // Пути к файлам модели
-    //std::filesystem::path modelFile("files\\ship.onnx");
-    //std::filesystem::path classFile("files\\ship.names");
-    //std::filesystem::path shipFile("files\\ship.bmp");
-    
-    //auto modelPath = currentPath / modelFile;
-    //auto classPath = currentPath / classFile;
-    //auto shipPath = currentPath / shipFile;
-    
+
     // Экземпляр класса детектора
     mrcv::ObjCourse *objcourse= new mrcv::ObjCourse(modelPath.u8string(), classPath.u8string());
     cv::Mat frameShip = cv::imread(shipPath.u8string(), cv::IMREAD_COLOR);

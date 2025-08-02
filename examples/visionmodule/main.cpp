@@ -1,11 +1,11 @@
-#include "mrcv/mrcv-visionmodule.h"
+п»ї#include "mrcv/mrcv-visionmodule.h"
 #include <iostream>
 
 int main() {
     auto currentPath = std::filesystem::current_path();
     std::filesystem::path path = currentPath / "files";
     
-    // Пути к файлам 
+    // РџСѓС‚Рё Рє С„Р°Р№Р»Р°Рј 
     std::filesystem::path model_path = path / "ship.onnx";
        if (!std::filesystem::exists(model_path)) {
            std::cerr << "Model file does not exist: " << model_path << std::endl;
@@ -35,28 +35,28 @@ int main() {
            std::cerr << "Camera parameters file does not exist: " << camera_params << std::endl;
            return -1;
        }
-    // Инициализация модуля
+    // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјРѕРґСѓР»СЏ
     mrcv::VisionModule vision_module(model_path.u8string(), class_path.u8string(),
         weightsFile.u8string(), segmentor_weights.u8string(), camera_params.u8string());
-    // Инициализация камеры
+    // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєР°РјРµСЂС‹
     if (!vision_module.initializeCamera(0)) {
         std::cerr << "Failed to initialize camera" << std::endl;
         return -1;
     }
 
-    // Создание окон для отображения
+    // РЎРѕР·РґР°РЅРёРµ РѕРєРѕРЅ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
     cv::namedWindow("Raw Frame", cv::WINDOW_AUTOSIZE);
     cv::namedWindow("Preprocessed Frame", cv::WINDOW_AUTOSIZE);
     cv::namedWindow("Segmentation Mask", cv::WINDOW_AUTOSIZE);
     cv::namedWindow("Detected Objects", cv::WINDOW_AUTOSIZE);
 
-    // Основной цикл обработки
+    // РћСЃРЅРѕРІРЅРѕР№ С†РёРєР» РѕР±СЂР°Р±РѕС‚РєРё
     while (true) {
         auto result = vision_module.processFrame();
         std::cout << "Objects detected: " << result.object_count
             << ", Course: " << result.object_course << " degrees" << std::endl;
 
-        // Отображение всех этапов обработки
+        // РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РІСЃРµС… СЌС‚Р°РїРѕРІ РѕР±СЂР°Р±РѕС‚РєРё
         cv::Mat raw_frame = vision_module.getRawFrame();
         cv::Mat preprocessed_frame = vision_module.getPreprocessedFrame();
         cv::Mat segmentation_mask = vision_module.getSegmentationMask();
@@ -75,13 +75,13 @@ int main() {
             cv::imshow("Detected Objects", detection_frame);
         }
 
-        // Выход по клавише ESC
+        // Р’С‹С…РѕРґ РїРѕ РєР»Р°РІРёС€Рµ ESC
         if (cv::waitKey(1) == 27) {
             break;
         }
     }
 
-    // Закрытие окон
+    // Р—Р°РєСЂС‹С‚РёРµ РѕРєРѕРЅ
     cv::destroyAllWindows();
 
     return 0;

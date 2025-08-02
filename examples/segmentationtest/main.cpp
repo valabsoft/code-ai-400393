@@ -2,20 +2,12 @@
 
 int main() {
 
-	//std::filesystem::path weightsFile("file\\weights\\resnet34.pt");
-    //std::filesystem::path segmentorFile("file\\weights\\segmentor.pt");
-    //std::filesystem::path imageFile("file\\images\\43.jpg");
-
     auto currentPath = std::filesystem::current_path();
     std::filesystem::path path = currentPath / "files";
     
     std::filesystem::path weightsPath = path / "weights" / "resnet34.pt";
     std::filesystem::path segmentorPath = path / "weights" / "segmentor.pt";
     std::filesystem::path imagePath = path / "images" / "43.jpg";
-
-    //auto weightsPath = currentPath / weightsFile;
-    //auto segmentorPath = currentPath / segmentorFile;
-    //auto imagePath = currentPath / imageFile;
 
 	cv::Mat image = cv::imread(imagePath.u8string());
 

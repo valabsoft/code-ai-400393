@@ -1,9 +1,8 @@
-#include "mrcv/mrcv-sterevisionmodule.h"
+п»ї#include "mrcv/mrcv-sterevisionmodule.h"
 #include <iostream>
 
 int main() {
-    // Пути к файлам (настрой под свои)
-    // Пути к файлам 
+    // РџСѓС‚Рё Рє С„Р°Р№Р»Р°Рј 
     auto currentPath = std::filesystem::current_path();
     std::filesystem::path path = currentPath / "files";
     
@@ -37,17 +36,17 @@ int main() {
         return -1;
     }
 
-    // Инициализация модуля
+    // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјРѕРґСѓР»СЏ
     mrcv::StereoVisionModule vision_module(model_path.u8string(), class_path.u8string(),
         weightsFile.u8string(), segmentor_weights.u8string(), stereo_params.u8string());
 
-    // Инициализация стереокамеры
+    // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃС‚РµСЂРµРѕРєР°РјРµСЂС‹
     if (!vision_module.initializeStereoCamera(1, 0)) {
         std::cerr << "Failed to initialize stereo camera" << std::endl;
         return -1;
     }
 
-    // Создание окон для отображения
+    // РЎРѕР·РґР°РЅРёРµ РѕРєРѕРЅ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
     cv::namedWindow("Raw Left Frame", cv::WINDOW_AUTOSIZE);
     cv::namedWindow("Raw Right Frame", cv::WINDOW_AUTOSIZE);
     cv::namedWindow("Preprocessed Left Frame", cv::WINDOW_AUTOSIZE);
@@ -56,13 +55,13 @@ int main() {
     cv::namedWindow("Segmentation Mask", cv::WINDOW_AUTOSIZE);
     cv::namedWindow("Detected Objects", cv::WINDOW_AUTOSIZE);
 
-    // Основной цикл обработки
+    // РћСЃРЅРѕРІРЅРѕР№ С†РёРєР» РѕР±СЂР°Р±РѕС‚РєРё
     while (true) {
         auto result = vision_module.processFrame();
         std::cout << "Objects detected: " << result.object_count
             << ", Course: " << result.object_course << " degrees" << std::endl;
 
-        // Отображение всех этапов обработки
+        // РћС‚РѕР±СЂР°Р¶РµРЅРёРµ РІСЃРµС… СЌС‚Р°РїРѕРІ РѕР±СЂР°Р±РѕС‚РєРё
         cv::Mat raw_left = vision_module.getRawLeftFrame();
         cv::Mat raw_right = vision_module.getRawRightFrame();
         cv::Mat preprocessed_left = vision_module.getPreprocessedLeftFrame();
@@ -93,13 +92,13 @@ int main() {
             cv::imshow("Detected Objects", detection_frame);
         }
 
-        // Выход по клавише ESC
+        // Р’С‹С…РѕРґ РїРѕ РєР»Р°РІРёС€Рµ ESC
         if (cv::waitKey(1) == 27) {
             break;
         }
     }
 
-    // Закрытие окон
+    // Р—Р°РєСЂС‹С‚РёРµ РѕРєРѕРЅ
     cv::destroyAllWindows();
 
     return 0;

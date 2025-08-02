@@ -2,17 +2,12 @@
 
 int main()
 {
-    // Загрузка тестовых изображений
-    //std::filesystem::path fileImageLeft("files\\example_left.jpg");
-    //std::filesystem::path fileImageRight("files\\example_right.jpg");
+    // Загрузка тестовых изображений   
 
     auto currentPath = std::filesystem::current_path();
     std::filesystem::path path = currentPath / "files";
     std::filesystem::path pathImageLeft = path / "example_left.jpg";
     std::filesystem::path pathImageRight = path / "example_right.jpg";
-
-    //auto pathImageLeft = currentPath / fileImageLeft;
-    //auto pathImageRight = currentPath / fileImageRight;
 
     cv::Mat imageLeft = cv::imread(pathImageLeft.u8string(), cv::IMREAD_COLOR);
     cv::Mat imageRight = cv::imread(pathImageRight.u8string(), cv::IMREAD_COLOR);
