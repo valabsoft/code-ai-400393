@@ -6,42 +6,45 @@ string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_
 
 if(is_top_level)
     if(USE_CUDA)
-        set(CMAKE_PREFIX_PATH "C:/libtorch-12.4-cuda/Release;C:/yaml-cpp")
-        set(OpenCV_DIR "C:/opencv-4.10.0-build-cuda/install")
-        set(Torch_DIR "C:/libtorch-12.4-cuda/Release/share/cmake/Torch")
-        # OpenCV DIRs
+        # Добавляем макрос MRCV_CUDA_ENABLED
+        target_compile_definitions(mrcv PRIVATE MRCV_CUDA_ENABLED)
         if(WIN32)
+    	    set(CMAKE_PREFIX_PATH "C:/libtorch-12.4-cuda/Release;C:/yaml-cpp")
+            set(OpenCV_DIR "C:/opencv-4.10.0-build-cuda/install")
+            set(Torch_DIR "C:/libtorch-12.4-cuda/Release/share/cmake/Torch")
+    
             set(OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build-cuda/install/include")
             set(OpenCV_LIB_DIR "C:/opencv-4.10.0-build-cuda/install/x64/vc17/lib")
-        else()
-            set(OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4")
-            set(OpenCV_LIB_DIR "/usr/local/lib")
-        endif()
-        # Torch DIRs
-        if(WIN32)
+        
             set(Torch_INCLUDE_DIRS "C:/libtorch-12.4-cuda/Release/include")
             set(Torch_LIB_DIR "C:/libtorch-12.4-cuda/Release/lib")
         else()
-            set(Torch_INCLUDE_DIRS "/usr/local/include/torch")
-            set(Torch_LIB_DIR "/usr/local/lib")
-        endif()
-    else()
-        set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release;C:/yaml-cpp")
-        set(OpenCV_DIR "C:/opencv-4.10.0-build/install")
-        set(Torch_DIR "C:/libtorch-12.4/Release/share/cmake/Torch")
-        # OpenCV DIRs
-        if(WIN32)
-            set(OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include")
-            set(OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib")
-        else()
+    	    set(Torch_DIR "/opt/libtorch/share/cmake/Torch")
+   
             set(OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4")
             set(OpenCV_LIB_DIR "/usr/local/lib")
+        
+            set(Torch_INCLUDE_DIRS "/usr/local/include/torch")
+            set(Torch_LIB_DIR "/usr/local/lib")
+        
         endif()
-        # Torch DIRs
+    else() 
         if(WIN32)
+    	    set(CMAKE_PREFIX_PATH "C:/libtorch-12.4/Release;C:/yaml-cpp")
+            set(OpenCV_DIR "C:/opencv-4.10.0-build/install")
+            set(Torch_DIR "C:/libtorch-12.4/Release/share/cmake/Torch")
+
+            set(OpenCV_INCLUDE_DIRS "C:/opencv-4.10.0-build/install/include")
+            set(OpenCV_LIB_DIR "C:/opencv-4.10.0-build/install/x64/vc17/lib")
+
             set(Torch_INCLUDE_DIRS "C:/libtorch-12.4/Release/include")
             set(Torch_LIB_DIR "C:/libtorch-12.4/Release/lib")
         else()
+    	    set(Torch_DIR "/opt/libtorch/share/cmake/Torch")
+        
+            set(OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4")
+            set(OpenCV_LIB_DIR "/usr/local/lib") 
+        
             set(Torch_INCLUDE_DIRS "/usr/local/include/torch")
             set(Torch_LIB_DIR "/usr/local/lib")
         endif()
